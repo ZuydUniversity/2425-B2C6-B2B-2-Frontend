@@ -1,9 +1,10 @@
-﻿import {FC} from "react";
+﻿import styles from "./index.module.scss";
+import {FC} from "react";
 
 const Home: FC = () => {
   return (
-    <div>
-      <h1>Hello, World!</h1>
+    <div className={styles.wrapper}>
+      <h1 className={styles.title}>Hello, World!</h1>
     </div>
   );
 }

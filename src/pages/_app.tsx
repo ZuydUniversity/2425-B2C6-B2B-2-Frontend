@@ -1,4 +1,5 @@
-﻿import {Provider} from "react-redux";
+﻿import "normalize.css";
+import {Provider} from "react-redux";
 import store from "../redux/store";
 import {FC} from "react";
 import {AppProps} from "next/app";
