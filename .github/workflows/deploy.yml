@@ -11,6 +11,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.0.2
+
+      - name: Install dependencies
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
+
+      - name: Test application
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: test
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -22,4 +37,4 @@ jobs:
           tags: my-app:dry-run
 
       - name: Deploy (stub)
-        run: "This is a fake deploy until the infrastructure is ready to support real deployment"
+        run: "echo 'This is a fake deploy until the infrastructure is ready to support real deployment'"

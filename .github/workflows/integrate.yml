@@ -8,14 +8,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 24.0.2
+
       - name: Install dependencies
         uses: borales/actions-yarn@v4
         with:
           cmd: install
+
       - name: Test application
         uses: borales/actions-yarn@v4
         with:
