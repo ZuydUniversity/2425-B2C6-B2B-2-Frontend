@@ -1,4 +1,5 @@
 ﻿*.env
+.swc/
 
 # Logs
 logs
