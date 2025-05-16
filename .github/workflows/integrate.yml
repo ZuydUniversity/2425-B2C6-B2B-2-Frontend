@@ -2,7 +2,7 @@
 on:
   pull_request:
 jobs:
-  build:
+  test:
     runs-on: ubuntu-24.04
 
     steps:
@@ -12,5 +12,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: npm ci
-      - run: npm test
+      - name: Install dependencies
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
+      - name: Test application
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: test
