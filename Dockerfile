@@ -1,0 +1,15 @@
+﻿FROM node:24.0.2-alpine
+
+WORKDIR /app
+
+COPY yarn.lock package.json ./
+
+RUN yarn install
+
+COPY . .
+
+RUN yarn build
+
+EXPOSE 3000
+
+CMD ["yarn", "start:prod"]
