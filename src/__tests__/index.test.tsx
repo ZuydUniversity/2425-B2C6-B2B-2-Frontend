@@ -1,4 +1,4 @@
-﻿import HomePage from "./index";
+﻿import HomePage from "../pages";
 import {render} from "@testing-library/react";
 
 describe("HomePage", () => {
