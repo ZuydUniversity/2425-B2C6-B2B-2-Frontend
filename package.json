@@ -1,0 +1,24 @@
+{
+  "name": "2425-b2c6-b2b-2-frontend",
+  "version": "1.0.0",
+  "description": "Studenten repository voor frontend in Reactjs voor het vak B2C6 DevOps. In deze repository sla je alle frontend code op. Elke klas heeft 1 repository voor Frontend.",
+  "homepage": "https://github.com/ZuydUniversity/2425-B2C6-B2B-2-Frontend#readme",
+  "bugs": {
+    "url": "https://github.com/ZuydUniversity/2425-B2C6-B2B-2-Frontend/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZuydUniversity/2425-B2C6-B2B-2-Frontend.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "start": "node index.js"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
