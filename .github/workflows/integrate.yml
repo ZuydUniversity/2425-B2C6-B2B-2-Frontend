@@ -2,7 +2,7 @@
 on:
   pull_request:
 jobs:
-  test:
+  integration_test:
     runs-on: ubuntu-24.04
 
     steps:
@@ -18,6 +18,11 @@ jobs:
         uses: borales/actions-yarn@v4
         with:
           cmd: install
+
+      - name: Check formatting
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: format:check
 
       - name: Test application
         uses: borales/actions-yarn@v4

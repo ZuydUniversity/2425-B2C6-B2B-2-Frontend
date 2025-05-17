@@ -1,5 +1,5 @@
 ﻿import HomePage from "../pages";
-import {render} from "@testing-library/react";
+import { render } from "@testing-library/react";
 
 describe("HomePage", () => {
   it("renders an h1 element", () => {

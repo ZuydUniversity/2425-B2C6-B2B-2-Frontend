@@ -1,8 +1,8 @@
 ﻿import "normalize.css"; // Use normalize.css to make styling more reliable
-import {Provider} from "react-redux";
+import { Provider } from "react-redux";
 import store from "../redux/store";
-import {FC} from "react";
-import {AppProps} from "next/app";
+import { FC } from "react";
+import { AppProps } from "next/app";
 
 /**
  * Default app component. This component renders and wraps around every page.
@@ -11,7 +11,7 @@ import {AppProps} from "next/app";
 const App: FC<AppProps> = ({ Component, pageProps }: AppProps) => {
   return (
     <Provider store={store}>
-        {/* Wrapping the main content of the page in a main block improves accessibility */}
+      {/* Wrapping the main content of the page in a main block improves accessibility */}
       <main>
         <Component {...pageProps} />
       </main>

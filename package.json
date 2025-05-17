@@ -12,7 +12,8 @@
     "start:prod": "next start",
     "test": "jest",
     "test:watch": "jest --watch",
-    "format": "prettier . --write"
+    "format": "prettier . --write",
+    "format:check": "prettier . --check"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.8.2",
