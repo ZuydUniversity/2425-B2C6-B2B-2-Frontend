@@ -1,6 +1,9 @@
 ﻿import styles from "./index.module.scss";
 import {FC} from "react";
 
+/**
+ * Homepage component.
+ */
 const Home: FC = () => {
   return (
     <div className={styles.wrapper}>
