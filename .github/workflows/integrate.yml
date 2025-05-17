@@ -24,6 +24,11 @@ jobs:
         with:
           cmd: format:check
 
+      - name: Check linting
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: lint
+
       - name: Test application
         uses: borales/actions-yarn@v4
         with:
