@@ -21,6 +21,11 @@ jobs:
         with:
           cmd: install
 
+      - name: Disable Next.JS telemetry
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: next telemetry disable
+
       - name: Check formatting
         uses: borales/actions-yarn@v4
         with:
