@@ -36,15 +36,21 @@ jobs:
         with:
           cmd: test
 
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Login to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ vars.CONTAINER_REGISTRY_DOMAIN }}
+          username: ${{ vars.CONTAINER_REGISTRY_USERNAME }}
+          password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
 
       - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
-          context: .
-          push: false  # Don't push anywhere yet
-          tags: my-app:dry-run
-
-      - name: Deploy (stub)
-        run: "echo 'This is a fake deploy until the infrastructure is ready to support real deployment'"
+          push: true
+          tags: ${{ vars.CONTAINER_REGISTRY_DOMAIN }}/b2b-frontend:latest
