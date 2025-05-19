@@ -8,6 +8,8 @@ RUN yarn install
 
 COPY . .
 
+RUN yarn next telemetry disable
+
 RUN yarn build
 
 EXPOSE 3000
