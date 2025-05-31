@@ -1,4 +1,5 @@
-﻿import styles from "./index.module.scss";
+﻿import TestComponent from "../components/TestComponent";
+import styles from "./index.module.scss";
 import { FC } from "react";
 
 /**
@@ -7,7 +8,8 @@ import { FC } from "react";
 const Home: FC = () => {
   return (
     <div className={styles.wrapper}>
-      <h1 className={styles.title}>Bye, World!</h1>
+      <TestComponent />
+      <h1 className={styles.title}>Hello, World </h1>
       <h1 className={styles.title}>This is a testing nightmare!</h1>
     </div>
   );
