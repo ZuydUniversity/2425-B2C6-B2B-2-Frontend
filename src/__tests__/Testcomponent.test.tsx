@@ -7,4 +7,7 @@ describe("TestComponent", () => {
     const { container } = render(<TestComponent />);
     expect(container).not.toBeNull(); // eenvoudige check
   });
+  it("is defined", () => {
+    expect(TestComponent).toBeDefined();
+  });
 });
