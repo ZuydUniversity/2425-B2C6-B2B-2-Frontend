@@ -1,4 +1,4 @@
-﻿import TestComponent from '../components/TestComponent';
+﻿import TestComponent from "../components/TestComponent";
 import styles from "./index.module.scss";
 import { FC } from "react";
 
