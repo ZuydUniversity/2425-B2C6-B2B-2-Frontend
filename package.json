@@ -15,6 +15,7 @@
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "lint": "next lint",
+    "postinstall": "husky",
     "precommit": "lint-staged && yarn lint && yarn test"
   },
   "lint-staged": {
