@@ -6,35 +6,35 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - name: Checkout
+      - name: Checkout (Set up environment)
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node (Set up environment)
         uses: actions/setup-node@v4
         with:
           node-version: 24.0.2
 
-      - name: Install dependencies
+      - name: Install dependencies (Set up environment)
         uses: borales/actions-yarn@v4
         with:
           cmd: install
 
-      - name: Disable Next.JS telemetry
+      - name: Disable Next.JS telemetry (Set up environment)
         uses: borales/actions-yarn@v4
         with:
           cmd: next telemetry disable
 
-      - name: Check formatting
+      - name: Check if the formatting of code follows Prettier formatting rules
         uses: borales/actions-yarn@v4
         with:
           cmd: format:check
 
-      - name: Check linting
+      - name: Check if there aren't any linting errors
         uses: borales/actions-yarn@v4
         with:
           cmd: lint
 
-      - name: Test application
+      - name: Check unit tests
         uses: borales/actions-yarn@v4
         with:
           cmd: test

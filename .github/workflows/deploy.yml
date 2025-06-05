@@ -8,58 +8,58 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - name: Checkout
+      - name: Checkout (Set up environment)
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node (Set up environment)
         uses: actions/setup-node@v4
         with:
           node-version: 24.0.2
 
-      - name: Install dependencies
+      - name: Install dependencies (Set up environment)
         uses: borales/actions-yarn@v4
         with:
           cmd: install
 
-      - name: Disable Next.JS telemetry
+      - name: Disable Next.JS telemetry (Set up environment)
         uses: borales/actions-yarn@v4
         with:
           cmd: next telemetry disable
 
-      - name: Check formatting
+      - name: Check if the formatting of code follows Prettier formatting rules
         uses: borales/actions-yarn@v4
         with:
           cmd: format:check
 
-      - name: Check linting
+      - name: Check if there aren't any linting errors
         uses: borales/actions-yarn@v4
         with:
           cmd: lint
 
-      - name: Test application
+      - name: Check unit tests
         uses: borales/actions-yarn@v4
         with:
           cmd: test
 
-      - name: Generate version
+      - name: Generate version (Docker)
         id: version
         run: echo "date=$(date +'%Y-%m-%d-%H-%M')" >> $GITHUB_OUTPUT
 
-      - name: Setup QEMU
+      - name: Setup QEMU (Docker)
         uses: docker/setup-qemu-action@v3
 
-      - name: Set up Docker Buildx
+      - name: Set up Docker Buildx (Docker)
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to registry
+      - name: Login to registry (Docker)
         uses: docker/login-action@v3
         with:
           registry: ${{ vars.CONTAINER_REGISTRY_DOMAIN }}
           username: ${{ vars.CONTAINER_REGISTRY_USERNAME }}
           password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
 
-      - name: Build Docker image
+      - name: Build Docker image (Docker)
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: ${{ vars.CONTAINER_REGISTRY_DOMAIN }}/b2b-frontend:${{ steps.version.outputs.date }}
+          tags: ${{ vars.CONTAINER_REGISTRY_DOMAIN }}/b2b-frontend:${{ steps.version.outputs.date }},${{ vars.CONTAINER_REGISTRY_DOMAIN }}/b2b-frontend:latest
