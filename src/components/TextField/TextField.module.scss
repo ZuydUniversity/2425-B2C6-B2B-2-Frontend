@@ -1,0 +1,36 @@
+﻿.wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.input {
+  flex-grow: 1;
+  width: 100%;
+
+  min-height: 30px;
+
+  border: 0;
+  border-radius: 10px 10px 0 0;
+
+  background-color: #e3e3e3;
+}
+
+.underline_wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  height: 5px;
+}
+
+.underline {
+  height: 100%;
+  width: 0;
+
+  background-color: black;
+
+  transition: ease-in-out 0.5s;
+}
+
+.underline_activated {
+  width: 100%;
+}
