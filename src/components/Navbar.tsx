@@ -1,19 +1,8 @@
 import Link from "next/link";
-import { useState } from "react";
 import styles from "./navbar.module.scss";
+import { pagesList } from "../data/pageslist"; // Import the pages list
 
 const Navbar = () => {
-  const [open, setOpen] = useState(false);
-  const pages = [
-    { name: "Productie", href: "/productie" },
-    { name: "Accountmanagement", href: "/accountmanagement" },
-    { name: "Planning", href: "/planning" },
-    { name: "Inkoop", href: "/inkoop" },
-    { name: "Voorraadbeheer", href: "/voorraadbeheer" },
-    { name: "Expeditie", href: "/expeditie" },
-    { name: "FinanciëleAdministratie", href: "/financieleadministratie" },
-  ];
-
   return (
     <nav className={styles.navbar}>
       <div className={styles.leftGroup}>
@@ -22,29 +11,22 @@ const Navbar = () => {
           Startpagina
         </Link>
         <div className={styles.separator}></div>
-        <div style={{ position: "relative" }}>
-          <button
-            onClick={() => setOpen(!open)}
-            className={styles.dropdownButton}
-            aria-haspopup="true"
-            aria-expanded={open}
-          >
+        <div className={styles.dropdown}>
+          <span className={styles.link}>
             Overzichten <span className={styles.arrow}>▼</span>
-          </button>
-          {open && (
-            <ul className={styles.dropdownMenu}>
-              {pages.map((p) => (
-                <li key={p.name}>
-                  <Link href={p.href} className={styles.dropdownLink}>
-                    {p.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
+          </span>
+          <ul className={styles.dropdownMenu}>
+            {pagesList.map((page) => (
+              <li key={page.href}>
+                <Link href={page.href} className={styles.dropdownLink}>
+                  {page.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
-      <Link href="/login" className={styles.loginLink}>
+      <Link href="/" /*href="/login"*/ className={styles.loginLink}>
         Inloggen
       </Link>
     </nav>

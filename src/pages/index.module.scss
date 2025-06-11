@@ -1,37 +1,38 @@
 ﻿.wrapper {
-  margin: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  padding: 2rem;
+  text-align: center;
 }
 
 .title {
-  font-size: 3rem;
+  font-size: 2.5rem;
   margin-bottom: 2rem;
 }
 
-.circleContainer {
+.list {
   display: flex;
   flex-direction: column;
+  align-items: start;
   gap: 1.5rem;
 }
 
-.circle {
-  width: 150px;
-  height: 150px;
-  background-color: #f3f4f6;
-  border-radius: 50%;
+.linkItem {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  text-align: center;
+  gap: 1rem;
   text-decoration: none;
-  color: #1f2937;
-  border: 2px solid #d1d5db;
-  transition: background-color 0.3s;
+  color: black;
+  transition: background-color 0.2s ease;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+
+  &:hover {
+    background-color: #f3f4f6; // lichte hoverkleur
+  }
 }
 
-.circle:hover {
-  background-color: #e5e7eb;
+.circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background-color: gray;
 }

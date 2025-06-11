@@ -23,6 +23,14 @@
   margin: 0 0.5rem;
 }
 
+.dropdown {
+  position: relative;
+
+  &:hover .dropdownMenu {
+    display: block;
+  }
+}
+
 .dropdownButton {
   background: none;
   border: none;
@@ -38,6 +46,7 @@
 }
 
 .dropdownMenu {
+  display: none;
   position: absolute;
   background: white;
   border: 1px solid #d1d5db;
@@ -101,4 +110,19 @@
 
 .dropdownLink:hover {
   background-color: #e5e7eb;
+}
+
+.link {
+  position: relative;
+  font-weight: 500;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #333;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #e0e0e0;
+  }
 }
