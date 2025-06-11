@@ -18,7 +18,7 @@ const Navbar = () => {
     <nav className={styles.navbar}>
       <div className={styles.leftGroup}>
         <span className={styles.logo}>Logo</span>
-        <Link href="/" className={styles.startPageLink}>
+        <Link href="/" className={styles.linkButton}>
           Startpagina
         </Link>
         <div className={styles.separator}></div>
@@ -29,7 +29,7 @@ const Navbar = () => {
             aria-haspopup="true"
             aria-expanded={open}
           >
-            Overzichten
+            Overzichten <span className={styles.arrow}>▼</span>
           </button>
           {open && (
             <ul className={styles.dropdownMenu}>
