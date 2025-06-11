@@ -1,5 +1,5 @@
 import Link from "next/link";
-import styles from "./navbar.module.scss";
+import styles from "./Navbar.module.scss";
 import { pagesList } from "../data/pageslist"; // Import the pages list
 
 const Navbar = () => {
