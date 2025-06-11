@@ -1,7 +1,38 @@
 ﻿.wrapper {
-  margin: 10px;
+  padding: 2rem;
+  text-align: center;
 }
 
 .title {
-  font-size: 6rem;
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 1.5rem;
+}
+
+.linkItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-decoration: none;
+  color: black;
+  transition: background-color 0.2s ease;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+
+  &:hover {
+    background-color: #f3f4f6; // lichte hoverkleur
+  }
+}
+
+.circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background-color: gray;
 }

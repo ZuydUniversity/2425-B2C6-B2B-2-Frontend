@@ -17,7 +17,7 @@
     "baseUrl": "src",
     "paths": {
       "@redux-typed-hooks": ["redux/hooks"],
-      "@components": ["components"]
+      "@components/*": ["components/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
