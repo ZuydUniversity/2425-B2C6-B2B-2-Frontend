@@ -11,9 +11,11 @@ import Layout from "../components/Layout";
  */
 const App: FC<AppProps> = ({ Component, pageProps }: AppProps) => {
   return (
-    <Layout>
-      <Component {...pageProps} />
-    </Layout>
+    <Provider store={store}>
+      <Layout>
+        <Component {...pageProps} />
+      </Layout>
+    </Provider>
   );
 };
 
