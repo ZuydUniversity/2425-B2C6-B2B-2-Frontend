@@ -1,8 +1,18 @@
 import Link from "next/link";
 import styles from "./Navbar.module.scss";
-import { pagesList } from "../data/pageslist"; // Import the pages list
+import { pagesList } from "../data/pageslist";
+import { FC, useState } from "react"; // Import the pages list
 
-const Navbar = () => {
+const Navbar: FC = () => {
+  const [dropdownHover, setDropdownHover] = useState(false);
+  const [listHover, setListHover] = useState(false);
+
+  /**
+   * OR gate between the dropdown container being hovered and the dropdown
+   * list being hovered
+   */
+  const isDropdownVisible = dropdownHover || listHover;
+
   return (
     <nav className={styles.navbar}>
       <div className={styles.leftGroup}>
@@ -11,19 +21,35 @@ const Navbar = () => {
           Startpagina
         </Link>
         <div className={styles.separator}></div>
-        <div className={styles.dropdown}>
+        <div
+          className={styles.dropdown}
+          data-testid={"dropdown"}
+          onMouseEnter={() => setDropdownHover(true)}
+          onMouseLeave={() => setDropdownHover(false)}
+          onFocus={() => setDropdownHover(true)}
+          onBlur={() => setDropdownHover(false)}
+        >
           <span className={styles.link}>
             Overzichten <span className={styles.arrow}>▼</span>
           </span>
-          <ul className={styles.dropdownMenu}>
-            {pagesList.map((page) => (
-              <li key={page.href}>
-                <Link href={page.href} className={styles.dropdownLink}>
-                  {page.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          {isDropdownVisible && (
+            <ul
+              className={styles.dropdownMenu}
+              data-testid={"dropdownMenu"}
+              onMouseEnter={() => setListHover(true)}
+              onMouseLeave={() => setListHover(false)}
+              onFocus={() => setListHover(true)}
+              onBlur={() => setListHover(false)}
+            >
+              {pagesList.map((page) => (
+                <li key={page.href}>
+                  <Link href={page.href} className={styles.dropdownLink}>
+                    {page.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
       <Link href="/" /*href="/login"*/ className={styles.loginLink}>
