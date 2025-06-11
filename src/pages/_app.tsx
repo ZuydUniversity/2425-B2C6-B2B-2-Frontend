@@ -3,7 +3,7 @@ import { Provider } from "react-redux";
 import store from "../redux/store";
 import { FC } from "react";
 import { AppProps } from "next/app";
-import Layout from '../components/Layout';
+import Layout from "../components/Layout";
 
 /**
  * Default app component. This component renders and wraps around every page.

@@ -1,9 +1,9 @@
-import Navbar from './Navbar';
-import { useRouter } from 'next/router';
+import Navbar from "./Navbar";
+import { useRouter } from "next/router";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const { pathname } = useRouter();
-  const hideNavbar = pathname === '/login';
+  const hideNavbar = pathname === "/login";
 
   return (
     <>

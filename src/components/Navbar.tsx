@@ -1,24 +1,26 @@
-import Link from 'next/link';
-import { useState } from 'react';
+import Link from "next/link";
+import { useState } from "react";
 import styles from "./navbar.module.scss";
 
 const Navbar = () => {
-    const [open, setOpen] = useState(false);
-    const pages = [
-        { name: 'Productie', href: '/productie' },
-        { name: 'Accountmanagement', href: '/accountmanagement' },
-        { name: 'Planning', href: '/planning' },
-        { name: 'Inkoop', href: '/inkoop' },
-        { name: 'Voorraadbeheer', href: '/voorraadbeheer' },
-        { name: 'Expeditie', href: '/expeditie' },
-        { name: 'FinanciëleAdministratie', href: '/financieleadministratie' },
-    ];
+  const [open, setOpen] = useState(false);
+  const pages = [
+    { name: "Productie", href: "/productie" },
+    { name: "Accountmanagement", href: "/accountmanagement" },
+    { name: "Planning", href: "/planning" },
+    { name: "Inkoop", href: "/inkoop" },
+    { name: "Voorraadbeheer", href: "/voorraadbeheer" },
+    { name: "Expeditie", href: "/expeditie" },
+    { name: "FinanciëleAdministratie", href: "/financieleadministratie" },
+  ];
 
-    return (
+  return (
     <nav className={styles.navbar}>
       <div className={styles.leftGroup}>
         <span className={styles.logo}>Logo</span>
-        <Link href="/" className={styles.startPageLink}>Startpagina</Link>
+        <Link href="/" className={styles.startPageLink}>
+          Startpagina
+        </Link>
         <div className={styles.separator}></div>
         <div style={{ position: "relative" }}>
           <button
@@ -33,16 +35,20 @@ const Navbar = () => {
             <ul className={styles.dropdownMenu}>
               {pages.map((p) => (
                 <li key={p.name}>
-                  <Link href={p.href} className={styles.dropdownLink}>{p.name}</Link>
+                  <Link href={p.href} className={styles.dropdownLink}>
+                    {p.name}
+                  </Link>
                 </li>
               ))}
             </ul>
           )}
         </div>
       </div>
-      <Link href="/login" className={styles.loginLink}>Inloggen</Link>
+      <Link href="/login" className={styles.loginLink}>
+        Inloggen
+      </Link>
     </nav>
   );
 };
- 
+
 export default Navbar;
