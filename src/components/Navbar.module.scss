@@ -25,10 +25,6 @@
 
 .dropdown {
   position: relative;
-
-  &:hover .dropdownMenu {
-    display: block;
-  }
 }
 
 .dropdownButton {
@@ -46,7 +42,6 @@
 }
 
 .dropdownMenu {
-  display: none;
   position: absolute;
   background: white;
   border: 1px solid #d1d5db;
