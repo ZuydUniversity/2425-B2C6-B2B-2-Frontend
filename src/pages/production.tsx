@@ -1,45 +1,22 @@
+import { sampleData } from "../data/productionsampledata";
+import { statuses } from "../data/statuseslist";
+import { motorImagesList } from "../data/motorimageslist";
 import styles from "./production.module.scss";
 import React, { useState } from "react";
 
-const statuses = ["In productie", "Afgerond", "Wachten op onderdelen"];
-
-const sampleData = [
-  {
-    orderId: "ORD001",
-    productType: "A",
-    aantal: 10,
-    productielijn: 1,
-    leverdatum: "2025-06-15",
-    status: statuses[0], // "In productie"
-  },
-  {
-    orderId: "ORD002",
-    productType: "B",
-    aantal: 5,
-    productielijn: 2,
-    leverdatum: "2025-06-16",
-    status: statuses[2], // "Wachten op onderdelen"
-  },
-  {
-    orderId: "ORD003",
-    productType: "C",
-    aantal: 8,
-    productielijn: 3,
-    leverdatum: "2025-06-17",
-    status: statuses[1], // "Afgerond"
-  },
-  {
-    orderId: "ORD004",
-    productType: "B",
-    aantal: 3,
-    productielijn: 1,
-    leverdatum: "2025-06-17",
-    status: statuses[0], // "In productie"
-  },
-];
+type Order = {
+  orderId: string;
+  productType: string;
+  aantal: number;
+  productielijn: number;
+  leverdatum: string;
+  status: string;
+};
 
 const ProductionPage = () => {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
   const groupedByLine = [1, 2, 3].map((lijn) => ({
     lijn,
     orders: sampleData.filter((o) => o.productielijn === lijn),
@@ -112,7 +89,12 @@ const ProductionPage = () => {
                       </div>
                     </td>
                     <td>
-                      <button className={styles.button}>Details</button>
+                      <button
+                        className={styles.button}
+                        onClick={() => setSelectedOrder(order)}
+                      >
+                        Details
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -121,6 +103,55 @@ const ProductionPage = () => {
           </div>
         ))}
       </div>
+
+      {selectedOrder && (
+        <div
+          className={styles.modalOverlay}
+          onClick={() => setSelectedOrder(null)}
+        >
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h3>Details voor Order {selectedOrder.orderId}</h3>
+            <div className={styles.modalContent}>
+              <div className={styles.details}>
+                <p>
+                  <strong>Producttype:</strong> {selectedOrder.productType}
+                </p>
+                <p>
+                  <strong>Aantal:</strong> {selectedOrder.aantal}
+                </p>
+                <p>
+                  <strong>Productielijn:</strong> {selectedOrder.productielijn}
+                </p>
+                <p>
+                  <strong>Leverdatum:</strong> {selectedOrder.leverdatum}
+                </p>
+                <p>
+                  <strong>Status:</strong> {selectedOrder.status}
+                </p>
+              </div>
+
+              <div className={styles.imageContainer}>
+                {/*product image*/}
+                <img
+                  src={
+                    motorImagesList[selectedOrder.productType] ||
+                    motorImagesList["A"]
+                  }
+                  alt={`Motor ${selectedOrder.productType}`}
+                  className={styles.productImage}
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={() => setSelectedOrder(null)}
+              className={styles.button}
+            >
+              Sluiten
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

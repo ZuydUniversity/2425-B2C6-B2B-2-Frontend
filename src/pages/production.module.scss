@@ -101,3 +101,48 @@
 .dropdownContainer {
   position: relative;
 }
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  width: 550px;
+  max-width: 90%;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.modalContent {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.details {
+  flex: 1;
+}
+
+.imageContainer {
+  flex: 1;
+  align-items: end;
+}
+
+.productImage {
+  height: 250px;
+  margin-top: 1rem;
+  border-radius: 0.5rem;
+}
