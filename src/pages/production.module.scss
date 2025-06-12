@@ -69,3 +69,35 @@
     background-color: #005ac1;
   }
 }
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: white;
+  border: 1px solid #ccc;
+  width: max-content;
+  z-index: 10;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dropdownLink {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.dropdownLink:hover {
+  background-color: #f0f0f0;
+}
+
+.dropdownContainer {
+  position: relative;
+}
