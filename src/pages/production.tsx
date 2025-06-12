@@ -1,4 +1,3 @@
-import { stat } from "fs";
 import styles from "./production.module.scss";
 import React, { useState } from "react";
 
