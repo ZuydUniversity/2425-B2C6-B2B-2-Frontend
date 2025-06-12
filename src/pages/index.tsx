@@ -1,32 +1,27 @@
 ﻿import styles from "./index.module.scss";
 import { FC } from "react";
-import TextField from "../components/TextField";
-import { useFormik } from "formik";
+import Link from "next/link";
+import { pagesList } from "../data/pageslist"; // Import the pages list
+
+// list with all pages.
+const pages = pagesList;
 
 /**
  * Homepage component.
  */
 const Home: FC = () => {
-  const { values, handleChange, handleSubmit } = useFormik({
-    initialValues: {
-      username: "",
-    },
-    onSubmit: (values) => {
-      console.log(values);
-    },
-  });
-
   return (
-    <form className={styles.wrapper} onSubmit={handleSubmit}>
-      <h1 className={styles.title}>Bye, World!</h1>
-      <h1 className={styles.title}>This is a testing test nightmare!</h1>
-      <TextField
-        label={"Gebruikersnaam"}
-        name={"username"}
-        value={values.username}
-        onChange={handleChange}
-      />
-    </form>
+    <div className={styles.wrapper}>
+      <h1 className={styles.title}>Welkom op de Startpagina</h1>
+      <div className={styles.list}>
+        {pages.map((page) => (
+          <Link key={page.name} href={page.href} className={styles.linkItem}>
+            <div className={styles.circle}></div>
+            <span>{page.name}</span>
+          </Link>
+        ))}
+      </div>
+    </div>
   );
 };
 
