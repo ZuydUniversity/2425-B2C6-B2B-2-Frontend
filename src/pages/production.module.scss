@@ -33,6 +33,16 @@
   th {
     background-color: #f4f4f4;
   }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+}
+
+.tablesContainer {
+  padding: 0 10px;
 }
 
 .status {
@@ -145,4 +155,12 @@
   height: 250px;
   margin-top: 1rem;
   border-radius: 0.5rem;
+}
+
+.tableWrapper {
+  max-height: 10.65rem;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
 }

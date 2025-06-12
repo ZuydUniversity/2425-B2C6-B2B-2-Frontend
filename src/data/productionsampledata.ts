@@ -34,4 +34,44 @@ export const sampleData = [
     leverdatum: "2025-06-17",
     status: statuses[0], // "In productie"
   },
+  {
+    orderId: "ORD005",
+    productType: "B",
+    aantal: 5,
+    productielijn: 2,
+    leverdatum: "2025-06-16",
+    status: statuses[2], // "Wachten op onderdelen"
+  },
+  {
+    orderId: "ORD006",
+    productType: "C",
+    aantal: 8,
+    productielijn: 3,
+    leverdatum: "2025-06-17",
+    status: statuses[1], // "Afgerond"
+  },
+  {
+    orderId: "ORD007",
+    productType: "B",
+    aantal: 3,
+    productielijn: 1,
+    leverdatum: "2025-06-17",
+    status: statuses[0], // "In productie"
+  },
+  {
+    orderId: "ORD008",
+    productType: "B",
+    aantal: 5,
+    productielijn: 2,
+    leverdatum: "2025-06-16",
+    status: statuses[2], // "Wachten op onderdelen"
+  },
+  {
+    orderId: "ORD009",
+    productType: "C",
+    aantal: 8,
+    productielijn: 1,
+    leverdatum: "2025-06-17",
+    status: statuses[1], // "Afgerond"
+  },
 ];
