@@ -14,7 +14,11 @@ type Order = {
 };
 
 const ProductionPage = () => {
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<{
+    orderId: string;
+    x: number;
+    y: number;
+  } | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showProblemModal, setShowProblemModal] = useState(false);
   const [problemText, setProblemText] = useState("");
@@ -101,7 +105,6 @@ const ProductionPage = () => {
                   />
                 </label>
               </div>
-
               <div className={styles.tableWrapper}>
                 <table className={styles.table}>
                   <thead className={styles.tableHeader}>
@@ -136,32 +139,21 @@ const ProductionPage = () => {
                           </span>
                         </td>
                         <td className={styles.dropdownContainer}>
-                          <div
-                            className={styles.dropdown}
-                            onMouseEnter={() => setOpenDropdown(order.orderId)}
-                            onMouseLeave={() => setOpenDropdown(null)}
+                          <button
+                            className={styles.button}
+                            onClick={(e) => {
+                              const rect = (
+                                e.target as HTMLElement
+                              ).getBoundingClientRect();
+                              setOpenDropdown({
+                                orderId: order.orderId,
+                                x: rect.left,
+                                y: rect.bottom,
+                              });
+                            }}
                           >
-                            <button className={styles.button}>
-                              Wijzig status ▼
-                            </button>
-                            {openDropdown === order.orderId && (
-                              <ul className={styles.dropdownMenu}>
-                                {statuses.map((status) => (
-                                  <li
-                                    key={status}
-                                    className={styles.dropdownLink}
-                                    onClick={() => {
-                                      // TODO: update de status in backend
-                                      order.status = status;
-                                      setOpenDropdown(null);
-                                    }}
-                                  >
-                                    {status}
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
-                          </div>
+                            Wijzig status ▼
+                          </button>
                         </td>
                         <td>
                           <button
@@ -259,6 +251,37 @@ const ProductionPage = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {openDropdown && (
+        <ul
+          className={styles.dropdownMenu}
+          style={{
+            position: "fixed",
+            top: openDropdown.y,
+            left: openDropdown.x,
+            zIndex: 1000,
+          }}
+          onMouseLeave={() => setOpenDropdown(null)}
+        >
+          {statuses.map((status) => (
+            <li
+              key={status}
+              className={styles.dropdownLink}
+              onClick={() => {
+                // update status in backend/locaal
+                // hier moet je je state update doen, vb:
+                const orderToUpdate = sampleData.find(
+                  (o) => o.orderId === openDropdown.orderId,
+                );
+                if (orderToUpdate) orderToUpdate.status = status;
+                setOpenDropdown(null);
+              }}
+            >
+              {status}
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );
