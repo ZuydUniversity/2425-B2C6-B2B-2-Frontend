@@ -1,6 +1,8 @@
-import { statuses } from "./statuseslist";
-//sample data for the production page
+import { Status } from "./statuseslist";
 
+/**
+ * Sample data for the production page
+ */
 export const sampleData = [
   {
     orderId: "ORD001",
@@ -8,7 +10,7 @@ export const sampleData = [
     aantal: 10,
     productielijn: 1,
     leverdatum: "2025-06-15",
-    status: statuses[0], // "In productie"
+    status: Status.InProduction,
   },
   {
     orderId: "ORD002",
@@ -16,7 +18,7 @@ export const sampleData = [
     aantal: 5,
     productielijn: 2,
     leverdatum: "2025-06-16",
-    status: statuses[2], // "Wachten op onderdelen"
+    status: Status.WaitingForParts,
   },
   {
     orderId: "ORD003",
@@ -24,7 +26,7 @@ export const sampleData = [
     aantal: 8,
     productielijn: 3,
     leverdatum: "2025-06-17",
-    status: statuses[1], // "Afgerond"
+    status: Status.Complete,
   },
   {
     orderId: "ORD004",
@@ -32,7 +34,7 @@ export const sampleData = [
     aantal: 3,
     productielijn: 1,
     leverdatum: "2025-06-17",
-    status: statuses[0], // "In productie"
+    status: Status.InProduction,
   },
   {
     orderId: "ORD005",
@@ -40,7 +42,7 @@ export const sampleData = [
     aantal: 5,
     productielijn: 2,
     leverdatum: "2025-06-16",
-    status: statuses[2], // "Wachten op onderdelen"
+    status: Status.WaitingForParts,
   },
   {
     orderId: "ORD006",
@@ -48,7 +50,7 @@ export const sampleData = [
     aantal: 8,
     productielijn: 3,
     leverdatum: "2025-06-17",
-    status: statuses[1], // "Afgerond"
+    status: Status.Complete,
   },
   {
     orderId: "ORD007",
@@ -56,7 +58,7 @@ export const sampleData = [
     aantal: 3,
     productielijn: 1,
     leverdatum: "2025-06-17",
-    status: statuses[0], // "In productie"
+    status: Status.InProduction,
   },
   {
     orderId: "ORD008",
@@ -64,7 +66,7 @@ export const sampleData = [
     aantal: 5,
     productielijn: 2,
     leverdatum: "2025-06-16",
-    status: statuses[2], // "Wachten op onderdelen"
+    status: Status.WaitingForParts,
   },
   {
     orderId: "ORD009",
@@ -72,6 +74,6 @@ export const sampleData = [
     aantal: 8,
     productielijn: 1,
     leverdatum: "2025-06-17",
-    status: statuses[1], // "Afgerond"
+    status: Status.Complete,
   },
 ];

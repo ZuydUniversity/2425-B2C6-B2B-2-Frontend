@@ -1,5 +1,5 @@
 import { sampleData } from "../data/productionsampledata";
-import { statuses } from "../data/statuseslist";
+import { Status } from "../data/statuseslist";
 import { motorImagesList } from "../data/motorimageslist";
 import styles from "./production.module.scss";
 import React, { useState } from "react";
@@ -10,7 +10,7 @@ type Order = {
   aantal: number;
   productielijn: number;
   leverdatum: string;
-  status: string;
+  status: Status;
 };
 
 const ProductionPage = () => {
@@ -83,7 +83,7 @@ const ProductionPage = () => {
                     }
                   >
                     <option value="">Alle</option>
-                    {statuses.map((status) => (
+                    {Object.values(Status).map((status) => (
                       <option key={status} value={status}>
                         {status}
                       </option>
@@ -264,7 +264,7 @@ const ProductionPage = () => {
           }}
           onMouseLeave={() => setOpenDropdown(null)}
         >
-          {statuses.map((status) => (
+          {Object.values(Status).map((status) => (
             <li
               key={status}
               className={styles.dropdownLink}

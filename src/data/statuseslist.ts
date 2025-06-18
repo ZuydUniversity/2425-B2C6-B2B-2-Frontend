@@ -1,3 +1,8 @@
-//a list of all statuses for orders in the production page
-
-export const statuses = ["In productie", "Afgerond", "Wachten op onderdelen"];
+/**
+ * Possible statuses for orders on the production page
+ */
+export enum Status {
+  InProduction = "In productie",
+  Complete = "Afgerond",
+  WaitingForParts = "Wachten op onderdelen",
+}
