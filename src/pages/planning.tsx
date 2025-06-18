@@ -9,14 +9,14 @@ interface PlanningItem {
 }
 
 const PlanningPage: FC = () => {
-  const [blauw, setBlauw] = useState("");
-  const [rood, setRood] = useState("");
-  const [grijs, setGrijs] = useState("");
+  const [blauw, setBlauw] = useState('');
+  const [rood, setRood] = useState('');
+  const [grijs, setGrijs] = useState('');
 
   const planningDisplayItems: PlanningItem[] = [
-    { type: "", periode: "", aantal: null, orderId: null },
-    { type: "", periode: "", aantal: null, orderId: null },
-    { type: "", periode: "", aantal: null, orderId: null },
+    { type: '', periode: '', aantal: null, orderId: null },  
+    { type: '', periode: '', aantal: null, orderId: null },  
+    { type: '', periode: '', aantal: null, orderId: null },  
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -26,17 +26,15 @@ const PlanningPage: FC = () => {
     const roodAantal = Number(rood);
     const grijsAantal = Number(grijs);
 
-    console.log("Blauw:", blauwAantal);
-    console.log("Rood:", roodAantal);
-    console.log("Grijs:", grijsAantal);
+    console.log('Blauw:', blauwAantal);
+    console.log('Rood:', roodAantal);
+    console.log('Grijs:', grijsAantal);
 
-    alert(
-      `Aantallen ingevoerd: Blauw=${blauwAantal}, Rood=${roodAantal}, Grijs=${grijsAantal}`,
-    );
+    alert(`Aantallen ingevoerd: Blauw=${blauwAantal}, Rood=${roodAantal}, Grijs=${grijsAantal}`);
 
-    setBlauw("");
-    setRood("");
-    setGrijs("");
+    setBlauw('');
+    setRood('');
+    setGrijs('');
   };
 
   return (
@@ -53,12 +51,8 @@ const PlanningPage: FC = () => {
                 <span className={styles.cardOrderId}>OrderID: ____</span>
               </div>
               <div className={styles.cardBody}>
-                <p>
-                  <strong>Periode:</strong> ____
-                </p>
-                <p>
-                  <strong>Aantal:</strong> ____
-                </p>
+                <p><strong>Periode:</strong> ____</p>
+                <p><strong>Aantal:</strong> ____</p>
               </div>
             </div>
           ))}
