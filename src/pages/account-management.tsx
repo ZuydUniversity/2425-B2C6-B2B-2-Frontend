@@ -35,6 +35,12 @@ const AccountManagementPage: React.FC = () => {
     );
   };
 
+  const [filters, setFilters] = useState({
+    searchTerm: "",
+    orderdatum: "",
+    status: "",
+  });
+
   return (
     <div>
       <div className={styles.title}>
@@ -45,24 +51,93 @@ const AccountManagementPage: React.FC = () => {
       <div className={styles.page}>
         <div className={styles.title}>
           <h1>Klantorders</h1>
+
+          <div className={styles.searchbar}>
+            <input
+              type="text"
+              placeholder="Zoek op Order ID of Producttype"
+              value={filters.searchTerm}
+              onChange={(e) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  searchTerm: e.target.value,
+                }))
+              }
+            />
+          </div>
+
+          <div className={styles.filters}>
+            <label>
+              Status:
+              <select
+                value={filters.status}
+                onChange={(e) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    status: e.target.value,
+                  }))
+                }
+              >
+                <option value="">Alle</option>
+                {Object.values(AccountStatus).map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              Orderdatum:
+              <input
+                type="date"
+                value={filters.orderdatum}
+                onChange={(e) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    leverdatum: e.target.value,
+                  }))
+                }
+              />
+            </label>
+          </div>
         </div>
 
         <div className={styles.tablesContainer}>
-          <div className={styles.tableWrapper}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th className={styles.normalColumn}>Order ID</th>
-                  <th className={styles.normalColumn}>Klant</th>
-                  <th className={styles.normalColumn}>Producttype</th>
-                  <th className={styles.normalColumn}>Aantal</th>
-                  <th className={styles.normalColumn}>Orderdatum</th>
-                  <th className={styles.normalColumn}>Status</th>
-                  <th className={styles.buttonColumn}>Acties</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((order) => (
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th className={styles.normalColumn}>Order ID</th>
+                <th className={styles.normalColumn}>Klant</th>
+                <th className={styles.normalColumn}>Producttype</th>
+                <th className={styles.normalColumn}>Aantal</th>
+                <th className={styles.normalColumn}>Orderdatum</th>
+                <th className={styles.normalColumn}>Status</th>
+                <th className={styles.buttonColumn}>Acties</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders
+                .filter((order) => {
+                  const matchesSearchTerm =
+                    filters.searchTerm === "" ||
+                    order.orderId
+                      .toLowerCase()
+                      .includes(filters.searchTerm.toLowerCase()) ||
+                    order.productType
+                      .toLowerCase()
+                      .includes(filters.searchTerm.toLowerCase());
+
+                  const matchesStatus =
+                    filters.status === "" || order.status === filters.status;
+
+                  const matchesDate =
+                    filters.orderdatum === "" ||
+                    order.orderdatum === filters.orderdatum;
+
+                  return matchesSearchTerm && matchesStatus && matchesDate;
+                })
+                .map((order) => (
                   <tr key={order.orderId}>
                     <td>{order.orderId}</td>
                     <td>{order.klantnaam}</td>
@@ -108,9 +183,8 @@ const AccountManagementPage: React.FC = () => {
                     </td>
                   </tr>
                 ))}
-              </tbody>
-            </table>
-          </div>
+            </tbody>
+          </table>
         </div>
 
         {selectedOrder && (
