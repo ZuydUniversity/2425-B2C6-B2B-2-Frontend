@@ -1,5 +1,5 @@
-import React, { FC, useState } from 'react';
-import styles from './PlanningPage.module.css'; // Controleer dit pad!
+import React, { FC, useState } from "react";
+import styles from "./PlanningPage.module.css"; // Controleer dit pad!
 
 interface PlanningItem {
   type: string;
