@@ -2,6 +2,9 @@
 
 WORKDIR /app
 
+ENV NODE_ENV="production"
+ENV NEXT_TELEMETRY_DISABLED=1
+
 COPY yarn.lock package.json ./
 
 RUN yarn install
