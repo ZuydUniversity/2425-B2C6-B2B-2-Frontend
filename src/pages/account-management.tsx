@@ -13,6 +13,16 @@ type Order = {
   status: AccountStatus;
 };
 
+function generateNextOrderId(orders: Order[]): string {
+  const maxNumber = orders.reduce((max, order) => {
+    const num = parseInt(order.orderId.replace("ORD", ""), 10);
+    return isNaN(num) ? max : Math.max(max, num);
+  }, 0);
+
+  const nextNumber = (maxNumber + 1).toString().padStart(3, "0");
+  return `ORD${nextNumber}`;
+}
+
 const AccountManagementPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>(
     sampleData.map((item, index) => ({
@@ -25,7 +35,15 @@ const AccountManagementPage: React.FC = () => {
     })),
   );
 
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+  const [createOrder, setCreateOrder] = useState({
+    klantnaam: "",
+    producttype: "Type A",
+    aantal: 1,
+    leverdatum: "",
+  });
 
   const updateStatus = (orderId: string, newStatus: AccountStatus) => {
     setOrders((prev) =>
@@ -66,40 +84,51 @@ const AccountManagementPage: React.FC = () => {
             />
           </div>
 
-          <div className={styles.filters}>
-            <label>
-              Status:
-              <select
-                value={filters.status}
-                onChange={(e) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    status: e.target.value,
-                  }))
-                }
-              >
-                <option value="">Alle</option>
-                {Object.values(AccountStatus).map((status) => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
-            </label>
+          <div className={styles.filtersContainer}>
+            <div className={styles.filters}>
+              <label>
+                Status:
+                <select
+                  value={filters.status}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      status: e.target.value,
+                    }))
+                  }
+                >
+                  <option value="">Alle</option>
+                  {Object.values(AccountStatus).map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-            <label>
-              Orderdatum:
-              <input
-                type="date"
-                value={filters.orderdatum}
-                onChange={(e) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    leverdatum: e.target.value,
-                  }))
-                }
-              />
-            </label>
+              <label>
+                Orderdatum:
+                <input
+                  type="date"
+                  value={filters.orderdatum}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      leverdatum: e.target.value,
+                    }))
+                  }
+                />
+              </label>
+            </div>
+
+            <div className={styles.createOrderButtonContainer}>
+              <button
+                className={styles.button}
+                onClick={() => setShowCreateModal(true)}
+              >
+                Order aanmaken
+              </button>
+            </div>
           </div>
         </div>
 
@@ -230,6 +259,110 @@ const AccountManagementPage: React.FC = () => {
               >
                 Sluiten
               </button>
+            </div>
+          </div>
+        )}
+
+        {showCreateModal && (
+          <div
+            className={styles.modalOverlay}
+            onClick={() => setShowCreateModal(false)}
+          >
+            <div
+              className={styles.createModal}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3>Nieuwe Order Aanmaken</h3>
+              <div className={styles.modalContent}>
+                <label>
+                  Klantnaam:
+                  <input
+                    type="text"
+                    value={createOrder.klantnaam}
+                    onChange={(e) =>
+                      setCreateOrder((prev) => ({
+                        ...prev,
+                        klantnaam: e.target.value,
+                      }))
+                    }
+                  />
+                </label>
+                <label>
+                  Producttype:
+                  <select
+                    value={createOrder.producttype}
+                    onChange={(e) =>
+                      setCreateOrder((prev) => ({
+                        ...prev,
+                        producttype: e.target.value,
+                      }))
+                    }
+                  >
+                    <option value="Type A">Type A</option>
+                    <option value="Type B">Type B</option>
+                    <option value="Type C">Type C</option>
+                  </select>
+                </label>
+                <label>
+                  Aantal:
+                  <input
+                    type="number"
+                    min="1"
+                    value={createOrder.aantal}
+                    onChange={(e) =>
+                      setCreateOrder((prev) => ({
+                        ...prev,
+                        aantal: parseInt(e.target.value),
+                      }))
+                    }
+                  />
+                </label>
+                <label>
+                  Gewenste leverdatum:
+                  <input
+                    type="date"
+                    value={createOrder.leverdatum}
+                    onChange={(e) =>
+                      setCreateOrder((prev) => ({
+                        ...prev,
+                        leverdatum: e.target.value,
+                      }))
+                    }
+                  />
+                </label>
+              </div>
+
+              <div className={styles.modalActions}>
+                <button
+                  className={styles.button}
+                  onClick={() => {
+                    const nextId = generateNextOrderId(orders);
+
+                    const newOrder: Order = {
+                      orderId: nextId,
+                      klantnaam: createOrder.klantnaam,
+                      productType: createOrder.producttype.split(" ")[1] as
+                        | "A"
+                        | "B"
+                        | "C",
+                      aantal: createOrder.aantal,
+                      orderdatum: new Date().toISOString().split("T")[0],
+                      status: AccountStatus.Pending,
+                    };
+
+                    setOrders((prev) => [...prev, newOrder]);
+                    setShowCreateModal(false);
+                  }}
+                >
+                  Bevestigen
+                </button>
+                <button
+                  className={styles.button}
+                  onClick={() => setShowCreateModal(false)}
+                >
+                  Annuleren
+                </button>
+              </div>
             </div>
           </div>
         )}

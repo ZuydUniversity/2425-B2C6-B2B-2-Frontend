@@ -13,10 +13,6 @@
   margin-left: 0;
 }
 
-.page {
-  padding: 2rem;
-}
-
 .table {
   width: 100%;
   table-layout: fixed;
@@ -79,11 +75,6 @@
   &:hover {
     background-color: #005ac1;
   }
-}
-
-.dropdown {
-  position: relative;
-  display: inline-block;
 }
 
 .dropdownMenu {

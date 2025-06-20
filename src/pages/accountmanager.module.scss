@@ -103,12 +103,28 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
+.createModal {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
 .modalContent {
   display: flex;
   gap: 2rem;
   margin-top: 1rem;
   align-items: flex-start;
   flex-wrap: wrap;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
 .details {
@@ -153,16 +169,28 @@
   width: 220px;
 }
 
+.filtersContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 0.5rem;
+  padding: 0 0.6rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
 .filters {
-  padding-left: 10px;
   display: flex;
   gap: 1rem;
-  align-items: center;
-  margin-bottom: 1rem;
+  flex-wrap: wrap;
 }
 
 .filters input,
 .filters select {
   padding: 0.4rem;
   font-size: 1rem;
+}
+
+.createOrderButtonContainer {
+  display: flex;
 }
