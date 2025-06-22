@@ -1,18 +1,9 @@
 import React from "react";
+import styles from "./inventory-management.module.scss";
 
-// Simple button component for table cells
 const TableButton: React.FC<{ label: string }> = ({ label }) => (
   <button
-    style={{
-      width: "100%",
-      height: "100%",
-      background: "#f8f8f8",
-      border: "1px solid #bbb",
-      borderRadius: 3,
-      padding: "4px 0",
-      cursor: "pointer",
-      fontSize: "1rem",
-    }}
+    className={styles.tableButton}
     onClick={() => alert(`Clicked: ${label}`)}
   >
     {label}
@@ -31,7 +22,6 @@ const InventoryPage = () => {
       frequentie: "Wekelijks",
       comment: "OK",
     },
-    // Add more rows as needed
     ...Array(9).fill({
       productId: "",
       leverancier: "",
@@ -44,62 +34,28 @@ const InventoryPage = () => {
   ];
 
   return (
-    <div style={{ background: "#222", minHeight: "100vh" }}>
+    <div className={styles.container}>
       {/* Header */}
-      <div
-        style={{
-          background: "#222",
-          color: "#ccc",
-          padding: "0.5rem 1rem",
-          fontWeight: "bold",
-          fontSize: "1.2rem",
-        }}
-      >
-        Overzicht\Voorraadbeheer
-      </div>
+      <div className={styles.header}>Overzicht\Voorraadbeheer</div>
 
       {/* Page Title */}
-      <div style={{ background: "#fff", padding: "1rem 1.5rem 0.5rem 1.5rem" }}>
-        <div style={{ fontSize: "1.1rem", fontWeight: "bold" }}>
-          Voorraadbeheer
-        </div>
-        <div style={{ borderBottom: "1px solid #888", marginTop: 4 }} />
+      <div className={styles.pageTitle}>
+        <div className={styles.titleText}>Voorraadbeheer</div>
+        <div className={styles.separator} />
       </div>
 
       {/* Table */}
-      <div
-        style={{
-          background: "#fff",
-          margin: "1.5rem",
-          border: "1px solid #bbb",
-          borderRadius: 4,
-          overflow: "hidden",
-        }}
-      >
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead style={{ background: "#ddd" }}>
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead className={styles.thead}>
             <tr>
-              <th style={{ border: "1px solid #aaa", padding: "8px" }}>
-                ProductID
-              </th>
-              <th style={{ border: "1px solid #aaa", padding: "8px" }}>
-                Leverancier
-              </th>
-              <th style={{ border: "1px solid #aaa", padding: "8px" }}>
-                Producttype
-              </th>
-              <th style={{ border: "1px solid #aaa", padding: "8px" }}>
-                Aantal
-              </th>
-              <th style={{ border: "1px solid #aaa", padding: "8px" }}>
-                Kwaliteitcheck score
-              </th>
-              <th style={{ border: "1px solid #aaa", padding: "8px" }}>
-                Frequentie levering
-              </th>
-              <th style={{ border: "1px solid #aaa", padding: "8px" }}>
-                Comment
-              </th>
+              <th className={styles.th}>ProductID</th>
+              <th className={styles.th}>Leverancier</th>
+              <th className={styles.th}>Producttype</th>
+              <th className={styles.th}>Aantal</th>
+              <th className={styles.th}>Kwaliteitcheck score</th>
+              <th className={styles.th}>Frequentie levering</th>
+              <th className={styles.th}>Comment</th>
             </tr>
           </thead>
           <tbody>
@@ -108,26 +64,25 @@ const InventoryPage = () => {
                 key={idx}
                 style={{ background: idx % 2 === 0 ? "#f5f5f5" : "#fff" }}
               >
-                <td style={{ border: "1px solid #ccc", height: 32 }}>
+                <td className={styles.buttonCell}>
                   <TableButton label={row.productId || "ProductID"} />
                 </td>
-                <td style={{ border: "1px solid #ccc" }}>
+                <td className={styles.buttonCell}>
                   <TableButton label={row.leverancier || "Leverancier"} />
                 </td>
-                <td style={{ border: "1px solid #ccc" }}>
-                  {/* Producttype stays as plain text */}
+                <td className={styles.buttonCell}>
                   {row.producttype || "Producttype"}
                 </td>
-                <td style={{ border: "1px solid #ccc" }}>
+                <td className={styles.buttonCell}>
                   <TableButton label={row.aantal || "Aantal"} />
                 </td>
-                <td style={{ border: "1px solid #ccc" }}>
+                <td className={styles.buttonCell}>
                   <TableButton label={row.kwaliteit || "Kwaliteit"} />
                 </td>
-                <td style={{ border: "1px solid #ccc" }}>
+                <td className={styles.buttonCell}>
                   <TableButton label={row.frequentie || "Frequentie"} />
                 </td>
-                <td style={{ border: "1px solid #ccc" }}>
+                <td className={styles.buttonCell}>
                   <TableButton label={row.comment || "Comment"} />
                 </td>
               </tr>
