@@ -43,7 +43,12 @@ const PieChart: React.FC<{ percent: number; label: string }> = ({
   const goodAngle = (percent / 100) * 360;
 
   return (
-    <svg width="120" height="120" viewBox="0 0 100 100" style={{ margin: 16 }}>
+    <svg
+      className={styles.pieChartSvg}
+      width="120"
+      height="120"
+      viewBox="0 0 100 100"
+    >
       {/* Remaining (red) */}
       {describeArc(goodAngle, 360, "#e53935")}
       {/* Good (green) */}
@@ -65,6 +70,53 @@ const PieChart: React.FC<{ percent: number; label: string }> = ({
     </svg>
   );
 };
+
+const DottedGraph: React.FC = () => (
+  <svg
+    className={styles.dottedGraphSvg}
+    width="320"
+    height="180"
+    viewBox="0 0 320 180"
+  >
+    {/* Axes */}
+    <line x1="40" y1="10" x2="40" y2="160" stroke="#888" strokeWidth="2" />
+    <line x1="40" y1="160" x2="300" y2="160" stroke="#888" strokeWidth="2" />
+    {/* Y axis label */}
+    <text
+      x="10"
+      y="90"
+      textAnchor="middle"
+      fontSize="12"
+      fill="#222"
+      transform="rotate(-90 15,90)"
+    >
+      Aantal leveringen
+    </text>
+    {/* X axis label */}
+    <text x="170" y="175" textAnchor="middle" fontSize="12" fill="#222">
+      Tijd
+    </text>
+    {/* Dots (placeholder data) */}
+    <circle cx="60" cy="120" r="4" fill="#1976d2" />
+    <circle cx="90" cy="100" r="4" fill="#1976d2" />
+    <circle cx="120" cy="110" r="4" fill="#1976d2" />
+    <circle cx="150" cy="80" r="4" fill="#1976d2" />
+    <circle cx="180" cy="70" r="4" fill="#1976d2" />
+    <circle cx="210" cy="60" r="4" fill="#1976d2" />
+    <circle cx="240" cy="50" r="4" fill="#1976d2" />
+    <circle cx="270" cy="40" r="4" fill="#1976d2" />
+    {/* Trendline (placeholder) */}
+    <line
+      x1="60"
+      y1="120"
+      x2="270"
+      y2="40"
+      stroke="#e53935"
+      strokeWidth="2"
+      strokeDasharray="4"
+    />
+  </svg>
+);
 
 const InventoryPage = () => {
   const [rows, setRows] = useState([
@@ -89,6 +141,9 @@ const InventoryPage = () => {
   ]);
 
   const [kwaliteitModalIdx, setKwaliteitModalIdx] = useState<number | null>(
+    null,
+  );
+  const [frequentieModalIdx, setFrequentieModalIdx] = useState<number | null>(
     null,
   );
 
@@ -163,7 +218,10 @@ const InventoryPage = () => {
                   />
                 </td>
                 <td className={styles.buttonCell}>
-                  <TableButton label={row.frequentie || "Frequentie"} />
+                  <TableButton
+                    label={row.frequentie || "Frequentie"}
+                    onClick={() => setFrequentieModalIdx(idx)}
+                  />
                 </td>
                 <td className={styles.buttonCell}>
                   <input
@@ -198,9 +256,34 @@ const InventoryPage = () => {
               ×
             </button>
             <h3>Kwaliteit Overzicht</h3>
-            <div style={{ display: "flex", justifyContent: "center" }}>
+            <div className={styles.modalChartsRow}>
               <PieChart percent={90} label="Laatste 50 leveringen" />
               <PieChart percent={85} label="All time" />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Frequentie Modal */}
+      {frequentieModalIdx !== null && (
+        <div
+          className={styles.modalOverlay}
+          onClick={() => setFrequentieModalIdx(null)}
+        >
+          <div
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className={styles.closeButton}
+              onClick={() => setFrequentieModalIdx(null)}
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <h3>Frequentie Levering Overzicht</h3>
+            <div className={styles.modalChartsRow}>
+              <DottedGraph />
             </div>
           </div>
         </div>
@@ -208,5 +291,4 @@ const InventoryPage = () => {
     </div>
   );
 };
-
 export default InventoryPage;
