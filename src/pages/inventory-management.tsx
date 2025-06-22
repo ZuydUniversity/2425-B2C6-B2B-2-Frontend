@@ -36,7 +36,7 @@ const InventoryPage = () => {
   return (
     <div className={styles.container}>
       {/* Header */}
-      <div className={styles.header}>Overzicht\Voorraadbeheer</div>
+      <div className={styles.header}>Overzicht Voorraadbeheer</div>
 
       {/* Page Title */}
       <div className={styles.pageTitle}>
