@@ -115,8 +115,6 @@ const PurchasingPage = () => {
       {/* Page Title */}
       <div className={styles.pageTitle}>
         <div className={styles.titleText}>Inkoop</div>
-        <div className={styles.separator} />
-        <div className={styles.subtitle}>Aanschaf</div>
       </div>
 
       {/* Table */}
