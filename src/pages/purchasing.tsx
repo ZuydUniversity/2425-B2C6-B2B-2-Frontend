@@ -2,18 +2,9 @@ import React, { useState } from "react";
 import styles from "./purchasing.module.scss";
 
 const leveranciers = ["Supplier A", "Supplier B", "Supplier C"];
-const producttypes = ["Type X", "Type Y", "Type Z"];
+const producttypes = ["Type A", "Type B", "Type C"];
 const statuses = ["In behandeling", "Goedgekeurd", "Geweigerd"];
 const frequenties = ["Wekelijks", "Maandelijks", "Jaarlijks"];
-
-const TableButton: React.FC<{ label: string; onClick?: () => void }> = ({
-  label,
-  onClick,
-}) => (
-  <button className={styles.tableButton} onClick={onClick} type="button">
-    {label}
-  </button>
-);
 
 const DottedGraph: React.FC = () => (
   <svg
