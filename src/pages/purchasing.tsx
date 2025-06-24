@@ -1,6 +1,11 @@
 import React, { useState } from "react";
 import styles from "./purchasing.module.scss";
 
+const leveranciers = ["Supplier A", "Supplier B", "Supplier C"];
+const producttypes = ["Type X", "Type Y", "Type Z"];
+const statuses = ["In behandeling", "Goedgekeurd", "Geweigerd"];
+const frequenties = ["Wekelijks", "Maandelijks", "Jaarlijks"];
+
 const TableButton: React.FC<{ label: string; onClick?: () => void }> = ({
   label,
   onClick,
@@ -96,17 +101,9 @@ const PurchasingPage = () => {
     null,
   );
 
-  const handleAantalChange = (idx: number, value: string) => {
-    const num = Number(value);
-    if (isNaN(num) || num < 0 || num > 9999) return;
+  const handleChange = (idx: number, field: string, value: string) => {
     setRows((prev) =>
-      prev.map((row, i) => (i === idx ? { ...row, aantal: value } : row)),
-    );
-  };
-
-  const handleCommentChange = (idx: number, value: string) => {
-    setRows((prev) =>
-      prev.map((row, i) => (i === idx ? { ...row, comment: value } : row)),
+      prev.map((row, i) => (i === idx ? { ...row, [field]: value } : row)),
     );
   };
 
@@ -136,13 +133,47 @@ const PurchasingPage = () => {
                 style={{ background: idx % 2 === 0 ? "#f5f5f5" : "#fff" }}
               >
                 <td className={styles.td}>
-                  <TableButton label={row.orderId || "OrderId"} />
+                  <input
+                    type="text"
+                    className={styles.tableButton}
+                    value={row.orderId}
+                    onChange={(e) =>
+                      handleChange(idx, "orderId", e.target.value)
+                    }
+                    placeholder="OrderId"
+                  />
                 </td>
                 <td className={styles.td}>
-                  <TableButton label={row.leverancier || "Leverancier"} />
+                  <select
+                    className={styles.tableButton}
+                    value={row.leverancier}
+                    onChange={(e) =>
+                      handleChange(idx, "leverancier", e.target.value)
+                    }
+                  >
+                    <option value="">Leverancier</option>
+                    {leveranciers.map((l) => (
+                      <option key={l} value={l}>
+                        {l}
+                      </option>
+                    ))}
+                  </select>
                 </td>
                 <td className={styles.td}>
-                  {row.producttype || "Producttype"}
+                  <select
+                    className={styles.tableButton}
+                    value={row.producttype}
+                    onChange={(e) =>
+                      handleChange(idx, "producttype", e.target.value)
+                    }
+                  >
+                    <option value="">Producttype</option>
+                    {producttypes.map((p) => (
+                      <option key={p} value={p}>
+                        {p}
+                      </option>
+                    ))}
+                  </select>
                 </td>
                 <td className={styles.td}>
                   <input
@@ -151,23 +182,61 @@ const PurchasingPage = () => {
                     max={9999}
                     className={styles.tableButton}
                     value={row.aantal}
-                    onChange={(e) => handleAantalChange(idx, e.target.value)}
+                    onChange={(e) =>
+                      handleChange(idx, "aantal", e.target.value)
+                    }
                   />
                 </td>
-                <td className={styles.td}>{row.orderdatum || "Orderdatum"}</td>
-                <td className={styles.td}>{row.status || "Status"}</td>
                 <td className={styles.td}>
-                  <TableButton
-                    label={row.frequentie || "Bestel frequentie"}
-                    onClick={() => setFrequentieModalIdx(idx)}
+                  <input
+                    type="date"
+                    className={styles.tableButton}
+                    value={row.orderdatum}
+                    onChange={(e) =>
+                      handleChange(idx, "orderdatum", e.target.value)
+                    }
                   />
+                </td>
+                <td className={styles.td}>
+                  <select
+                    className={styles.tableButton}
+                    value={row.status}
+                    onChange={(e) =>
+                      handleChange(idx, "status", e.target.value)
+                    }
+                  >
+                    <option value="">Status</option>
+                    {statuses.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td className={styles.td}>
+                  <select
+                    className={styles.tableButton}
+                    value={row.frequentie}
+                    onChange={(e) =>
+                      handleChange(idx, "frequentie", e.target.value)
+                    }
+                  >
+                    <option value="">Bestel frequentie</option>
+                    {frequenties.map((f) => (
+                      <option key={f} value={f}>
+                        {f}
+                      </option>
+                    ))}
+                  </select>
                 </td>
                 <td className={styles.td}>
                   <input
                     type="text"
                     className={styles.tableButton}
                     value={row.comment}
-                    onChange={(e) => handleCommentChange(idx, e.target.value)}
+                    onChange={(e) =>
+                      handleChange(idx, "comment", e.target.value)
+                    }
                     placeholder="Comment"
                   />
                 </td>
@@ -204,5 +273,4 @@ const PurchasingPage = () => {
     </div>
   );
 };
-
 export default PurchasingPage;
