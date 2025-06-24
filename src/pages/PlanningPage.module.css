@@ -5,7 +5,7 @@
   background-color: #f8fafc;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  font-family: "Inter", sans-serif;
+  font-family: 'Inter', sans-serif;
   color: #334e68;
 }
 
@@ -18,9 +18,60 @@
   letter-spacing: -0.05em;
 }
 
-.planningSection {
-  margin-bottom: 3rem;
+/* NIEUW: Flexbox wrapper voor de hoofdinhoud */
+.contentWrapper {
+  display: flex;
+  gap: 2rem; /* Ruimte tussen de kolommen */
+  flex-wrap: wrap; /* Zorgt ervoor dat kolommen onder elkaar vallen op kleinere schermen */
 }
+
+/* NIEUW: Stijl voor de linker sectie (productielijn status) */
+.productionLineStatusSection {
+  flex: 0 0 280px; /* Vaste breedte voor deze sectie */
+  padding: 1.5rem;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e0e6ed;
+  align-self: flex-start; /* Zorgt ervoor dat het aan de bovenkant blijft kleven */
+}
+
+.statusList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.statusItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0;
+  border-bottom: 1px dashed #eef2f6;
+}
+
+.statusItem:last-child {
+  border-bottom: none;
+}
+
+.statusLineName {
+  font-weight: 600;
+  color: #102a43;
+}
+
+.statusOrders {
+  font-size: 0.95rem;
+  color: #486581;
+}
+
+/* NIEUW: Stijl voor de rechter secties (planning en formulier) */
+.mainContent {
+  flex: 1; /* Neemt de resterende ruimte in beslag */
+  display: flex;
+  flex-direction: column;
+  gap: 2rem; /* Ruimte tussen planning sectie en formulier sectie */
+}
+
 
 .sectionTitle {
   font-size: 1.8rem;
@@ -29,6 +80,15 @@
   border-bottom: 2px solid #e0e6ed;
   padding-bottom: 0.5rem;
   font-weight: 600;
+}
+
+.planningSection {
+  /* margin-bottom is nu geregeld door mainContent gap */
+  padding: 1.5rem; /* Voeg padding toe voor een kaart-achtig uiterlijk */
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e0e6ed;
 }
 
 .grid {
@@ -48,9 +108,7 @@
   flex-direction: column;
   justify-content: space-between;
   border: 1px solid #e0e6ed;
-  transition:
-    transform 0.2s ease-in-out,
-    box-shadow 0.2s ease-in-out;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
 .card:hover {
@@ -67,14 +125,13 @@
   border-bottom: 1px dashed #e0e6ed;
 }
 
-/* NIEUW: Stijl voor de placeholder van Type */
 .cardTypePlaceholder {
   font-weight: 700;
   font-size: 1.1rem;
-  padding: 0.3rem 0; /* Geen padding aan de zijkanten */
-  color: #627d98; /* Een neutrale kleur */
+  padding: 0.3rem 0;
+  color: #627d98;
   text-transform: uppercase;
-  background-color: transparent; /* Geen achtergrondkleur */
+  background-color: transparent;
   border-radius: 0;
 }
 
@@ -96,7 +153,7 @@
 
 /* --- Formulier Stijlen --- */
 .formSection {
-  margin-top: 3rem;
+  /* margin-top is nu geregeld door mainContent gap */
   padding: 2rem;
   background-color: #ffffff;
   border-radius: 12px;
@@ -123,9 +180,7 @@
   border: 1px solid #bcccdc;
   font-size: 1rem;
   background-color: #f0f4f8;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
   width: 100%;
   box-sizing: border-box;
 }
@@ -151,14 +206,12 @@
   font-size: 1.1rem;
   margin-top: 1.5rem;
   cursor: pointer;
-  transition:
-    background-color 0.3s ease,
-    transform 0.2s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease;
   width: 100%;
 }
 
 .formButton:hover {
-  background-color: #357abd;
+  background-color: #357ABD;
   transform: translateY(-2px);
 }
 
@@ -167,6 +220,16 @@
 }
 
 /* Media Queries voor responsiviteit */
+@media (max-width: 992px) { /* Pas dit breakpoint aan voor de layout */
+  .contentWrapper {
+    flex-direction: column;  
+  }
+  .productionLineStatusSection {
+    flex: none;  
+    width: 100%;  
+  }
+}
+
 @media (max-width: 768px) {
   .pageTitle {
     font-size: 2rem;
