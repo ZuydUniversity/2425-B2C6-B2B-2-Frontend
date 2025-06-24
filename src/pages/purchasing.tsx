@@ -10,65 +10,6 @@ const TableButton: React.FC<{ label: string; onClick?: () => void }> = ({
   </button>
 );
 
-const PieChart: React.FC<{ percent: number; label: string }> = ({
-  percent,
-  label,
-}) => {
-  const describeArc = (startAngle: number, endAngle: number, color: string) => {
-    const radius = 50;
-    const start = {
-      x: 50 + radius * Math.cos((Math.PI / 180) * (startAngle - 90)),
-      y: 50 + radius * Math.sin((Math.PI / 180) * (startAngle - 90)),
-    };
-    const end = {
-      x: 50 + radius * Math.cos((Math.PI / 180) * (endAngle - 90)),
-      y: 50 + radius * Math.sin((Math.PI / 180) * (endAngle - 90)),
-    };
-    const largeArcFlag = endAngle - startAngle > 180 ? 1 : 0;
-    return (
-      <path
-        d={`
-          M 50 50
-          L ${start.x} ${start.y}
-          A ${radius} ${radius} 0 ${largeArcFlag} 1 ${end.x} ${end.y}
-          Z
-        `}
-        fill={color}
-      />
-    );
-  };
-
-  const goodAngle = (percent / 100) * 360;
-
-  return (
-    <svg
-      className={styles.pieChartSvg}
-      width="120"
-      height="120"
-      viewBox="0 0 100 100"
-    >
-      {/* Remaining (red) */}
-      {describeArc(goodAngle, 360, "#e53935")}
-      {/* Good (green) */}
-      {describeArc(0, goodAngle, "#4caf50")}
-      <circle
-        cx="50"
-        cy="50"
-        r="50"
-        fill="none"
-        stroke="#eee"
-        strokeWidth="1"
-      />
-      <text x="50" y="55" textAnchor="middle" fontSize="16" fill="#222">
-        {percent}%
-      </text>
-      <text x="50" y="90" textAnchor="middle" fontSize="10" fill="#555">
-        {label}
-      </text>
-    </svg>
-  );
-};
-
 const DottedGraph: React.FC = () => (
   <svg
     className={styles.dottedGraphSvg}
@@ -88,7 +29,7 @@ const DottedGraph: React.FC = () => (
       fill="#222"
       transform="rotate(-90 15,90)"
     >
-      Aantal leveringen
+      Aantal bestellingen
     </text>
     {/* X axis label */}
     <text x="170" y="175" textAnchor="middle" fontSize="12" fill="#222">
@@ -255,7 +196,7 @@ const PurchasingPage = () => {
             >
               ×
             </button>
-            <h3>Frequentie Levering Overzicht</h3>
+            <h3>Frequentie Bestelling Overzicht</h3>
             <div className={styles.modalChartsRow}>
               <DottedGraph />
             </div>
