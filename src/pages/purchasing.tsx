@@ -64,6 +64,17 @@ const tableHeaders = [
   "Comment",
 ];
 
+const emptyOrder = {
+  orderId: "",
+  leverancier: "",
+  producttype: "",
+  aantal: "",
+  orderdatum: "",
+  status: "",
+  frequentie: "",
+  comment: "",
+};
+
 const PurchasingPage = () => {
   const [rows, setRows] = useState([
     {
@@ -76,16 +87,7 @@ const PurchasingPage = () => {
       frequentie: "Maandelijks",
       comment: "Spoed",
     },
-    ...Array(9).fill({
-      orderId: "",
-      leverancier: "",
-      producttype: "",
-      aantal: "",
-      orderdatum: "",
-      status: "",
-      frequentie: "",
-      comment: "",
-    }),
+    ...Array(9).fill(emptyOrder),
   ]);
 
   const [frequentieModalIdx, setFrequentieModalIdx] = useState<number | null>(
@@ -94,6 +96,11 @@ const PurchasingPage = () => {
   const [aantalErrors, setAantalErrors] = useState<{ [key: number]: string }>(
     {},
   );
+  const [newOrders, setNewOrders] = useState([{ ...emptyOrder }]);
+  const [newOrderErrors, setNewOrderErrors] = useState<{
+    [key: number]: string;
+  }>({});
+  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
 
   const handleChange = (idx: number, field: string, value: string) => {
     if (field === "aantal") {
@@ -116,6 +123,84 @@ const PurchasingPage = () => {
     );
   };
 
+  // For new order table
+  const handleNewOrderChange = (idx: number, field: string, value: string) => {
+    if (field === "aantal") {
+      const num = Number(value);
+      if (value === "" || isNaN(num) || num < 0 || num > 9999) {
+        setNewOrderErrors((prev) => ({
+          ...prev,
+          [idx]: "Voer een getal in tussen 0 en 9999",
+        }));
+      } else {
+        setNewOrderErrors((prev) => {
+          const copy = { ...prev };
+          delete copy[idx];
+          return copy;
+        });
+      }
+    }
+    setNewOrders((prev) =>
+      prev.map((row, i) => (i === idx ? { ...row, [field]: value } : row)),
+    );
+  };
+
+  const addNewOrderRow = () => {
+    setNewOrders((prev) => [...prev, { ...emptyOrder }]);
+  };
+
+  const removeNewOrderRow = (idx: number) => {
+    setNewOrders((prev) => prev.filter((_, i) => i !== idx));
+    setNewOrderErrors((prev) => {
+      const copy = { ...prev };
+      delete copy[idx];
+      return copy;
+    });
+  };
+
+  const submitOrders = async () => {
+    // Simple validation: no empty required fields and no errors
+    let hasError = false;
+    newOrders.forEach((order, idx) => {
+      if (
+        !order.orderId ||
+        !order.leverancier ||
+        !order.producttype ||
+        !order.aantal ||
+        !order.orderdatum ||
+        !order.status ||
+        !order.frequentie
+      ) {
+        setNewOrderErrors((prev) => ({
+          ...prev,
+          [idx]: "Vul alle verplichte velden in",
+        }));
+        hasError = true;
+      }
+      if (newOrderErrors[idx]) hasError = true;
+    });
+    if (hasError) {
+      setSubmitMessage("Corrigeer de fouten voor het verzenden.");
+      return;
+    }
+
+    try {
+      // Example POST request for each order (adjust endpoint as needed)
+      for (const order of newOrders) {
+        await fetch("http://10.0.2.4:8080/api/Orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(order),
+        });
+      }
+      setSubmitMessage("Orders succesvol verzonden!");
+      setNewOrders([{ ...emptyOrder }]);
+      setNewOrderErrors({});
+    } catch (err) {
+      setSubmitMessage("Fout bij verzenden van orders.");
+    }
+  };
+
   return (
     <div className={styles.container}>
       {/* Page Title */}
@@ -123,7 +208,7 @@ const PurchasingPage = () => {
         <div className={styles.titleText}>Inkoop</div>
       </div>
 
-      {/* Table */}
+      {/* Existing Orders Table */}
       <div className={styles.tableWrapper}>
         <table className={styles.table}>
           <thead>
@@ -259,6 +344,167 @@ const PurchasingPage = () => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* New Orders Table */}
+      <div className={styles.tableWrapper}>
+        <div className={styles.tableActions}>
+          <button className={styles.addButton} onClick={addNewOrderRow}>
+            + Voeg order toe
+          </button>
+        </div>
+        <table className={styles.table}>
+          <thead>
+            <tr className={styles.theadRow}>
+              {tableHeaders.map((header) => (
+                <th key={header} className={styles.th}>
+                  {header}
+                </th>
+              ))}
+              <th className={styles.th}>Actie</th>
+            </tr>
+          </thead>
+          <tbody>
+            {newOrders.map((row, idx) => (
+              <tr
+                key={idx}
+                style={{ background: idx % 2 === 0 ? "#f5f5f5" : "#fff" }}
+              >
+                <td className={styles.td}>
+                  <input
+                    type="text"
+                    className={styles.tableButton}
+                    value={row.orderId}
+                    onChange={(e) =>
+                      handleNewOrderChange(idx, "orderId", e.target.value)
+                    }
+                    placeholder="OrderId"
+                  />
+                </td>
+                <td className={styles.td}>
+                  <select
+                    className={styles.tableButton}
+                    value={row.leverancier}
+                    onChange={(e) =>
+                      handleNewOrderChange(idx, "leverancier", e.target.value)
+                    }
+                  >
+                    <option value="">Leverancier</option>
+                    {leveranciers.map((l) => (
+                      <option key={l} value={l}>
+                        {l}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td className={styles.td}>
+                  <select
+                    className={styles.tableButton}
+                    value={row.producttype}
+                    onChange={(e) =>
+                      handleNewOrderChange(idx, "producttype", e.target.value)
+                    }
+                  >
+                    <option value="">Producttype</option>
+                    {producttypes.map((p) => (
+                      <option key={p} value={p}>
+                        {p}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td className={styles.td}>
+                  <input
+                    type="number"
+                    min={0}
+                    max={9999}
+                    className={`${styles.tableButton} ${newOrderErrors[idx] ? styles.inputError : ""}`}
+                    value={row.aantal}
+                    onChange={(e) =>
+                      handleNewOrderChange(idx, "aantal", e.target.value)
+                    }
+                    placeholder="Aantal"
+                  />
+                  {newOrderErrors[idx] && (
+                    <div className={styles.errorTooltip}>
+                      {newOrderErrors[idx]}
+                    </div>
+                  )}
+                </td>
+                <td className={styles.td}>
+                  <input
+                    type="date"
+                    className={styles.tableButton}
+                    value={row.orderdatum}
+                    onChange={(e) =>
+                      handleNewOrderChange(idx, "orderdatum", e.target.value)
+                    }
+                  />
+                </td>
+                <td className={styles.td}>
+                  <select
+                    className={styles.tableButton}
+                    value={row.status}
+                    onChange={(e) =>
+                      handleNewOrderChange(idx, "status", e.target.value)
+                    }
+                  >
+                    <option value="">Status</option>
+                    {statuses.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td className={styles.td}>
+                  <select
+                    className={styles.tableButton}
+                    value={row.frequentie}
+                    onChange={(e) =>
+                      handleNewOrderChange(idx, "frequentie", e.target.value)
+                    }
+                  >
+                    <option value="">Bestel frequentie</option>
+                    {frequenties.map((f) => (
+                      <option key={f} value={f}>
+                        {f}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td className={styles.td}>
+                  <input
+                    type="text"
+                    className={styles.tableButton}
+                    value={row.comment}
+                    onChange={(e) =>
+                      handleNewOrderChange(idx, "comment", e.target.value)
+                    }
+                    placeholder="Comment"
+                  />
+                </td>
+                <td className={styles.td}>
+                  <button
+                    className={styles.removeButton}
+                    onClick={() => removeNewOrderRow(idx)}
+                    disabled={newOrders.length === 1}
+                  >
+                    Verwijder
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className={styles.tableActions}>
+          <button className={styles.submitButton} onClick={submitOrders}>
+            Orders opslaan / versturen
+          </button>
+          {submitMessage && (
+            <div className={styles.submitMessage}>{submitMessage}</div>
+          )}
+        </div>
       </div>
 
       {/* Frequentie Modal */}
