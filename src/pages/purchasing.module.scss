@@ -81,3 +81,13 @@
   align-items: center;
   position: relative;
 }
+.inputError {
+  border: 2px solid #e53935 !important;
+  background: #fff0f0;
+}
+
+.errorTooltip {
+  color: #e53935;
+  font-size: 0.85em;
+  margin-top: 2px;
+}

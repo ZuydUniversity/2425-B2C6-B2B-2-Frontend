@@ -91,8 +91,26 @@ const PurchasingPage = () => {
   const [frequentieModalIdx, setFrequentieModalIdx] = useState<number | null>(
     null,
   );
+  const [aantalErrors, setAantalErrors] = useState<{ [key: number]: string }>(
+    {},
+  );
 
   const handleChange = (idx: number, field: string, value: string) => {
+    if (field === "aantal") {
+      const num = Number(value);
+      if (value === "" || isNaN(num) || num < 0 || num > 9999) {
+        setAantalErrors((prev) => ({
+          ...prev,
+          [idx]: "Voer een getal in tussen 0 en 9999",
+        }));
+      } else {
+        setAantalErrors((prev) => {
+          const copy = { ...prev };
+          delete copy[idx];
+          return copy;
+        });
+      }
+    }
     setRows((prev) =>
       prev.map((row, i) => (i === idx ? { ...row, [field]: value } : row)),
     );
@@ -171,12 +189,18 @@ const PurchasingPage = () => {
                     type="number"
                     min={0}
                     max={9999}
-                    className={styles.tableButton}
+                    className={`${styles.tableButton} ${aantalErrors[idx] ? styles.inputError : ""}`}
                     value={row.aantal}
                     onChange={(e) =>
                       handleChange(idx, "aantal", e.target.value)
                     }
+                    placeholder="Aantal"
                   />
+                  {aantalErrors[idx] && (
+                    <div className={styles.errorTooltip}>
+                      {aantalErrors[idx]}
+                    </div>
+                  )}
                 </td>
                 <td className={styles.td}>
                   <input
@@ -264,4 +288,5 @@ const PurchasingPage = () => {
     </div>
   );
 };
+
 export default PurchasingPage;
