@@ -196,7 +196,7 @@ const PurchasingPage = () => {
       setSubmitMessage("Orders succesvol verzonden!");
       setNewOrders([{ ...emptyOrder }]);
       setNewOrderErrors({});
-    } catch (err) {
+    } catch {
       setSubmitMessage("Fout bij verzenden van orders.");
     }
   };
