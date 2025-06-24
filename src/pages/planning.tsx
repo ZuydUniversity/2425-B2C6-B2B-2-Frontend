@@ -1,5 +1,7 @@
-import React, { FC, useState } from 'react';
-import styles from './PlanningPage.module.css'; // Controleer dit pad!
+
+import React, { FC, useState } from "react";
+import styles from "./planning.module.scss"; // Controleer dit pad!
+
 
 interface PlanningItem {
   type: string;
@@ -14,13 +16,16 @@ interface ProductionLineStatus {
 }
 
 const PlanningPage: FC = () => {
+
   const [blauw, setBlauw] = useState('');
   const [rood, setRood] = useState('');
   const [grijs, setGrijs] = useState('');
   const [productieLijn, setProductieLijn] = useState(''); // Nieuwe state voor productielijn
 
+
   // Voorbeelddata voor het overzicht: ALLEMAAL LEEG, zoals eerder afgesproken.
   const planningDisplayItems: PlanningItem[] = [
+ 
     { type: '', periode: '', aantal: null, orderId: null },
     { type: '', periode: '', aantal: null, orderId: null },
     { type: '', periode: '', aantal: null, orderId: null },
@@ -31,6 +36,7 @@ const PlanningPage: FC = () => {
     { line: 'Productielijn A', ordersInProgress: null },
     { line: 'Productielijn B', ordersInProgress: null },
     { line: 'Productielijn C', ordersInProgress: null },
+ 
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -40,6 +46,7 @@ const PlanningPage: FC = () => {
     const roodAantal = Number(rood);
     const grijsAantal = Number(grijs);
 
+ 
     console.log('Blauw:', blauwAantal);
     console.log('Rood:', roodAantal);
     console.log('Grijs:', grijsAantal);
@@ -53,12 +60,14 @@ const PlanningPage: FC = () => {
     setRood('');
     setGrijs('');
     setProductieLijn(''); // Reset ook de productielijn
+ 
   };
 
   return (
     <div className={styles.container}>
       <h1 className={styles.pageTitle}>Planningsoverzicht</h1>
 
+ 
       <div className={styles.contentWrapper}> {/* Nieuwe wrapper voor flex layout */}
         {/* Sectie voor Productielijn Status (links) */}
         <section className={styles.productionLineStatusSection}>
@@ -68,6 +77,7 @@ const PlanningPage: FC = () => {
               <div key={index} className={styles.statusItem}>
                 <span className={styles.statusLineName}>{status.line}:</span>
                 <span className={styles.statusOrders}>Orders bezig: {status.ordersInProgress !== null ? status.ordersInProgress : '____'}</span>
+ 
               </div>
             ))}
           </div>
