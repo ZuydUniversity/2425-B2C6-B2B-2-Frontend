@@ -71,7 +71,7 @@ const tableHeaders = [
 const PurchasingPage = () => {
   const [rows, setRows] = useState([
     {
-      orderId: "2001",
+      orderId: "STR02",
       leverancier: "Supplier B",
       producttype: "Type Y",
       aantal: "20",
