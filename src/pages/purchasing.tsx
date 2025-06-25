@@ -1,11 +1,22 @@
 import React, { useState } from "react";
 import styles from "./purchasing.module.scss";
+import { apiCreateOrders, apiUpdateOrderStatus } from "../api/purchaseOrders";
 
 // Supplier and Product types
 type Supplier = { id: number; name: string };
 type Product = { id: number; name: string };
 
-// Example supplier and product lists with IDs
+// Export the PurchaseOrder type for use in API helpers
+export type PurchaseOrder = {
+  orderNumber: string;
+  orderDate: string;
+  status: string;
+  product: Product | null;
+  supplier: Supplier | null;
+  quantity: number | "";
+  comment: string;
+};
+
 const suppliers: Supplier[] = [
   { id: 1, name: "Supplier A" },
   { id: 2, name: "Supplier B" },
@@ -17,17 +28,6 @@ const products: Product[] = [
   { id: 3, name: "Type C" },
 ];
 const statuses = ["In behandeling", "Goedgekeurd", "Geweigerd"];
-
-// PurchaseOrder now uses Product and Supplier objects
-type PurchaseOrder = {
-  orderNumber: string;
-  orderDate: string;
-  status: string;
-  product: Product | null;
-  supplier: Supplier | null;
-  quantity: number | "";
-  comment: string;
-};
 
 const emptyPurchaseOrder: PurchaseOrder = {
   orderNumber: "",
@@ -50,7 +50,6 @@ const tableHeaders = [
 ];
 
 const PurchasingPage = () => {
-  // Example initial data
   const [orders, setOrders] = useState<PurchaseOrder[]>([
     {
       orderNumber: "PO001",
@@ -112,6 +111,7 @@ const PurchasingPage = () => {
     });
   };
 
+  // Submit new orders (to backend)
   const submitOrders = async () => {
     let hasError = false;
     newOrders.forEach((order, idx) => {
@@ -136,23 +136,28 @@ const PurchasingPage = () => {
       return;
     }
 
-    // Here you would POST to your backend
-    setOrders((prev) => [...prev, ...newOrders]);
-    setNewOrders([{ ...emptyPurchaseOrder }]);
-    setErrors({});
-    setSubmitMessage("Orders succesvol toegevoegd!");
+    try {
+      await apiCreateOrders(newOrders); // <-- API call
+      setOrders((prev) => [...prev, ...newOrders]);
+      setNewOrders([{ ...emptyPurchaseOrder }]);
+      setErrors({});
+      setSubmitMessage("Orders succesvol toegevoegd!");
+    } catch (e) {
+      setSubmitMessage("Fout bij opslaan van orders.");
+    }
   };
 
-  // Approve order
-  const handleApprove = (idx: number) => {
-    setOrders((prev) =>
-      prev.map((order, i) =>
-        i === idx
-          ? { ...order, status: "Goedgekeurd", comment: order.comment || "" }
-          : order,
-      ),
-    );
-    // TODO: Call backend API to update status
+  // Approve order (API)
+  const handleApprove = async (idx: number) => {
+    const order = orders[idx];
+    try {
+      await apiUpdateOrderStatus(order, "Goedgekeurd", order.comment || "");
+      setOrders((prev) =>
+        prev.map((o, i) => (i === idx ? { ...o, status: "Goedgekeurd" } : o)),
+      );
+    } catch (e) {
+      setSubmitMessage("Fout bij goedkeuren van order.");
+    }
   };
 
   // Open reject modal
@@ -161,18 +166,21 @@ const PurchasingPage = () => {
     setRejectComment("");
   };
 
-  // Confirm rejection
-  const handleReject = (idx: number) => {
-    setOrders((prev) =>
-      prev.map((order, i) =>
-        i === idx
-          ? { ...order, status: "Geweigerd", comment: rejectComment }
-          : order,
-      ),
-    );
-    setShowRejectModal(null);
-    setRejectComment("");
-    // TODO: Call backend API to update status and comment
+  // Confirm rejection (API)
+  const handleReject = async (idx: number) => {
+    const order = orders[idx];
+    try {
+      await apiUpdateOrderStatus(order, "Geweigerd", rejectComment);
+      setOrders((prev) =>
+        prev.map((o, i) =>
+          i === idx ? { ...o, status: "Geweigerd", comment: rejectComment } : o,
+        ),
+      );
+      setShowRejectModal(null);
+      setRejectComment("");
+    } catch (e) {
+      setSubmitMessage("Fout bij afwijzen van order.");
+    }
   };
 
   return (
