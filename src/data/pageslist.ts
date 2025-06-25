@@ -14,5 +14,4 @@ export const pagesList = [
   { name: "Event Logs", href: "/eventLogs" },
   { name: "Approval Forms", href: "/approvalForms" },
   { name: "Rejection Forms", href: "/rejectionForms" },
-  { name: "Quality Control", href: "/qualityControl" },
 ];
