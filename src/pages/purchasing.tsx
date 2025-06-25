@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import styles from "./purchasing.module.scss";
 import { apiCreateOrders, apiUpdateOrderStatus } from "../api/purchaseOrders";
+import { apiCreateEventLog } from "../api/eventLogs";
+import { apiCreateApprovalForm } from "../api/approvalForms";
+import { apiCreateRejectionForm } from "../api/rejectionForms";
 
 // Supplier and Product types
 type Supplier = { id: number; name: string };
@@ -152,6 +155,21 @@ const PurchasingPage = () => {
     const order = orders[idx];
     try {
       await apiUpdateOrderStatus(order, "Goedgekeurd", order.comment || "");
+      await apiCreateApprovalForm({
+        id: 0,
+        purchaseOrderId: order.orderNumber,
+        isApproved: true,
+        comments: order.comment || "",
+        orderId: order.orderNumber,
+        dateApproved: new Date().toISOString(),
+      });
+      await apiCreateEventLog({
+        id: 0,
+        orderId: order.orderNumber,
+        timestamp: new Date().toISOString(),
+        activity: "Approved",
+        details: "Order approved by manager",
+      });
       setOrders((prev) =>
         prev.map((o, i) => (i === idx ? { ...o, status: "Goedgekeurd" } : o)),
       );
@@ -171,6 +189,20 @@ const PurchasingPage = () => {
     const order = orders[idx];
     try {
       await apiUpdateOrderStatus(order, "Geweigerd", rejectComment);
+      await apiCreateRejectionForm({
+        id: 0,
+        purchaseOrderId: order.orderNumber,
+        reason: rejectComment,
+        rejectionDate: new Date().toISOString(),
+        orderId: order.orderNumber,
+      });
+      await apiCreateEventLog({
+        id: 0,
+        orderId: order.orderNumber,
+        timestamp: new Date().toISOString(),
+        activity: "Rejected",
+        details: rejectComment,
+      });
       setOrders((prev) =>
         prev.map((o, i) =>
           i === idx ? { ...o, status: "Geweigerd", comment: rejectComment } : o,
