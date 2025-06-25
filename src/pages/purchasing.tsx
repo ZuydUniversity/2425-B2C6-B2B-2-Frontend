@@ -1,25 +1,30 @@
 import React, { useState } from "react";
 import styles from "./purchasing.module.scss";
 
+// Supplier and Product types
+type Supplier = { id: number; name: string };
+type Product = { id: number; name: string };
+
 // Example supplier and product lists with IDs
-const suppliers = [
+const suppliers: Supplier[] = [
   { id: 1, name: "Supplier A" },
   { id: 2, name: "Supplier B" },
   { id: 3, name: "Supplier C" },
 ];
-const products = [
+const products: Product[] = [
   { id: 1, name: "Type A" },
   { id: 2, name: "Type B" },
   { id: 3, name: "Type C" },
 ];
 const statuses = ["In behandeling", "Goedgekeurd", "Geweigerd"];
 
+// PurchaseOrder now uses Product and Supplier objects
 type PurchaseOrder = {
   orderNumber: string;
   orderDate: string;
   status: string;
-  productId: number | "";
-  supplierId: number | "";
+  product: Product | null;
+  supplier: Supplier | null;
   quantity: number | "";
   comment: string;
 };
@@ -28,8 +33,8 @@ const emptyPurchaseOrder: PurchaseOrder = {
   orderNumber: "",
   orderDate: "",
   status: "",
-  productId: "",
-  supplierId: "",
+  product: null,
+  supplier: null,
   quantity: "",
   comment: "",
 };
@@ -51,8 +56,8 @@ const PurchasingPage = () => {
       orderNumber: "PO001",
       orderDate: "2025-06-25",
       status: "In behandeling",
-      productId: 1,
-      supplierId: 2,
+      product: products[0],
+      supplier: suppliers[1],
       quantity: 20,
       comment: "Spoed",
     },
@@ -67,7 +72,7 @@ const PurchasingPage = () => {
   const handleNewOrderChange = (
     idx: number,
     field: keyof PurchaseOrder,
-    value: string | number,
+    value: any,
   ) => {
     setNewOrders((prev) =>
       prev.map((row, i) => (i === idx ? { ...row, [field]: value } : row)),
@@ -110,8 +115,8 @@ const PurchasingPage = () => {
         !order.orderNumber ||
         !order.orderDate ||
         !order.status ||
-        !order.productId ||
-        !order.supplierId ||
+        !order.product ||
+        !order.supplier ||
         !order.quantity
       ) {
         setErrors((prev) => ({
@@ -161,12 +166,8 @@ const PurchasingPage = () => {
                 <td className={styles.td}>{order.orderNumber}</td>
                 <td className={styles.td}>{order.orderDate}</td>
                 <td className={styles.td}>{order.status}</td>
-                <td className={styles.td}>
-                  {products.find((p) => p.id === order.productId)?.name || ""}
-                </td>
-                <td className={styles.td}>
-                  {suppliers.find((s) => s.id === order.supplierId)?.name || ""}
-                </td>
+                <td className={styles.td}>{order.product?.name || ""}</td>
+                <td className={styles.td}>{order.supplier?.name || ""}</td>
                 <td className={styles.td}>{order.quantity}</td>
                 <td className={styles.td}>{order.comment}</td>
               </tr>
@@ -239,14 +240,13 @@ const PurchasingPage = () => {
                 <td className={styles.td}>
                   <select
                     className={styles.tableButton}
-                    value={order.productId}
-                    onChange={(e) =>
-                      handleNewOrderChange(
-                        idx,
-                        "productId",
-                        Number(e.target.value),
-                      )
-                    }
+                    value={order.product?.id || ""}
+                    onChange={(e) => {
+                      const prod =
+                        products.find((p) => p.id === Number(e.target.value)) ||
+                        null;
+                      handleNewOrderChange(idx, "product", prod);
+                    }}
                   >
                     <option value="">Product</option>
                     {products.map((p) => (
@@ -259,14 +259,14 @@ const PurchasingPage = () => {
                 <td className={styles.td}>
                   <select
                     className={styles.tableButton}
-                    value={order.supplierId}
-                    onChange={(e) =>
-                      handleNewOrderChange(
-                        idx,
-                        "supplierId",
-                        Number(e.target.value),
-                      )
-                    }
+                    value={order.supplier?.id || ""}
+                    onChange={(e) => {
+                      const sup =
+                        suppliers.find(
+                          (s) => s.id === Number(e.target.value),
+                        ) || null;
+                      handleNewOrderChange(idx, "supplier", sup);
+                    }}
                   >
                     <option value="">Leverancier</option>
                     {suppliers.map((s) => (
