@@ -41,13 +41,15 @@ const Navbar: FC = () => {
               onFocus={() => setListHover(true)}
               onBlur={() => setListHover(false)}
             >
-              {pagesList.map((page) => (
-                <li key={page.href}>
-                  <Link href={page.href} className={styles.dropdownLink}>
-                    {page.name}
-                  </Link>
-                </li>
-              ))}
+              {pagesList.map((page) =>
+                page ? (
+                  <li key={page.href}>
+                    <Link href={page.href} className={styles.dropdownLink}>
+                      {page.name}
+                    </Link>
+                  </li>
+                ) : null,
+              )}
             </ul>
           )}
         </div>
