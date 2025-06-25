@@ -4,6 +4,8 @@ import { apiCreateOrders, apiUpdateOrderStatus } from "../api/purchaseOrders";
 import { apiCreateEventLog } from "../api/eventLogs";
 import { apiCreateApprovalForm } from "../api/approvalForms";
 import { apiCreateRejectionForm } from "../api/rejectionForms";
+import { apiCreatePicklist } from "../api/picklists";
+import type { Picklist } from "../types";
 
 // Supplier and Product types
 type Supplier = { id: number; name: string };
@@ -52,6 +54,16 @@ const tableHeaders = [
   "Comment",
 ];
 
+const emptyPicklist: Picklist = {
+  id: 0,
+  purchaseOrderId: "",
+  type: "",
+  components: "",
+  orderId: "",
+  productId: 0,
+  quantity: 0,
+};
+
 const PurchasingPage = () => {
   const [orders, setOrders] = useState<PurchaseOrder[]>([
     {
@@ -73,6 +85,14 @@ const PurchasingPage = () => {
   // Approval/rejection modal state
   const [showRejectModal, setShowRejectModal] = useState<null | number>(null);
   const [rejectComment, setRejectComment] = useState<string>("");
+
+  // Picklist modal state
+  const [showPicklistModal, setShowPicklistModal] = useState<null | number>(
+    null,
+  );
+  const [picklistData, setPicklistData] = useState<Picklist>({
+    ...emptyPicklist,
+  });
 
   // Handle changes for new order rows
   const handleNewOrderChange = (
@@ -215,6 +235,39 @@ const PurchasingPage = () => {
     }
   };
 
+  // Open picklist modal for approved order
+  const handleOpenPicklist = (idx: number) => {
+    const order = orders[idx];
+    setPicklistData({
+      id: 0,
+      purchaseOrderId: order.orderNumber,
+      type: "",
+      components: "",
+      orderId: order.orderNumber,
+      productId: order.product?.id || 0,
+      quantity: Number(order.quantity) || 0,
+    });
+    setShowPicklistModal(idx);
+  };
+
+  // Confirm picklist creation
+  const handleCreatePicklist = async () => {
+    try {
+      await apiCreatePicklist(picklistData);
+      await apiCreateEventLog({
+        id: 0,
+        orderId: picklistData.orderId,
+        timestamp: new Date().toISOString(),
+        activity: "Picklist created",
+        details: `Picklist created for order ${picklistData.orderId}`,
+      });
+      setShowPicklistModal(null);
+      setSubmitMessage("Picklist succesvol aangemaakt!");
+    } catch {
+      setSubmitMessage("Fout bij aanmaken van picklist.");
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.pageTitle}>
@@ -265,6 +318,15 @@ const PurchasingPage = () => {
                       </button>
                     </>
                   )}
+                  {order.status === "Goedgekeurd" && (
+                    <button
+                      className={styles.addButton}
+                      onClick={() => handleOpenPicklist(idx)}
+                      style={{ marginLeft: 8 }}
+                    >
+                      Maak Picklist
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -299,6 +361,46 @@ const PurchasingPage = () => {
                 Annuleer
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Picklist Modal */}
+      {showPicklistModal !== null && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <h3>Picklist aanmaken</h3>
+            <input
+              type="text"
+              placeholder="Type"
+              value={picklistData.type}
+              onChange={(e) =>
+                setPicklistData((prev) => ({ ...prev, type: e.target.value }))
+              }
+              style={{ marginBottom: 8, width: "100%" }}
+            />
+            <input
+              type="text"
+              placeholder="Components"
+              value={picklistData.components}
+              onChange={(e) =>
+                setPicklistData((prev) => ({
+                  ...prev,
+                  components: e.target.value,
+                }))
+              }
+              style={{ marginBottom: 8, width: "100%" }}
+            />
+            <button className={styles.addButton} onClick={handleCreatePicklist}>
+              Bevestig Picklist
+            </button>
+            <button
+              className={styles.removeButton}
+              onClick={() => setShowPicklistModal(null)}
+              style={{ marginLeft: 8 }}
+            >
+              Annuleer
+            </button>
           </div>
         </div>
       )}
