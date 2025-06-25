@@ -7,7 +7,6 @@ export const pagesList = [
   { name: "Inkoop", href: "/purchasing" },
   { name: "Voorraadbeheer", href: "/inventory-management" },
   { name: "Financiële Administratie", href: "/financial-admin" },
-  ,
   { name: "Picklists", href: "/picklist" },
   { name: "Parts Deliveries", href: "/partsDelivery" },
   { name: "Expedities", href: "/expedition" },

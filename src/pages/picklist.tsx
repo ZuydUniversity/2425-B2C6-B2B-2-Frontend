@@ -4,12 +4,13 @@ import { apiCreatePartsDelivery } from "../api/partsDelivery";
 import { apiCreateExpedition } from "../api/expedition";
 import type { Picklist, PartsDelivery, Expedition } from "../types";
 
+// Use numbers for IDs for backend compatibility
 const emptyPicklist: Picklist = {
   id: 0,
-  purchaseOrderId: "",
+  purchaseOrderId: 0,
   type: "",
   components: "",
-  orderId: "",
+  orderId: 0,
   productId: 0,
   quantity: 0,
 };
@@ -45,7 +46,7 @@ const PicklistPage = () => {
   });
 
   const [showPartsDeliveryForm, setShowPartsDeliveryForm] = useState<
-    string | null
+    number | null
   >(null);
   const [showExpeditionForm, setShowExpeditionForm] = useState<string | null>(
     null,
@@ -64,8 +65,8 @@ const PicklistPage = () => {
 
   const handlePicklistSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await apiCreatePicklist(newPicklist);
-    setPicklists((prev) => [...prev, newPicklist]);
+    const created = await apiCreatePicklist(newPicklist);
+    setPicklists((prev) => [...prev, created]);
     setNewPicklist({ ...emptyPicklist });
   };
 
@@ -82,8 +83,8 @@ const PicklistPage = () => {
 
   const handlePartsDeliverySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await apiCreatePartsDelivery(newPartsDelivery);
-    setPartsDeliveries((prev) => [...prev, newPartsDelivery]);
+    const created = await apiCreatePartsDelivery(newPartsDelivery);
+    setPartsDeliveries((prev) => [...prev, created]);
     setNewPartsDelivery({ ...emptyPartsDelivery });
     setShowPartsDeliveryForm(null);
   };
@@ -101,8 +102,8 @@ const PicklistPage = () => {
 
   const handleExpeditionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await apiCreateExpedition(newExpedition);
-    setExpeditions((prev) => [...prev, newExpedition]);
+    const created = await apiCreateExpedition(newExpedition);
+    setExpeditions((prev) => [...prev, created]);
     setNewExpedition({ ...emptyExpedition });
     setShowExpeditionForm(null);
   };
@@ -112,17 +113,52 @@ const PicklistPage = () => {
       <h2>Picklists</h2>
       {/* Picklist Form */}
       <form onSubmit={handlePicklistSubmit} style={{ marginBottom: 24 }}>
-        {/* ...your picklist fields... */}
         <input
-          type="text"
+          type="number"
           placeholder="PurchaseOrderId"
           value={newPicklist.purchaseOrderId}
           onChange={(e) =>
-            handlePicklistChange("purchaseOrderId", e.target.value)
+            handlePicklistChange("purchaseOrderId", Number(e.target.value))
           }
           required
         />
-        {/* ...other fields... */}
+        <input
+          type="text"
+          placeholder="Type"
+          value={newPicklist.type}
+          onChange={(e) => handlePicklistChange("type", e.target.value)}
+          required
+        />
+        <input
+          type="text"
+          placeholder="Components"
+          value={newPicklist.components}
+          onChange={(e) => handlePicklistChange("components", e.target.value)}
+        />
+        <input
+          type="number"
+          placeholder="OrderId"
+          value={newPicklist.orderId}
+          onChange={(e) =>
+            handlePicklistChange("orderId", Number(e.target.value))
+          }
+        />
+        <input
+          type="number"
+          placeholder="ProductId"
+          value={newPicklist.productId}
+          onChange={(e) =>
+            handlePicklistChange("productId", Number(e.target.value))
+          }
+        />
+        <input
+          type="number"
+          placeholder="Quantity"
+          value={newPicklist.quantity}
+          onChange={(e) =>
+            handlePicklistChange("quantity", Number(e.target.value))
+          }
+        />
         <button type="submit">Toevoegen</button>
       </form>
 
@@ -132,21 +168,29 @@ const PicklistPage = () => {
           <tr>
             <th>PurchaseOrderId</th>
             <th>Type</th>
+            <th>Components</th>
+            <th>OrderId</th>
+            <th>ProductId</th>
+            <th>Quantity</th>
             <th>Actie</th>
           </tr>
         </thead>
         <tbody>
-          {picklists.map((p, idx) => (
-            <tr key={idx}>
+          {picklists.map((p) => (
+            <tr key={p.id}>
               <td>{p.purchaseOrderId}</td>
               <td>{p.type}</td>
+              <td>{p.components}</td>
+              <td>{p.orderId}</td>
+              <td>{p.productId}</td>
+              <td>{p.quantity}</td>
               <td>
                 <button
                   onClick={() => {
                     setShowPartsDeliveryForm(p.purchaseOrderId);
                     setNewPartsDelivery({
                       ...emptyPartsDelivery,
-                      partsReference: p.purchaseOrderId, // Link to picklist
+                      partsReference: String(p.purchaseOrderId), // Link to picklist
                     });
                   }}
                 >
@@ -159,7 +203,7 @@ const PicklistPage = () => {
       </table>
 
       {/* PartsDelivery Form (shown for selected Picklist) */}
-      {showPartsDeliveryForm && (
+      {showPartsDeliveryForm !== null && (
         <form onSubmit={handlePartsDeliverySubmit} style={{ margin: "24px 0" }}>
           <h3>PartsDelivery voor Picklist {showPartsDeliveryForm}</h3>
           <input
@@ -206,8 +250,8 @@ const PicklistPage = () => {
           </tr>
         </thead>
         <tbody>
-          {partsDeliveries.map((d, idx) => (
-            <tr key={idx}>
+          {partsDeliveries.map((d) => (
+            <tr key={d.id}>
               <td>{d.partsReference}</td>
               <td>{d.deliveryDate}</td>
               <td>{d.isComplete ? "Ja" : "Nee"}</td>
@@ -286,8 +330,8 @@ const PicklistPage = () => {
           </tr>
         </thead>
         <tbody>
-          {expeditions.map((e, idx) => (
-            <tr key={idx}>
+          {expeditions.map((e) => (
+            <tr key={e.id}>
               <td>{e.shipmentReference}</td>
               <td>{e.shipmentDate}</td>
               <td>{e.destination}</td>

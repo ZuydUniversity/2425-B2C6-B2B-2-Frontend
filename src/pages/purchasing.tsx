@@ -5,36 +5,40 @@ import { apiCreateEventLog } from "../api/eventLogs";
 import { apiCreateApprovalForm } from "../api/approvalForms";
 import { apiCreateRejectionForm } from "../api/rejectionForms";
 import { apiCreatePicklist } from "../api/picklists";
-import type { Picklist } from "../types";
+import type {
+  Picklist,
+  PurchaseOrder as BackendPurchaseOrder,
+  Supplier,
+  Product,
+} from "../types";
 
-// Supplier and Product types
-type Supplier = { id: number; name: string };
-type Product = { id: number; name: string };
+// UI types for form state
+type UISupplier = { id: number; name: string };
+type UIProduct = { id: number; name: string };
 
-// Export the PurchaseOrder type for use in API helpers
-export type PurchaseOrder = {
+type UIPurchaseOrder = {
   orderNumber: string;
   orderDate: string;
   status: string;
-  product: Product | null;
-  supplier: Supplier | null;
+  product: UIProduct | null;
+  supplier: UISupplier | null;
   quantity: number | "";
   comment: string;
 };
 
-const suppliers: Supplier[] = [
+const suppliers: UISupplier[] = [
   { id: 1, name: "Supplier A" },
   { id: 2, name: "Supplier B" },
   { id: 3, name: "Supplier C" },
 ];
-const products: Product[] = [
+const products: UIProduct[] = [
   { id: 1, name: "Type A" },
   { id: 2, name: "Type B" },
   { id: 3, name: "Type C" },
 ];
 const statuses = ["In behandeling", "Goedgekeurd", "Geweigerd"];
 
-const emptyPurchaseOrder: PurchaseOrder = {
+const emptyUIPurchaseOrder: UIPurchaseOrder = {
   orderNumber: "",
   orderDate: "",
   status: "",
@@ -56,16 +60,17 @@ const tableHeaders = [
 
 const emptyPicklist: Picklist = {
   id: 0,
-  purchaseOrderId: "",
+  purchaseOrderId: 0,
   type: "",
   components: "",
-  orderId: "",
+  orderId: 0,
   productId: 0,
   quantity: 0,
 };
 
 const PurchasingPage = () => {
-  const [orders, setOrders] = useState<PurchaseOrder[]>([
+  // UI state for orders
+  const [orders, setOrders] = useState<UIPurchaseOrder[]>([
     {
       orderNumber: "PO001",
       orderDate: "2025-06-25",
@@ -76,8 +81,8 @@ const PurchasingPage = () => {
       comment: "Spoed",
     },
   ]);
-  const [newOrders, setNewOrders] = useState<PurchaseOrder[]>([
-    { ...emptyPurchaseOrder },
+  const [newOrders, setNewOrders] = useState<UIPurchaseOrder[]>([
+    { ...emptyUIPurchaseOrder },
   ]);
   const [errors, setErrors] = useState<{ [key: number]: string }>({});
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
@@ -94,11 +99,23 @@ const PurchasingPage = () => {
     ...emptyPicklist,
   });
 
+  // Convert UI order to backend order
+  const toBackendOrder = (order: UIPurchaseOrder): BackendPurchaseOrder => ({
+    id: 0,
+    orderNumber: order.orderNumber,
+    orderDate: order.orderDate,
+    customerName: "", // Not used in UI, set as empty or fetch if needed
+    status: order.status,
+    productId: order.product?.id || 0,
+    supplierId: order.supplier?.id || 0,
+    quantity: Number(order.quantity) || 0,
+  });
+
   // Handle changes for new order rows
   const handleNewOrderChange = (
     idx: number,
-    field: keyof PurchaseOrder,
-    value: string | number | Supplier | Product | null,
+    field: keyof UIPurchaseOrder,
+    value: string | number | UISupplier | UIProduct | null,
   ) => {
     setNewOrders((prev) =>
       prev.map((row, i) => (i === idx ? { ...row, [field]: value } : row)),
@@ -122,7 +139,7 @@ const PurchasingPage = () => {
   };
 
   const addNewOrderRow = () => {
-    setNewOrders((prev) => [...prev, { ...emptyPurchaseOrder }]);
+    setNewOrders((prev) => [...prev, { ...emptyUIPurchaseOrder }]);
   };
 
   const removeNewOrderRow = (idx: number) => {
@@ -160,9 +177,10 @@ const PurchasingPage = () => {
     }
 
     try {
-      await apiCreateOrders(newOrders); // <-- API call
+      const backendOrders = newOrders.map(toBackendOrder);
+      await apiCreateOrders(backendOrders);
       setOrders((prev) => [...prev, ...newOrders]);
-      setNewOrders([{ ...emptyPurchaseOrder }]);
+      setNewOrders([{ ...emptyUIPurchaseOrder }]);
       setErrors({});
       setSubmitMessage("Orders succesvol toegevoegd!");
     } catch {
@@ -174,18 +192,22 @@ const PurchasingPage = () => {
   const handleApprove = async (idx: number) => {
     const order = orders[idx];
     try {
-      await apiUpdateOrderStatus(order, "Goedgekeurd", order.comment || "");
+      await apiUpdateOrderStatus(
+        order.orderNumber,
+        "Goedgekeurd",
+        order.comment || "",
+      );
       await apiCreateApprovalForm({
         id: 0,
-        purchaseOrderId: order.orderNumber,
+        purchaseOrderId: Number(order.orderNumber.replace(/\D/g, "")) || 0,
         isApproved: true,
         comments: order.comment || "",
-        orderId: order.orderNumber,
+        orderId: Number(order.orderNumber.replace(/\D/g, "")) || 0,
         dateApproved: new Date().toISOString(),
       });
       await apiCreateEventLog({
         id: 0,
-        orderId: order.orderNumber,
+        orderId: Number(order.orderNumber.replace(/\D/g, "")) || 0,
         timestamp: new Date().toISOString(),
         activity: "Approved",
         details: "Order approved by manager",
@@ -208,17 +230,17 @@ const PurchasingPage = () => {
   const handleReject = async (idx: number) => {
     const order = orders[idx];
     try {
-      await apiUpdateOrderStatus(order, "Geweigerd", rejectComment);
+      await apiUpdateOrderStatus(order.orderNumber, "Geweigerd", rejectComment);
       await apiCreateRejectionForm({
         id: 0,
-        purchaseOrderId: order.orderNumber,
+        purchaseOrderId: Number(order.orderNumber.replace(/\D/g, "")) || 0,
         reason: rejectComment,
         rejectionDate: new Date().toISOString(),
-        orderId: order.orderNumber,
+        orderId: Number(order.orderNumber.replace(/\D/g, "")) || 0,
       });
       await apiCreateEventLog({
         id: 0,
-        orderId: order.orderNumber,
+        orderId: Number(order.orderNumber.replace(/\D/g, "")) || 0,
         timestamp: new Date().toISOString(),
         activity: "Rejected",
         details: rejectComment,
@@ -240,10 +262,10 @@ const PurchasingPage = () => {
     const order = orders[idx];
     setPicklistData({
       id: 0,
-      purchaseOrderId: order.orderNumber,
+      purchaseOrderId: Number(order.orderNumber.replace(/\D/g, "")) || 0,
       type: "",
       components: "",
-      orderId: order.orderNumber,
+      orderId: Number(order.orderNumber.replace(/\D/g, "")) || 0,
       productId: order.product?.id || 0,
       quantity: Number(order.quantity) || 0,
     });
@@ -290,7 +312,7 @@ const PurchasingPage = () => {
           <tbody>
             {orders.map((order, idx) => (
               <tr
-                key={idx}
+                key={order.orderNumber}
                 style={{ background: idx % 2 === 0 ? "#f5f5f5" : "#fff" }}
               >
                 <td className={styles.td}>{order.orderNumber}</td>
