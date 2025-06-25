@@ -25,7 +25,10 @@ const RejectionFormsPage = () => {
   useEffect(() => {
     apiGetRejectionForms()
       .then(setForms)
-      .catch((e) => setError(e.message));
+      .catch((e: unknown) => {
+        if (e instanceof Error) setError(e.message);
+        else setError("Unknown error");
+      });
   }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -36,8 +39,9 @@ const RejectionFormsPage = () => {
       setForms((prev) => [...prev, created]);
       setNewForm({ ...emptyRejectionForm });
       setError(null);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) setError(e.message);
+      else setError("Unknown error");
     } finally {
       setLoading(false);
     }
@@ -49,8 +53,9 @@ const RejectionFormsPage = () => {
       await apiDeleteRejectionForm(id);
       setForms((prev) => prev.filter((f) => f.id !== id));
       setError(null);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) setError(e.message);
+      else setError("Unknown error");
     } finally {
       setLoading(false);
     }

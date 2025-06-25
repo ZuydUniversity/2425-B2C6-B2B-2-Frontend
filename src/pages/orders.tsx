@@ -10,7 +10,10 @@ const OrdersPage = () => {
   useEffect(() => {
     apiGetOrders()
       .then(setOrders)
-      .catch((e) => setError(e.message));
+      .catch((e: unknown) => {
+        if (e instanceof Error) setError(e.message);
+        else setError("Unknown error");
+      });
   }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -19,8 +22,9 @@ const OrdersPage = () => {
       const created = await apiCreateOrder(newOrder as Order);
       setOrders((prev) => [...prev, created]);
       setNewOrder({});
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) setError(e.message);
+      else setError("Unknown error");
     }
   };
 
@@ -28,8 +32,9 @@ const OrdersPage = () => {
     try {
       await apiDeleteOrder(id);
       setOrders((prev) => prev.filter((o) => o.id !== id));
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) setError(e.message);
+      else setError("Unknown error");
     }
   };
 

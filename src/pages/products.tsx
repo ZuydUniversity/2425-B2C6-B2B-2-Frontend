@@ -14,7 +14,10 @@ const ProductsPage = () => {
   useEffect(() => {
     apiGetProducts()
       .then(setProducts)
-      .catch((e) => setError(e.message));
+      .catch((e: unknown) => {
+        if (e instanceof Error) setError(e.message);
+        else setError("Unknown error");
+      });
   }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -23,8 +26,9 @@ const ProductsPage = () => {
       const created = await apiCreateProduct(newProduct as Product);
       setProducts((prev) => [...prev, created]);
       setNewProduct({});
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) setError(e.message);
+      else setError("Unknown error");
     }
   };
 
@@ -32,8 +36,9 @@ const ProductsPage = () => {
     try {
       await apiDeleteProduct(id);
       setProducts((prev) => prev.filter((p) => p.id !== id));
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) setError(e.message);
+      else setError("Unknown error");
     }
   };
 

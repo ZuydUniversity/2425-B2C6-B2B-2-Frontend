@@ -14,7 +14,10 @@ const SuppliersPage = () => {
   useEffect(() => {
     apiGetSuppliers()
       .then(setSuppliers)
-      .catch((e) => setError(e.message));
+      .catch((e: unknown) => {
+        if (e instanceof Error) setError(e.message);
+        else setError("Unknown error");
+      });
   }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -23,8 +26,9 @@ const SuppliersPage = () => {
       const created = await apiCreateSupplier(newSupplier as Supplier);
       setSuppliers((prev) => [...prev, created]);
       setNewSupplier({});
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) setError(e.message);
+      else setError("Unknown error");
     }
   };
 
@@ -32,8 +36,9 @@ const SuppliersPage = () => {
     try {
       await apiDeleteSupplier(id);
       setSuppliers((prev) => prev.filter((s) => s.id !== id));
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) setError(e.message);
+      else setError("Unknown error");
     }
   };
 
@@ -78,3 +83,5 @@ const SuppliersPage = () => {
     </div>
   );
 };
+
+export default SuppliersPage;

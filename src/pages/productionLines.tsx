@@ -14,7 +14,10 @@ const ProductionLinesPage = () => {
   useEffect(() => {
     apiGetProductionLines()
       .then(setLines)
-      .catch((e) => setError(e.message));
+      .catch((e: unknown) => {
+        if (e instanceof Error) setError(e.message);
+        else setError("Unknown error");
+      });
   }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -23,8 +26,9 @@ const ProductionLinesPage = () => {
       const created = await apiCreateProductionLine(newLine as ProductionLine);
       setLines((prev) => [...prev, created]);
       setNewLine({});
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) setError(e.message);
+      else setError("Unknown error");
     }
   };
 
@@ -32,8 +36,9 @@ const ProductionLinesPage = () => {
     try {
       await apiDeleteProductionLine(id);
       setLines((prev) => prev.filter((l) => l.id !== id));
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) setError(e.message);
+      else setError("Unknown error");
     }
   };
 

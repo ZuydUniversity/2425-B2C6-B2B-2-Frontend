@@ -13,28 +13,46 @@ import type {
 } from "../types";
 
 // UI types for form state
-type UISupplier = { id: number; name: string };
-type UIProduct = { id: number; name: string };
-
 type UIPurchaseOrder = {
   orderNumber: string;
   orderDate: string;
   status: string;
-  product: UIProduct | null;
-  supplier: UISupplier | null;
+  product: Product | null;
+  supplier: Supplier | null;
   quantity: number | "";
   comment: string;
 };
 
-const suppliers: UISupplier[] = [
+const suppliers: Supplier[] = [
   { id: 1, name: "Supplier A" },
   { id: 2, name: "Supplier B" },
   { id: 3, name: "Supplier C" },
 ];
-const products: UIProduct[] = [
-  { id: 1, name: "Type A" },
-  { id: 2, name: "Type B" },
-  { id: 3, name: "Type C" },
+const products: Product[] = [
+  {
+    id: 1,
+    name: "Type A",
+    description: "",
+    price: 0,
+    costPrice: 0,
+    stockQuantity: 0,
+  },
+  {
+    id: 2,
+    name: "Type B",
+    description: "",
+    price: 0,
+    costPrice: 0,
+    stockQuantity: 0,
+  },
+  {
+    id: 3,
+    name: "Type C",
+    description: "",
+    price: 0,
+    costPrice: 0,
+    stockQuantity: 0,
+  },
 ];
 const statuses = ["In behandeling", "Goedgekeurd", "Geweigerd"];
 
@@ -104,7 +122,7 @@ const PurchasingPage = () => {
     id: 0,
     orderNumber: order.orderNumber,
     orderDate: order.orderDate,
-    customerName: "", // Not used in UI, set as empty or fetch if needed
+    customerName: "",
     status: order.status,
     productId: order.product?.id || 0,
     supplierId: order.supplier?.id || 0,
@@ -115,7 +133,7 @@ const PurchasingPage = () => {
   const handleNewOrderChange = (
     idx: number,
     field: keyof UIPurchaseOrder,
-    value: string | number | UISupplier | UIProduct | null,
+    value: string | number | Supplier | Product | null,
   ) => {
     setNewOrders((prev) =>
       prev.map((row, i) => (i === idx ? { ...row, [field]: value } : row)),

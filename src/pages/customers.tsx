@@ -14,7 +14,10 @@ const CustomersPage = () => {
   useEffect(() => {
     apiGetCustomers()
       .then(setCustomers)
-      .catch((e) => setError(e.message));
+      .catch((e: unknown) => {
+        if (e instanceof Error) setError(e.message);
+        else setError("Unknown error");
+      });
   }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -23,8 +26,9 @@ const CustomersPage = () => {
       const created = await apiCreateCustomer(newCustomer as Customer);
       setCustomers((prev) => [...prev, created]);
       setNewCustomer({});
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) setError(e.message);
+      else setError("Unknown error");
     }
   };
 
@@ -32,8 +36,9 @@ const CustomersPage = () => {
     try {
       await apiDeleteCustomer(id);
       setCustomers((prev) => prev.filter((c) => c.id !== id));
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) setError(e.message);
+      else setError("Unknown error");
     }
   };
 

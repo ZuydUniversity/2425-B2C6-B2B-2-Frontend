@@ -9,3 +9,9 @@ export async function apiCreateEventLog(eventlog: EventLog) {
   if (!response.ok) throw new Error("Failed to create event log");
   return response.json();
 }
+
+export async function apiGetEventLogs(): Promise<EventLog[]> {
+  const response = await fetch("/api/eventlogs");
+  if (!response.ok) throw new Error("Failed to fetch event logs");
+  return response.json();
+}
