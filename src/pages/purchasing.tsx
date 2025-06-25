@@ -68,11 +68,15 @@ const PurchasingPage = () => {
   const [errors, setErrors] = useState<{ [key: number]: string }>({});
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
 
+  // Approval/rejection modal state
+  const [showRejectModal, setShowRejectModal] = useState<null | number>(null);
+  const [rejectComment, setRejectComment] = useState<string>("");
+
   // Handle changes for new order rows
   const handleNewOrderChange = (
     idx: number,
     field: keyof PurchaseOrder,
-    value: any,
+    value: string | number | Supplier | Product | null,
   ) => {
     setNewOrders((prev) =>
       prev.map((row, i) => (i === idx ? { ...row, [field]: value } : row)),
@@ -139,6 +143,38 @@ const PurchasingPage = () => {
     setSubmitMessage("Orders succesvol toegevoegd!");
   };
 
+  // Approve order
+  const handleApprove = (idx: number) => {
+    setOrders((prev) =>
+      prev.map((order, i) =>
+        i === idx
+          ? { ...order, status: "Goedgekeurd", comment: order.comment || "" }
+          : order,
+      ),
+    );
+    // TODO: Call backend API to update status
+  };
+
+  // Open reject modal
+  const handleOpenReject = (idx: number) => {
+    setShowRejectModal(idx);
+    setRejectComment("");
+  };
+
+  // Confirm rejection
+  const handleReject = (idx: number) => {
+    setOrders((prev) =>
+      prev.map((order, i) =>
+        i === idx
+          ? { ...order, status: "Geweigerd", comment: rejectComment }
+          : order,
+      ),
+    );
+    setShowRejectModal(null);
+    setRejectComment("");
+    // TODO: Call backend API to update status and comment
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.pageTitle}>
@@ -155,6 +191,7 @@ const PurchasingPage = () => {
                   {header}
                 </th>
               ))}
+              <th className={styles.th}>Actie</th>
             </tr>
           </thead>
           <tbody>
@@ -170,11 +207,61 @@ const PurchasingPage = () => {
                 <td className={styles.td}>{order.supplier?.name || ""}</td>
                 <td className={styles.td}>{order.quantity}</td>
                 <td className={styles.td}>{order.comment}</td>
+                <td className={styles.td}>
+                  {order.status === "In behandeling" && (
+                    <>
+                      <button
+                        className={styles.addButton}
+                        onClick={() => handleApprove(idx)}
+                      >
+                        Approve
+                      </button>
+                      <button
+                        className={styles.removeButton}
+                        onClick={() => handleOpenReject(idx)}
+                        style={{ marginLeft: 8 }}
+                      >
+                        Reject
+                      </button>
+                    </>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* Reject Modal */}
+      {showRejectModal !== null && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <h3>Reden van afwijzing</h3>
+            <textarea
+              value={rejectComment}
+              onChange={(e) => setRejectComment(e.target.value)}
+              rows={4}
+              style={{ width: "100%", marginBottom: 16 }}
+              placeholder="Voer een reden in..."
+            />
+            <div style={{ display: "flex", gap: 12 }}>
+              <button
+                className={styles.removeButton}
+                onClick={() => handleReject(showRejectModal)}
+                disabled={!rejectComment.trim()}
+              >
+                Bevestig afwijzing
+              </button>
+              <button
+                className={styles.addButton}
+                onClick={() => setShowRejectModal(null)}
+              >
+                Annuleer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* New Purchase Orders Table */}
       <div className={styles.tableWrapper}>
