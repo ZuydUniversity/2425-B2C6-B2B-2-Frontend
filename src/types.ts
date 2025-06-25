@@ -32,3 +32,18 @@ export type RejectionForm = {
   rejectionDate: string;
   orderId: string;
 };
+
+export type PartsDelivery = {
+  id: number;
+  partsReference: string;
+  deliveryDate: string;
+  isComplete: boolean;
+};
+
+export type Expedition = {
+  id: number;
+  shipmentReference: string;
+  shipmentDate: string;
+  destination: string;
+  isDelivered: boolean;
+};
