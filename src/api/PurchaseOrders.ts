@@ -1,21 +1,13 @@
-import type { PurchaseOrder } from "../pages/purchasing";
+import type { PurchaseOrder } from "../types";
 
-export function toApiPayload(order: PurchaseOrder) {
-  return {
-    orderNumber: order.orderNumber,
-    orderDate: order.orderDate,
-    status: order.status,
-    productId: order.product?.id ?? null,
-    supplierId: order.supplier?.id ?? null,
-    quantity: order.quantity,
-    comment: order.comment,
-  };
-}
-
-// Use _ to avoid unused-vars lint error, but allow arguments
 export async function apiCreateOrders(orders: PurchaseOrder[]) {
-  void orders;
-  return Promise.resolve();
+  const response = await fetch("/api/purchaseorders", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(orders),
+  });
+  if (!response.ok) throw new Error("Failed to create purchase orders");
+  return response.json();
 }
 
 export async function apiUpdateOrderStatus(
@@ -23,8 +15,14 @@ export async function apiUpdateOrderStatus(
   status: string,
   comment: string,
 ) {
-  void order;
-  void status;
-  void comment;
-  return Promise.resolve();
+  const response = await fetch(
+    `/api/purchaseorders/${order.orderNumber}/status`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status, comment }),
+    },
+  );
+  if (!response.ok) throw new Error("Failed to update order status");
+  return response.json();
 }

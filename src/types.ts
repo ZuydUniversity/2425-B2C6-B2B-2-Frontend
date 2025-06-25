@@ -47,3 +47,13 @@ export type Expedition = {
   destination: string;
   isDelivered: boolean;
 };
+
+export type PurchaseOrder = {
+  orderNumber: string;
+  orderDate: string;
+  status: string;
+  product: { id: number; name: string } | null;
+  supplier: { id: number; name: string } | null;
+  quantity: number | "";
+  comment: string;
+};
