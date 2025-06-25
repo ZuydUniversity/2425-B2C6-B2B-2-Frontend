@@ -1,5 +1,14 @@
 import React, { useState } from "react";
 import styles from "./accountmanager.module.scss";
+import {
+  apiUpdateOrderStatus,
+  apiCreateApprovalForm,
+  /*apiGetAllOrders,
+  apiGetOrder,
+  apiGetCustomer,*/
+  apiCreateEventLog as apiCreateAccountEventLog,
+} from "../api/account";
+//import { apiCreateEventLog } from "../api/eventLogs";
 import { sampleData } from "../data/productionsampledata";
 import { motorImagesList } from "../data/motorimageslist";
 import { AccountStatus } from "../data/accountstatuslist";
@@ -49,41 +58,71 @@ const AccountManagementPage: React.FC = () => {
     leverdatum: "",
   });
 
-  const updateStatus = (orderId: string, newStatus: AccountStatus) => {
-    const now = new Date().toISOString().split("T")[0];
+  const updateStatus = async (orderId: string, newStatus: AccountStatus) => {
+    try {
+      const now = new Date().toISOString().split("T")[0];
+      const numericOrderId = Number(orderId.replace(/\D/g, ""));
 
-    setOrders((prev) =>
-      prev.map((order) => {
-        if (order.orderId !== orderId) return order;
+      if (newStatus === AccountStatus.Approved) {
+        await apiUpdateOrderStatus(
+          Number(numericOrderId),
+          "Approved",
+          "Goedgekeurd door accountmanager",
+        );
+        await apiCreateApprovalForm(Number(numericOrderId));
+      } else if (newStatus === AccountStatus.Rejected) {
+        await apiUpdateOrderStatus(
+          Number(numericOrderId),
+          "Rejected",
+          "Afgekeurd door accountmanager",
+        );
+      }
 
-        const wasHandledBefore = !!order.accountmanagerPeriode?.start;
-        const updatedPeriode = wasHandledBefore
-          ? {
-              start: order.accountmanagerPeriode!.start,
-              einde: now,
-            }
-          : { start: now };
+      const notificatie =
+        newStatus === AccountStatus.Rejected
+          ? `Klant geïnformeerd: order ${orderId} is afgekeurd op ${now}`
+          : newStatus === AccountStatus.Approved
+            ? `Planning geïnformeerd: order ${orderId} is goedgekeurd op ${now}`
+            : "";
 
-        const notificatie =
-          newStatus === AccountStatus.Rejected
-            ? `Klant geïnformeerd: order ${orderId} is afgekeurd op ${now}`
-            : newStatus === AccountStatus.Approved
-              ? `Planning geïnformeerd: order ${orderId} is goedgekeurd op ${now}`
-              : "";
+      await apiCreateAccountEventLog({
+        orderId: Number(orderId),
+        message: notificatie,
+        role: newStatus === AccountStatus.Approved ? "Planning" : "Klant",
+      });
 
-        const nieuweNotificaties = [...(order.notificaties || []), notificatie];
+      setOrders((prev) =>
+        prev.map((order) => {
+          if (order.orderId !== orderId) return order;
 
-        setLaatsteNotificaties([notificatie]);
-        setNotificatieModalOpen(true);
+          const wasHandledBefore = !!order.accountmanagerPeriode?.start;
+          const updatedPeriode = wasHandledBefore
+            ? {
+                start: order.accountmanagerPeriode!.start,
+                einde: now,
+              }
+            : { start: now };
 
-        return {
-          ...order,
-          status: newStatus,
-          accountmanagerPeriode: updatedPeriode,
-          notificaties: nieuweNotificaties,
-        };
-      }),
-    );
+          const nieuweNotificaties = [
+            ...(order.notificaties || []),
+            notificatie,
+          ];
+
+          setLaatsteNotificaties([notificatie]);
+          setNotificatieModalOpen(true);
+
+          return {
+            ...order,
+            status: newStatus,
+            accountmanagerPeriode: updatedPeriode,
+            notificaties: nieuweNotificaties,
+          };
+        }),
+      );
+    } catch (error) {
+      console.error("Fout bij statusupdate:", error);
+      alert("Er is iets misgegaan bij het verwerken van deze order.");
+    }
   };
 
   const [filters, setFilters] = useState({
