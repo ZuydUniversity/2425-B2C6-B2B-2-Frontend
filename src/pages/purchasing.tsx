@@ -1,6 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./purchasing.module.scss";
-import { apiCreateOrders, apiUpdateOrderStatus } from "../api/purchaseOrders";
+import {
+  apiCreateOrders,
+  apiUpdatePurchaseOrder,
+  apiGetOrders,
+} from "../api/PurchaseOrders";
 import { apiCreateEventLog } from "../api/eventLogs";
 import { apiCreateApprovalForm } from "../api/approvalForms";
 import { apiCreateRejectionForm } from "../api/rejectionForms";
@@ -14,8 +18,10 @@ import type {
 
 // UI types for form state
 type UIPurchaseOrder = {
+  id?: number;
   orderNumber: string;
   orderDate: string;
+  customerName: string;
   status: string;
   product: Product | null;
   supplier: Supplier | null;
@@ -59,6 +65,7 @@ const statuses = ["In behandeling", "Goedgekeurd", "Geweigerd"];
 const emptyUIPurchaseOrder: UIPurchaseOrder = {
   orderNumber: "",
   orderDate: "",
+  customerName: "",
   status: "",
   product: null,
   supplier: null,
@@ -69,6 +76,7 @@ const emptyUIPurchaseOrder: UIPurchaseOrder = {
 const tableHeaders = [
   "Ordernummer",
   "Orderdatum",
+  "Klantnaam",
   "Status",
   "Product",
   "Leverancier",
@@ -88,17 +96,7 @@ const emptyPicklist: Picklist = {
 
 const PurchasingPage = () => {
   // UI state for orders
-  const [orders, setOrders] = useState<UIPurchaseOrder[]>([
-    {
-      orderNumber: "PO001",
-      orderDate: "2025-06-25",
-      status: "In behandeling",
-      product: products[0],
-      supplier: suppliers[1],
-      quantity: 20,
-      comment: "Spoed",
-    },
-  ]);
+  const [orders, setOrders] = useState<UIPurchaseOrder[]>([]);
   const [newOrders, setNewOrders] = useState<UIPurchaseOrder[]>([
     { ...emptyUIPurchaseOrder },
   ]);
@@ -117,12 +115,34 @@ const PurchasingPage = () => {
     ...emptyPicklist,
   });
 
+  // Fetch all orders from backend on mount and after new orders are created
+  useEffect(() => {
+    fetchOrders();
+    // eslint-disable-next-line
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      const backendOrders = await apiGetOrders();
+      setOrders(
+        backendOrders.map((o: BackendPurchaseOrder) => ({
+          ...o,
+          product: products.find((p) => p.id === o.productId) || null,
+          supplier: suppliers.find((s) => s.id === o.supplierId) || null,
+          comment: "",
+        })),
+      );
+    } catch {
+      setSubmitMessage("Fout bij ophalen van orders.");
+    }
+  };
+
   // Convert UI order to backend order
   const toBackendOrder = (order: UIPurchaseOrder): BackendPurchaseOrder => ({
-    id: 0,
+    id: order.id || 0,
     orderNumber: order.orderNumber,
     orderDate: order.orderDate,
-    customerName: "",
+    customerName: order.customerName,
     status: order.status,
     productId: order.product?.id || 0,
     supplierId: order.supplier?.id || 0,
@@ -176,6 +196,7 @@ const PurchasingPage = () => {
       if (
         !order.orderNumber ||
         !order.orderDate ||
+        !order.customerName ||
         !order.status ||
         !order.product ||
         !order.supplier ||
@@ -197,7 +218,7 @@ const PurchasingPage = () => {
     try {
       const backendOrders = newOrders.map(toBackendOrder);
       await apiCreateOrders(backendOrders);
-      setOrders((prev) => [...prev, ...newOrders]);
+      await fetchOrders(); // Refresh orders with correct IDs
       setNewOrders([{ ...emptyUIPurchaseOrder }]);
       setErrors({});
       setSubmitMessage("Orders succesvol toegevoegd!");
@@ -209,30 +230,30 @@ const PurchasingPage = () => {
   // Approve order (API)
   const handleApprove = async (idx: number) => {
     const order = orders[idx];
+    if (!order.id) {
+      setSubmitMessage("Order heeft geen ID.");
+      return;
+    }
     try {
-      await apiUpdateOrderStatus(
-        order.orderNumber,
-        "Goedgekeurd",
-        order.comment || "",
-      );
+      await apiUpdatePurchaseOrder(order.id, {
+        status: "Goedgekeurd",
+      });
       await apiCreateApprovalForm({
         id: 0,
-        purchaseOrderId: Number(order.orderNumber.replace(/\D/g, "")) || 0,
+        purchaseOrderId: order.id,
         isApproved: true,
         comments: order.comment || "",
-        orderId: Number(order.orderNumber.replace(/\D/g, "")) || 0,
+        orderId: order.id,
         dateApproved: new Date().toISOString(),
       });
       await apiCreateEventLog({
         id: 0,
-        orderId: Number(order.orderNumber.replace(/\D/g, "")) || 0,
+        orderId: order.id,
         timestamp: new Date().toISOString(),
         activity: "Approved",
         details: "Order approved by manager",
       });
-      setOrders((prev) =>
-        prev.map((o, i) => (i === idx ? { ...o, status: "Goedgekeurd" } : o)),
-      );
+      await fetchOrders();
     } catch {
       setSubmitMessage("Fout bij goedkeuren van order.");
     }
@@ -247,27 +268,29 @@ const PurchasingPage = () => {
   // Confirm rejection (API)
   const handleReject = async (idx: number) => {
     const order = orders[idx];
+    if (!order.id) {
+      setSubmitMessage("Order heeft geen ID.");
+      return;
+    }
     try {
-      await apiUpdateOrderStatus(order.orderNumber, "Geweigerd", rejectComment);
+      await apiUpdatePurchaseOrder(order.id, {
+        status: "Geweigerd",
+      });
       await apiCreateRejectionForm({
         id: 0,
-        purchaseOrderId: Number(order.orderNumber.replace(/\D/g, "")) || 0,
+        purchaseOrderId: order.id,
         reason: rejectComment,
         rejectionDate: new Date().toISOString(),
-        orderId: Number(order.orderNumber.replace(/\D/g, "")) || 0,
+        orderId: order.id,
       });
       await apiCreateEventLog({
         id: 0,
-        orderId: Number(order.orderNumber.replace(/\D/g, "")) || 0,
+        orderId: order.id,
         timestamp: new Date().toISOString(),
         activity: "Rejected",
         details: rejectComment,
       });
-      setOrders((prev) =>
-        prev.map((o, i) =>
-          i === idx ? { ...o, status: "Geweigerd", comment: rejectComment } : o,
-        ),
-      );
+      await fetchOrders();
       setShowRejectModal(null);
       setRejectComment("");
     } catch {
@@ -280,10 +303,10 @@ const PurchasingPage = () => {
     const order = orders[idx];
     setPicklistData({
       id: 0,
-      purchaseOrderId: Number(order.orderNumber.replace(/\D/g, "")) || 0,
+      purchaseOrderId: order.id || 0,
       type: "",
       components: "",
-      orderId: Number(order.orderNumber.replace(/\D/g, "")) || 0,
+      orderId: order.id || 0,
       productId: order.product?.id || 0,
       quantity: Number(order.quantity) || 0,
     });
@@ -330,11 +353,12 @@ const PurchasingPage = () => {
           <tbody>
             {orders.map((order, idx) => (
               <tr
-                key={order.orderNumber}
+                key={order.id ?? order.orderNumber}
                 style={{ background: idx % 2 === 0 ? "#f5f5f5" : "#fff" }}
               >
                 <td className={styles.td}>{order.orderNumber}</td>
                 <td className={styles.td}>{order.orderDate}</td>
+                <td className={styles.td}>{order.customerName}</td>
                 <td className={styles.td}>{order.status}</td>
                 <td className={styles.td}>{order.product?.name || ""}</td>
                 <td className={styles.td}>{order.supplier?.name || ""}</td>
@@ -488,6 +512,17 @@ const PurchasingPage = () => {
                     onChange={(e) =>
                       handleNewOrderChange(idx, "orderDate", e.target.value)
                     }
+                  />
+                </td>
+                <td className={styles.td}>
+                  <input
+                    type="text"
+                    className={styles.tableButton}
+                    value={order.customerName}
+                    onChange={(e) =>
+                      handleNewOrderChange(idx, "customerName", e.target.value)
+                    }
+                    placeholder="Klantnaam"
                   />
                 </td>
                 <td className={styles.td}>

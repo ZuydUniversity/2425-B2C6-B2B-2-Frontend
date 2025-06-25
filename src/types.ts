@@ -6,6 +6,7 @@ export type ApprovalForm = {
   orderId: number;
   dateApproved: string;
 };
+
 export type Customer = {
   id: number;
   username: string;
