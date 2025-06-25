@@ -120,6 +120,19 @@
   flex-wrap: wrap;
 }
 
+.notifModalContent {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  flex-direction: column;
+}
+
+.notifModalContent ul {
+  flex-grow: 1;
+}
+
 .modalActions {
   display: flex;
   justify-content: flex-end;

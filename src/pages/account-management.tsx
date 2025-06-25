@@ -11,6 +11,8 @@ type Order = {
   aantal: number;
   orderdatum: string;
   status: AccountStatus;
+  accountmanagerPeriode?: { start: string; einde?: string };
+  notificaties?: string[];
 };
 
 function generateNextOrderId(orders: Order[]): string {
@@ -37,6 +39,8 @@ const AccountManagementPage: React.FC = () => {
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [notificatieModalOpen, setNotificatieModalOpen] = useState(false);
+  const [laatsteNotificaties, setLaatsteNotificaties] = useState<string[]>([]);
 
   const [createOrder, setCreateOrder] = useState({
     klantnaam: "",
@@ -46,10 +50,39 @@ const AccountManagementPage: React.FC = () => {
   });
 
   const updateStatus = (orderId: string, newStatus: AccountStatus) => {
+    const now = new Date().toISOString().split("T")[0];
+
     setOrders((prev) =>
-      prev.map((order) =>
-        order.orderId === orderId ? { ...order, status: newStatus } : order,
-      ),
+      prev.map((order) => {
+        if (order.orderId !== orderId) return order;
+
+        const wasHandledBefore = !!order.accountmanagerPeriode?.start;
+        const updatedPeriode = wasHandledBefore
+          ? {
+              start: order.accountmanagerPeriode!.start,
+              einde: now,
+            }
+          : { start: now };
+
+        const notificatie =
+          newStatus === AccountStatus.Rejected
+            ? `Klant geïnformeerd: order ${orderId} is afgekeurd op ${now}`
+            : newStatus === AccountStatus.Approved
+              ? `Planning geïnformeerd: order ${orderId} is goedgekeurd op ${now}`
+              : "";
+
+        const nieuweNotificaties = [...(order.notificaties || []), notificatie];
+
+        setLaatsteNotificaties([notificatie]);
+        setNotificatieModalOpen(true);
+
+        return {
+          ...order,
+          status: newStatus,
+          accountmanagerPeriode: updatedPeriode,
+          notificaties: nieuweNotificaties,
+        };
+      }),
     );
   };
 
@@ -361,6 +394,27 @@ const AccountManagementPage: React.FC = () => {
                   onClick={() => setShowCreateModal(false)}
                 >
                   Annuleren
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {notificatieModalOpen && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.notifModalContent}>
+                <h3>Notificatie verzonden</h3>
+                <ul>
+                  {laatsteNotificaties.map((n, i) => (
+                    <li key={i}>{n}</li>
+                  ))}
+                </ul>
+                <button
+                  className={styles.button}
+                  onClick={() => setNotificatieModalOpen(false)}
+                >
+                  Sluiten
                 </button>
               </div>
             </div>
