@@ -11,6 +11,10 @@ type Order = {
   productielijn: number;
   leverdatum: string;
   status: Status;
+  productiePeriode?: {
+    start?: string;
+    einde?: string;
+  };
 };
 
 const ProductionPage = () => {
@@ -22,10 +26,11 @@ const ProductionPage = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showProblemModal, setShowProblemModal] = useState(false);
   const [problemText, setProblemText] = useState("");
+  const [ordersData, setOrdersData] = useState(sampleData);
 
   const groupedByLine = [1, 2, 3].map((lijn) => ({
     lijn,
-    orders: sampleData.filter((o) => o.productielijn === lijn),
+    orders: ordersData.filter((o) => o.productielijn === lijn),
   }));
 
   const [filters, setFilters] = useState<{
@@ -197,6 +202,78 @@ const ProductionPage = () => {
                 <p>
                   <strong>Status:</strong> {selectedOrder.status}
                 </p>
+                <div>
+                  <label>
+                    Start productie:
+                    <input
+                      type="date"
+                      value={selectedOrder.productiePeriode?.start || ""}
+                      onChange={(e) => {
+                        const newStart = e.target.value;
+                        setOrdersData((prev) =>
+                          prev.map((order) =>
+                            order.orderId === selectedOrder.orderId
+                              ? {
+                                  ...order,
+                                  productiePeriode: {
+                                    ...order.productiePeriode,
+                                    start: newStart,
+                                  },
+                                }
+                              : order,
+                          ),
+                        );
+                        setSelectedOrder((prev) =>
+                          prev
+                            ? {
+                                ...prev,
+                                productiePeriode: {
+                                  ...prev.productiePeriode,
+                                  start: newStart,
+                                },
+                              }
+                            : null,
+                        );
+                      }}
+                    />
+                  </label>
+                </div>
+                <div>
+                  <label>
+                    Einde productie:
+                    <input
+                      type="date"
+                      value={selectedOrder.productiePeriode?.einde || ""}
+                      onChange={(e) => {
+                        const newEnd = e.target.value;
+                        setOrdersData((prev) =>
+                          prev.map((order) =>
+                            order.orderId === selectedOrder.orderId
+                              ? {
+                                  ...order,
+                                  productiePeriode: {
+                                    ...order.productiePeriode,
+                                    einde: newEnd,
+                                  },
+                                }
+                              : order,
+                          ),
+                        );
+                        setSelectedOrder((prev) =>
+                          prev
+                            ? {
+                                ...prev,
+                                productiePeriode: {
+                                  ...prev.productiePeriode,
+                                  einde: newEnd,
+                                },
+                              }
+                            : null,
+                        );
+                      }}
+                    />
+                  </label>
+                </div>
               </div>
 
               <div className={styles.imageContainer}>
