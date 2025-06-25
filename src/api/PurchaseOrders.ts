@@ -1,6 +1,5 @@
 import type { PurchaseOrder } from "../pages/purchasing";
 
-// Convert PurchaseOrder to API payload (IDs instead of objects)
 export function toApiPayload(order: PurchaseOrder) {
   return {
     orderNumber: order.orderNumber,
@@ -13,30 +12,19 @@ export function toApiPayload(order: PurchaseOrder) {
   };
 }
 
-// Placeholder: Create new purchase orders
+// Use _ to avoid unused-vars lint error, but allow arguments
 export async function apiCreateOrders(orders: PurchaseOrder[]) {
-  // Replace with real API call
-  // Example:
-  // await fetch('/api/purchaseorders', {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(orders.map(toApiPayload)),
-  // });
+  void orders;
   return Promise.resolve();
 }
 
-// Placeholder: Update order status
 export async function apiUpdateOrderStatus(
   order: PurchaseOrder,
   status: string,
   comment: string,
 ) {
-  // Replace with real API call
-  // Example:
-  // await fetch(`/api/purchaseorders/${order.orderNumber}/status`, {
-  //   method: 'PATCH',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify({ status, comment }),
-  // });
+  void order;
+  void status;
+  void comment;
   return Promise.resolve();
 }

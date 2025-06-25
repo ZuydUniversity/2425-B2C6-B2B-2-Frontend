@@ -142,7 +142,7 @@ const PurchasingPage = () => {
       setNewOrders([{ ...emptyPurchaseOrder }]);
       setErrors({});
       setSubmitMessage("Orders succesvol toegevoegd!");
-    } catch (e) {
+    } catch {
       setSubmitMessage("Fout bij opslaan van orders.");
     }
   };
@@ -155,7 +155,7 @@ const PurchasingPage = () => {
       setOrders((prev) =>
         prev.map((o, i) => (i === idx ? { ...o, status: "Goedgekeurd" } : o)),
       );
-    } catch (e) {
+    } catch {
       setSubmitMessage("Fout bij goedkeuren van order.");
     }
   };
@@ -178,7 +178,7 @@ const PurchasingPage = () => {
       );
       setShowRejectModal(null);
       setRejectComment("");
-    } catch (e) {
+    } catch {
       setSubmitMessage("Fout bij afwijzen van order.");
     }
   };
