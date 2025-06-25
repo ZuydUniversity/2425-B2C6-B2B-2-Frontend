@@ -67,7 +67,7 @@ const PurchasingPage = () => {
   const handleNewOrderChange = (
     idx: number,
     field: keyof PurchaseOrder,
-    value: any,
+    value: string | number,
   ) => {
     setNewOrders((prev) =>
       prev.map((row, i) => (i === idx ? { ...row, [field]: value } : row)),
