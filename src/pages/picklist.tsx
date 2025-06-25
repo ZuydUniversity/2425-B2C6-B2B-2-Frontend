@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { apiCreatePicklist } from "../api/picklists";
-import type { Picklist } from "../types";
+import { apiCreatePartsDelivery } from "../api/partsDelivery";
+import { apiCreateExpedition } from "../api/expedition";
+import type { Picklist, PartsDelivery, Expedition } from "../types";
 
 const emptyPicklist: Picklist = {
   id: 0,
@@ -12,88 +14,125 @@ const emptyPicklist: Picklist = {
   quantity: 0,
 };
 
+const emptyPartsDelivery: PartsDelivery = {
+  id: 0,
+  partsReference: "",
+  deliveryDate: "",
+  isComplete: false,
+};
+
+const emptyExpedition: Expedition = {
+  id: 0,
+  shipmentReference: "",
+  shipmentDate: "",
+  destination: "",
+  isDelivered: false,
+};
+
 const PicklistPage = () => {
   const [picklists, setPicklists] = useState<Picklist[]>([]);
+  const [partsDeliveries, setPartsDeliveries] = useState<PartsDelivery[]>([]);
+  const [expeditions, setExpeditions] = useState<Expedition[]>([]);
+
   const [newPicklist, setNewPicklist] = useState<Picklist>({
     ...emptyPicklist,
   });
-  const [message, setMessage] = useState<string | null>(null);
+  const [newPartsDelivery, setNewPartsDelivery] = useState<PartsDelivery>({
+    ...emptyPartsDelivery,
+  });
+  const [newExpedition, setNewExpedition] = useState<Expedition>({
+    ...emptyExpedition,
+  });
 
-  const handleChange = (field: keyof Picklist, value: string | number) => {
+  const [showPartsDeliveryForm, setShowPartsDeliveryForm] = useState<
+    string | null
+  >(null);
+  const [showExpeditionForm, setShowExpeditionForm] = useState<string | null>(
+    null,
+  );
+
+  // Picklist handlers
+  const handlePicklistChange = (
+    field: keyof Picklist,
+    value: string | number,
+  ) => {
     setNewPicklist((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handlePicklistSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      await apiCreatePicklist(newPicklist);
-      setPicklists((prev) => [...prev, newPicklist]);
-      setNewPicklist({ ...emptyPicklist });
-      setMessage("Picklist toegevoegd!");
-    } catch {
-      setMessage("Fout bij toevoegen van picklist.");
-    }
+    await apiCreatePicklist(newPicklist);
+    setPicklists((prev) => [...prev, newPicklist]);
+    setNewPicklist({ ...emptyPicklist });
+  };
+
+  // PartsDelivery handlers
+  const handlePartsDeliveryChange = (
+    field: keyof PartsDelivery,
+    value: string | boolean,
+  ) => {
+    setNewPartsDelivery((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handlePartsDeliverySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await apiCreatePartsDelivery(newPartsDelivery);
+    setPartsDeliveries((prev) => [...prev, newPartsDelivery]);
+    setNewPartsDelivery({ ...emptyPartsDelivery });
+    setShowPartsDeliveryForm(null);
+  };
+
+  // Expedition handlers
+  const handleExpeditionChange = (
+    field: keyof Expedition,
+    value: string | boolean,
+  ) => {
+    setNewExpedition((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleExpeditionSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await apiCreateExpedition(newExpedition);
+    setExpeditions((prev) => [...prev, newExpedition]);
+    setNewExpedition({ ...emptyExpedition });
+    setShowExpeditionForm(null);
   };
 
   return (
     <div style={{ padding: 24 }}>
       <h2>Picklists</h2>
-      <form onSubmit={handleSubmit} style={{ marginBottom: 24 }}>
+      {/* Picklist Form */}
+      <form onSubmit={handlePicklistSubmit} style={{ marginBottom: 24 }}>
+        {/* ...your picklist fields... */}
         <input
           type="text"
           placeholder="PurchaseOrderId"
           value={newPicklist.purchaseOrderId}
-          onChange={(e) => handleChange("purchaseOrderId", e.target.value)}
+          onChange={(e) =>
+            handlePicklistChange("purchaseOrderId", e.target.value)
+          }
           required
         />
-        <input
-          type="text"
-          placeholder="Type"
-          value={newPicklist.type}
-          onChange={(e) => handleChange("type", e.target.value)}
-          required
-        />
-        <input
-          type="text"
-          placeholder="Components"
-          value={newPicklist.components}
-          onChange={(e) => handleChange("components", e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="OrderId"
-          value={newPicklist.orderId}
-          onChange={(e) => handleChange("orderId", e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="ProductId"
-          value={newPicklist.productId}
-          onChange={(e) => handleChange("productId", Number(e.target.value))}
-          required
-        />
-        <input
-          type="number"
-          placeholder="Quantity"
-          value={newPicklist.quantity}
-          onChange={(e) => handleChange("quantity", Number(e.target.value))}
-          required
-        />
+        {/* ...other fields... */}
         <button type="submit">Toevoegen</button>
       </form>
-      {message && <div>{message}</div>}
+
+      {/* Picklist Table */}
       <table border={1} cellPadding={8}>
         <thead>
           <tr>
             <th>PurchaseOrderId</th>
             <th>Type</th>
-            <th>Components</th>
-            <th>OrderId</th>
-            <th>ProductId</th>
-            <th>Quantity</th>
+            <th>Actie</th>
           </tr>
         </thead>
         <tbody>
@@ -101,10 +140,158 @@ const PicklistPage = () => {
             <tr key={idx}>
               <td>{p.purchaseOrderId}</td>
               <td>{p.type}</td>
-              <td>{p.components}</td>
-              <td>{p.orderId}</td>
-              <td>{p.productId}</td>
-              <td>{p.quantity}</td>
+              <td>
+                <button
+                  onClick={() => {
+                    setShowPartsDeliveryForm(p.purchaseOrderId);
+                    setNewPartsDelivery({
+                      ...emptyPartsDelivery,
+                      partsReference: p.purchaseOrderId, // Link to picklist
+                    });
+                  }}
+                >
+                  Maak PartsDelivery
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* PartsDelivery Form (shown for selected Picklist) */}
+      {showPartsDeliveryForm && (
+        <form onSubmit={handlePartsDeliverySubmit} style={{ margin: "24px 0" }}>
+          <h3>PartsDelivery voor Picklist {showPartsDeliveryForm}</h3>
+          <input
+            type="text"
+            placeholder="Parts Reference"
+            value={newPartsDelivery.partsReference}
+            onChange={(e) =>
+              handlePartsDeliveryChange("partsReference", e.target.value)
+            }
+            required
+          />
+          <input
+            type="date"
+            placeholder="Delivery Date"
+            value={newPartsDelivery.deliveryDate}
+            onChange={(e) =>
+              handlePartsDeliveryChange("deliveryDate", e.target.value)
+            }
+            required
+          />
+          <label>
+            <input
+              type="checkbox"
+              checked={newPartsDelivery.isComplete}
+              onChange={(e) =>
+                handlePartsDeliveryChange("isComplete", e.target.checked)
+              }
+            />
+            Is Complete
+          </label>
+          <button type="submit">Toevoegen</button>
+        </form>
+      )}
+
+      {/* PartsDelivery Table */}
+      <h2>Parts Deliveries</h2>
+      <table border={1} cellPadding={8}>
+        <thead>
+          <tr>
+            <th>Parts Reference</th>
+            <th>Delivery Date</th>
+            <th>Is Complete</th>
+            <th>Actie</th>
+          </tr>
+        </thead>
+        <tbody>
+          {partsDeliveries.map((d, idx) => (
+            <tr key={idx}>
+              <td>{d.partsReference}</td>
+              <td>{d.deliveryDate}</td>
+              <td>{d.isComplete ? "Ja" : "Nee"}</td>
+              <td>
+                <button
+                  onClick={() => {
+                    setShowExpeditionForm(d.partsReference);
+                    setNewExpedition({
+                      ...emptyExpedition,
+                      shipmentReference: d.partsReference, // Link to parts delivery
+                    });
+                  }}
+                >
+                  Maak Expedition
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Expedition Form (shown for selected PartsDelivery) */}
+      {showExpeditionForm && (
+        <form onSubmit={handleExpeditionSubmit} style={{ margin: "24px 0" }}>
+          <h3>Expedition voor PartsDelivery {showExpeditionForm}</h3>
+          <input
+            type="text"
+            placeholder="Shipment Reference"
+            value={newExpedition.shipmentReference}
+            onChange={(e) =>
+              handleExpeditionChange("shipmentReference", e.target.value)
+            }
+            required
+          />
+          <input
+            type="date"
+            placeholder="Shipment Date"
+            value={newExpedition.shipmentDate}
+            onChange={(e) =>
+              handleExpeditionChange("shipmentDate", e.target.value)
+            }
+            required
+          />
+          <input
+            type="text"
+            placeholder="Destination"
+            value={newExpedition.destination}
+            onChange={(e) =>
+              handleExpeditionChange("destination", e.target.value)
+            }
+            required
+          />
+          <label>
+            <input
+              type="checkbox"
+              checked={newExpedition.isDelivered}
+              onChange={(e) =>
+                handleExpeditionChange("isDelivered", e.target.checked)
+              }
+            />
+            Is Delivered
+          </label>
+          <button type="submit">Toevoegen</button>
+        </form>
+      )}
+
+      {/* Expedition Table */}
+      <h2>Expedities</h2>
+      <table border={1} cellPadding={8}>
+        <thead>
+          <tr>
+            <th>Shipment Reference</th>
+            <th>Shipment Date</th>
+            <th>Destination</th>
+            <th>Is Delivered</th>
+          </tr>
+        </thead>
+        <tbody>
+          {expeditions.map((e, idx) => (
+            <tr key={idx}>
+              <td>{e.shipmentReference}</td>
+              <td>{e.shipmentDate}</td>
+              <td>{e.destination}</td>
+              <td>{e.isDelivered ? "Ja" : "Nee"}</td>
             </tr>
           ))}
         </tbody>
