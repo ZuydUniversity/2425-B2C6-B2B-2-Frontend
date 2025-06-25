@@ -18,8 +18,55 @@
   letter-spacing: -0.05em;
 }
 
-.planningSection {
-  margin-bottom: 3rem;
+.contentWrapper {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.productionLineStatusSection {
+  flex: 0 0 280px;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e0e6ed;
+  align-self: flex-start;
+}
+
+.statusList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.statusItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0;
+  border-bottom: 1px dashed #eef2f6;
+}
+
+.statusItem:last-child {
+  border-bottom: none;
+}
+
+.statusLineName {
+  font-weight: 600;
+  color: #102a43;
+}
+
+.statusOrders {
+  font-size: 0.95rem;
+  color: #486581;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
 .sectionTitle {
@@ -29,6 +76,14 @@
   border-bottom: 2px solid #e0e6ed;
   padding-bottom: 0.5rem;
   font-weight: 600;
+}
+
+.planningSection {
+  padding: 1.5rem;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e0e6ed;
 }
 
 .grid {
@@ -67,16 +122,16 @@
   border-bottom: 1px dashed #e0e6ed;
 }
 
-/* NIEUW: Stijl voor de placeholder van Type */
 .cardTypePlaceholder {
   font-weight: 700;
   font-size: 1.1rem;
-  padding: 0.3rem 0; /* Geen padding aan de zijkanten */
-  color: #627d98; /* Een neutrale kleur */
+  padding: 0.3rem 0;
+  color: #627d98;
   text-transform: uppercase;
-  background-color: transparent; /* Geen achtergrondkleur */
+  background-color: transparent;
   border-radius: 0;
 }
+
 .cardOrderId {
   font-size: 0.9rem;
   color: #627d98;
@@ -93,9 +148,7 @@
   color: #102a43;
 }
 
-/* --- Formulier Stijlen --- */
 .formSection {
-  margin-top: 3rem;
   padding: 2rem;
   background-color: #ffffff;
   border-radius: 12px;
@@ -166,6 +219,17 @@
 }
 
 /* Media Queries voor responsiviteit */
+@media (max-width: 992px) {
+  /* Pas dit breakpoint aan voor de layout */
+  .contentWrapper {
+    flex-direction: column; /* Stapel kolommen op kleinere schermen */
+  }
+  .productionLineStatusSection {
+    flex: none; /* Verwijder vaste breedte */
+    width: 100%; /* Volledige breedte */
+  }
+}
+
 @media (max-width: 768px) {
   .pageTitle {
     font-size: 2rem;

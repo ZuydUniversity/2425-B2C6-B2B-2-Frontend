@@ -1,0 +1,111 @@
+.container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background-color: #f8fafc;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  font-family: "Inter", sans-serif;
+  color: #334e68;
+}
+
+.pageTitle {
+  text-align: center;
+  color: #102a43;
+  margin-bottom: 2.5rem;
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+}
+
+.section {
+  margin-bottom: 3rem;
+}
+
+.sectionTitle {
+  font-size: 1.8rem;
+  color: #334e68;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #e0e6ed;
+  padding-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(220px, 1fr)
+  ); /* Aangepast voor meer kolommen */
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.card {
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid #e0e6ed;
+  transition:
+    transform 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
+  text-align: center; /* Centreer tekst in de kaartjes */
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+.cardLabel {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #486581;
+  margin-bottom: 0.5rem;
+}
+
+.cardValue {
+  font-size: 1.5rem; /* Grotere tekst voor de waarden */
+  font-weight: 700;
+  color: #102a43;
+}
+
+/* Media Queries voor responsiviteit */
+@media (max-width: 768px) {
+  .pageTitle {
+    font-size: 2rem;
+  }
+  .sectionTitle {
+    font-size: 1.5rem;
+  }
+  .grid {
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(180px, 1fr)
+    ); /* Kleinere kaarten op tablets */
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 1rem;
+    margin: 1rem auto;
+  }
+  .pageTitle {
+    font-size: 1.8rem;
+  }
+  .sectionTitle {
+    font-size: 1.3rem;
+  }
+  .grid {
+    grid-template-columns: 1fr; /* Stapel kaarten op mobiel */
+  }
+  .cardValue {
+    font-size: 1.3rem;
+  }
+}
