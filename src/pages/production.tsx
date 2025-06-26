@@ -1,4 +1,3 @@
-
 import Order from "../models/order.model";
 import OrderController from "controllers/order.controller";
 import PlanningController from "controllers/planning.controller";
@@ -8,7 +7,9 @@ import styles from "./production.module.scss";
 import React, { useState, useEffect } from "react";
 
 const ProductionPage = () => {
-  const [selectedOrder, setSelectedOrder] = useState<EnrichedOrder | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<EnrichedOrder | null>(
+    null,
+  );
   const [showProblemModal, setShowProblemModal] = useState(false);
   const [problemText, setProblemText] = useState("");
   const [ordersData, setOrdersData] = useState<EnrichedOrder[]>([]);
@@ -36,7 +37,6 @@ const ProductionPage = () => {
     };
   };
 
-
   useEffect(() => {
     async function fetchData() {
       const [orderRes, planningRes] = await Promise.all([
@@ -44,10 +44,7 @@ const ProductionPage = () => {
         PlanningController.getAll(),
       ]);
 
-      if (
-        orderRes._tag === "Right" &&
-        planningRes._tag === "Right"
-      ) {
+      if (orderRes._tag === "Right" && planningRes._tag === "Right") {
         const orders = orderRes.right;
         const planning = planningRes.right;
 
@@ -104,7 +101,7 @@ const ProductionPage = () => {
             const { status, leverdatum } = filters[lijn];
             return (
               (!status || order.status === status) &&
-              (!leverdatum || (order.deliveredDate?.toString() === leverdatum))
+              (!leverdatum || order.deliveredDate?.toString() === leverdatum)
             );
           });
 
@@ -169,7 +166,7 @@ const ProductionPage = () => {
                         <td>{order.product.name}</td>
                         <td>{order.quantity}</td>
                         <td>{order.productielijn}</td>
-                        <td>{(order.deliveredDate?.toString())}</td>
+                        <td>{order.deliveredDate?.toString()}</td>
                         <td>
                           <span
                             className={`${styles.status} ${
@@ -235,7 +232,8 @@ const ProductionPage = () => {
                   <strong>Productielijn:</strong> {selectedOrder.productielijn}
                 </p>
                 <p>
-                  <strong>Leverdatum:</strong> {selectedOrder.deliveredDate?.toString() ?? "Onbekend"}
+                  <strong>Leverdatum:</strong>{" "}
+                  {selectedOrder.deliveredDate?.toString() ?? "Onbekend"}
                 </p>
                 <p>
                   <strong>Status:</strong> {selectedOrder.status}

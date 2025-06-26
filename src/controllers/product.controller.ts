@@ -3,30 +3,36 @@ import Product from "../models/product.model";
 import * as EitherModule from "fp-ts/Either";
 
 export default class ProductController {
-  public static async getAll(): Promise<EitherModule.Either<string, Product[]>> {
+  public static async getAll(): Promise<
+    EitherModule.Either<string, Product[]>
+  > {
     try {
-      const response = await axios.get<any[]>("https://10.0.2.4:8080/api/Products");
+      const response = await axios.get<any[]>(
+        "https://10.0.2.4:8080/api/Products",
+      );
       const data = response.data;
 
-      const result: Product[] = data.map((item) =>
-        new Product({
-          id: item["id"] as number,
-          name: item["name"] as string,
-          price: item["price"] as number,
-          costPrice: item["costPrice"] as number,
-          blueBlocks: item["blueBlocks"] as number,
-          redBlocks: item["redBlocks"] as number,
-          greyBlocks: item["greyBlocks"] as number,
-          productionTime: item["productionTime"] as number,
-        })
+      const result: Product[] = data.map(
+        (item) =>
+          new Product({
+            id: item["id"] as number,
+            name: item["name"] as string,
+            price: item["price"] as number,
+            costPrice: item["costPrice"] as number,
+            blueBlocks: item["blueBlocks"] as number,
+            redBlocks: item["redBlocks"] as number,
+            greyBlocks: item["greyBlocks"] as number,
+            productionTime: item["productionTime"] as number,
+          }),
       );
 
       return EitherModule.right(result);
     } catch (error: any) {
-      return EitherModule.left("Fout bij ophalen van producten: " + error.message);
+      return EitherModule.left(
+        "Fout bij ophalen van producten: " + error.message,
+      );
     }
   }
-
 
   public static getById(id: number): EitherModule.Either<string, Product> {
     axios
@@ -42,7 +48,7 @@ export default class ProductController {
           blueBlocks: item["blueBlocks"] as number,
           redBlocks: item["redBlocks"] as number,
           greyBlocks: item["greyBlocks"] as number,
-          productionTime: item["productionTime"] as number
+          productionTime: item["productionTime"] as number,
         });
         return EitherModule.right(product);
       })
@@ -64,7 +70,7 @@ export default class ProductController {
         blueBlocks: product.blueBlocks,
         redBlocks: product.redBlocks,
         greyBlocks: product.greyBlocks,
-        productionTime: product.productionTime
+        productionTime: product.productionTime,
       })
       .then((response) => {
         const created = new Product({
@@ -75,7 +81,7 @@ export default class ProductController {
           blueBlocks: response.data.blueBlocks as number,
           redBlocks: response.data.redBlocks as number,
           greyBlocks: response.data.greyBlocks as number,
-          productionTime: response.data.productionTime as number
+          productionTime: response.data.productionTime as number,
         });
         return EitherModule.right(created);
       })
@@ -97,7 +103,7 @@ export default class ProductController {
         blueBlocks: product.blueBlocks,
         redBlocks: product.redBlocks,
         greyBlocks: product.greyBlocks,
-        productionTime: product.productionTime
+        productionTime: product.productionTime,
       })
       .then((response) => {
         const updated = new Product({
@@ -108,7 +114,7 @@ export default class ProductController {
           blueBlocks: response.data.blueBlocks as number,
           redBlocks: response.data.redBlocks as number,
           greyBlocks: response.data.greyBlocks as number,
-          productionTime: response.data.productionTime as number
+          productionTime: response.data.productionTime as number,
         });
         return EitherModule.right(updated);
       })

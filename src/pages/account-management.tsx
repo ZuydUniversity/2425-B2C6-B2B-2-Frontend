@@ -62,7 +62,9 @@ const AccountManagementPage: React.FC = () => {
 
         setError(null);
       } catch (e) {
-        setError("Er is een onverwachte fout opgetreden: " + (e as Error).message);
+        setError(
+          "Er is een onverwachte fout opgetreden: " + (e as Error).message,
+        );
       }
     }
     fetchData();
@@ -73,10 +75,14 @@ const AccountManagementPage: React.FC = () => {
   const [notificatieModalOpen, setNotificatieModalOpen] = useState(false);
   const [laatsteNotificaties, setLaatsteNotificaties] = useState<string[]>([]);
 
-  const updateStatus = async (currentorderId: number, newStatus: AccountStatus) => {
+  const updateStatus = async (
+    currentorderId: number,
+    newStatus: AccountStatus,
+  ) => {
     try {
       const now = new Date().toISOString().split("T")[0];
-      const eitherCurrentOrder = await OrderController.getOneById(currentorderId);
+      const eitherCurrentOrder =
+        await OrderController.getOneById(currentorderId);
 
       if (eitherCurrentOrder._tag === "Left") {
         throw new Error(eitherCurrentOrder.left);
@@ -96,7 +102,7 @@ const AccountManagementPage: React.FC = () => {
           ? `Klant geïnformeerd: order ${currentorderId} is afgekeurd op ${now}`
           : `Planning geïnformeerd: order ${currentorderId} is goedgekeurd op ${now}`;
 
-       const newEventLog = new EventLog({
+      const newEventLog = new EventLog({
         id: 1,
         orderId: currentorderId,
         timestamp: new Date(),
@@ -105,7 +111,10 @@ const AccountManagementPage: React.FC = () => {
         order: updateResult.right,
       });
 
-      const eventLogResult = await OrderController.addEventLog(currentorderId, newEventLog);
+      const eventLogResult = await OrderController.addEventLog(
+        currentorderId,
+        newEventLog,
+      );
 
       if (eventLogResult._tag === "Left") {
         throw new Error(eventLogResult.left);
@@ -300,7 +309,8 @@ const AccountManagementPage: React.FC = () => {
                     <strong>Aantal:</strong> {selectedOrder.quantity}
                   </p>
                   <p>
-                    <strong>orderdate:</strong> {selectedOrder.orderDate.toString()}
+                    <strong>orderdate:</strong>{" "}
+                    {selectedOrder.orderDate.toString()}
                   </p>
                   <p>
                     <strong>Status:</strong> {selectedOrder.status}
@@ -452,7 +462,6 @@ const AccountManagementPage: React.FC = () => {
                       eventLogs: [],
                     });
 
-
                     setOrders((prev) => [...prev, newOrder]);
                     setShowCreateModal(false);
                   }}
@@ -469,7 +478,6 @@ const AccountManagementPage: React.FC = () => {
             </div>
           </div>
         )}
-
 
         {notificatieModalOpen && (
           <div className={styles.modalOverlay}>

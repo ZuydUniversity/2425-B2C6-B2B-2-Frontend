@@ -204,7 +204,7 @@ export default class OrderController {
 
   public static async addEventLog(
     orderId: number,
-    eventLog: EventLog
+    eventLog: EventLog,
   ): Promise<EitherModule.Either<string, Order>> {
     const orderEither = await this.getOneById(orderId);
     if (EitherModule.isLeft(orderEither)) {
@@ -216,7 +216,7 @@ export default class OrderController {
       return log.id > maxId ? log.id : maxId;
     }, 0);
 
-    const newEventLog = eventLog
+    const newEventLog = eventLog;
     newEventLog.id = highestId + 1;
 
     if (!order.eventLogs) {

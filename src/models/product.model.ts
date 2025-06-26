@@ -27,7 +27,7 @@ export default class Product {
     blueBlocks,
     redBlocks,
     greyBlocks,
-    productionTime
+    productionTime,
   }: ProductConstructor) {
     this.id = id;
     this.name = name;
@@ -36,6 +36,6 @@ export default class Product {
     this.blueBlocks = blueBlocks;
     this.redBlocks = redBlocks;
     this.greyBlocks = greyBlocks;
-    this.productionTime = productionTime
+    this.productionTime = productionTime;
   }
 }
