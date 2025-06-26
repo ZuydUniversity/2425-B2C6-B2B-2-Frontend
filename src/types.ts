@@ -1,19 +1,26 @@
-export type Product = {
+export type ApprovalForm = {
   id: number;
-  name: string;
-  description: string;
-  price: number;
-  costPrice: number;
-  stockQuantity: number;
+  purchaseOrderId: number;
+  isApproved: boolean;
+  comments: string;
+  orderId: number;
+  dateApproved: string;
 };
 
-export type EventLog = {
+export type Customer = {
   id: number;
-  orderId: number;
-  timestamp: string;
-  activity: string;
-  details: string;
-  order: string;
+  username: string;
+  name: string;
+  password: string;
+  orders?: Order[];
+};
+
+export type Expedition = {
+  id: number;
+  shipmentReference: string;
+  shipmentDate: string;
+  destination: string;
+  isDelivered: boolean;
 };
 
 export type Order = {
@@ -24,31 +31,83 @@ export type Order = {
   totalPrice: number;
   status: string;
   orderDate: string;
-  approvedDate: string;
-  rejectedDate: string;
-  deliveredDate: string;
-  comment: string;
-  orderType: string;
-  isSignedByInkoop: boolean;
-  isSignedByAccountmanager: boolean;
-  forwardedToSupplier: boolean;
-  picklistStatus: string;
-  rejectionReason: string;
-  customer: string;
-  product: Product;
-  eventLogs: EventLog[];
+  approvedDate?: string;
+  rejectedDate?: string;
+  deliveredDate?: string;
+  comment?: string;
+  orderType?: string;
+  isSignedByInkoop?: boolean;
+  isSignedByAccountmanager?: boolean;
+  forwardedToSupplier?: boolean;
+  picklistStatus?: string;
+  rejectionReason?: string;
+  customer?: Customer;
+  product?: Product;
+  eventLogs?: EventLog[];
 };
 
-export type Customer = {
+export type Picklist = {
   id: number;
-  username: string;
-  name: string;
-  password: string;
-  orders: Order[];
+  purchaseOrderId: number;
+  type: string;
+  components: string;
+  purchaseOrder?: PurchaseOrder;
+  orderId: number;
+  productId: number;
+  quantity: number;
 };
 
-export type ProductLine = {
+export type Product = {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  costPrice: number;
+  stockQuantity: number;
+};
+
+export type ProductionLine = {
   id: number;
   lineName: string;
   isActive: boolean;
+};
+
+export type PurchaseOrder = {
+  id: number;
+  orderNumber: string;
+  orderDate: string;
+  customerName: string;
+  status: string;
+  productId: number;
+  supplierId: number;
+  quantity: number;
+};
+
+export type RejectionForm = {
+  id: number;
+  purchaseOrderId: number;
+  reason: string;
+  rejectionDate: string;
+  orderId: number;
+};
+
+export type Supplier = {
+  id: number;
+  name: string;
+};
+
+export type EventLog = {
+  id: number;
+  orderId: number;
+  timestamp: string;
+  activity: string;
+  details: string;
+  order?: Order;
+};
+
+export type PartsDelivery = {
+  id: number;
+  partsReference: string;
+  deliveryDate: string;
+  isComplete: boolean;
 };
