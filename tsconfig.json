@@ -16,8 +16,12 @@
     "jsx": "preserve",
     "baseUrl": "src",
     "paths": {
-      "@redux-typed-hooks": ["redux/hooks"],
-      "@components/*": ["components/*"]
+      "@redux-typed-hooks": ["global/state/hooks"],
+      "@components/*": ["presentation/components/*"],
+      "@global": ["global/*"],
+      "@data": ["data/*"],
+      "@domain": ["domain/*"],
+      "@presentation": ["presentation/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],

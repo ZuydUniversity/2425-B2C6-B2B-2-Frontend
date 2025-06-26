@@ -1,6 +1,6 @@
-import { sampleData } from "../data/productionsampledata";
-import { Status } from "../data/statuseslist";
-import { motorImagesList } from "../data/motorimageslist";
+import { sampleData } from "../global/constants/productionsampledata";
+import { Status } from "../global/constants/statuseslist";
+import { motorImagesList } from "../global/constants/motorimageslist";
 import styles from "./production.module.scss";
 import React, { useState } from "react";
 

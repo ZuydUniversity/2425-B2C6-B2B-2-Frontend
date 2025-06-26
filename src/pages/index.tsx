@@ -1,7 +1,7 @@
 ﻿import styles from "./index.module.scss";
 import { FC } from "react";
 import Link from "next/link";
-import { pagesList } from "../data/pageslist"; // Import the pages list
+import { pagesList } from "../global/constants/pageslist"; // Import the pages list
 
 // list with all pages.
 const pages = pagesList;

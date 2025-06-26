@@ -1,7 +1,7 @@
 import { Status } from "./statuseslist";
 
 /**
- * Sample data for the production page
+ * Sample global for the production page
  */
 export const sampleData = [
   {

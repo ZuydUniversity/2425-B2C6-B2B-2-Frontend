@@ -9,9 +9,9 @@ import {
   apiCreateEventLog as apiCreateAccountEventLog,
 } from "../api/account";
 //import { apiCreateEventLog } from "../api/eventLogs";
-import { sampleData } from "../data/productionsampledata";
-import { motorImagesList } from "../data/motorimageslist";
-import { AccountStatus } from "../data/accountstatuslist";
+import { sampleData } from "../global/constants/productionsampledata";
+import { motorImagesList } from "../global/constants/motorimageslist";
+import { AccountStatus } from "../global/constants/accountstatuslist";
 
 type Order = {
   orderId: string;
