@@ -1,33 +1,41 @@
 interface ProductConstructor {
   id: number;
   name: string;
-  description: string;
   price: number;
   costPrice: number;
-  stockQuantity: number;
+  blueBlocks: number;
+  redBlocks: number;
+  greyBlocks: number;
+  productionTime: number;
 }
 
 export default class Product {
   public id: number;
   public name: string;
-  public description: string;
   public price: number;
   public costPrice: number;
-  public stockQuantity: number;
+  public blueBlocks: number;
+  public redBlocks: number;
+  public greyBlocks: number;
+  public productionTime: number;
 
   constructor({
     id,
     name,
-    description,
     price,
     costPrice,
-    stockQuantity,
+    blueBlocks,
+    redBlocks,
+    greyBlocks,
+    productionTime,
   }: ProductConstructor) {
     this.id = id;
     this.name = name;
-    this.description = description;
     this.price = price;
     this.costPrice = costPrice;
-    this.stockQuantity = stockQuantity;
+    this.blueBlocks = blueBlocks;
+    this.redBlocks = redBlocks;
+    this.greyBlocks = greyBlocks;
+    this.productionTime = productionTime;
   }
 }

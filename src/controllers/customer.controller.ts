@@ -4,26 +4,32 @@ import Order from "../models/order.model";
 import * as EitherModule from "fp-ts/Either";
 
 export default class CustomerController {
-  public static getAll(): EitherModule.Either<string, Customer[]> {
-    axios
-      .get<any[]>("https://10.0.2.4:8080/api/Customers")
-      .then((response) => {
-        const customers: Customer[] = response.data.map(
-          (item) =>
-            new Customer({
-              id: item["id"] as number,
-              username: item["username"] as string,
-              name: item["name"] as string,
-              password: item["password"] as string,
-              orders: item["orders"] || ([] as Order[]),
-            }),
-        );
-        return EitherModule.right(customers);
-      })
-      .catch((error) => {
-        return EitherModule.left(error.toString());
-      });
-    return EitherModule.left("Failed to fetch customers");
+  public static async getAll(): Promise<
+    EitherModule.Either<string, Customer[]>
+  > {
+    try {
+      const response = await axios.get<any[]>(
+        "https://10.0.2.4:8080/api/Customers",
+      );
+      const data = response.data;
+
+      const result: Customer[] = data.map(
+        (item) =>
+          new Customer({
+            id: item["id"] as number,
+            username: item["username"] as string,
+            name: item["name"] as string,
+            password: item["password"] as string,
+            orders: item["orders"] || ([] as Order[]),
+          }),
+      );
+
+      return EitherModule.right(result);
+    } catch (error: any) {
+      return EitherModule.left(
+        "Fout bij ophalen van klanten: " + error.message,
+      );
+    }
   }
 
   public static createCustomer(

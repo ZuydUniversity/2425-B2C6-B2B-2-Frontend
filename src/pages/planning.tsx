@@ -14,10 +14,10 @@ interface ProductionLineStatus {
 }
 
 const PlanningPage: FC = () => {
-  const [blauw, setBlauw] = useState("");
-  const [rood, setRood] = useState("");
-  const [grijs, setGrijs] = useState("");
-  const [productieLijn, setProductieLijn] = useState(""); // Nieuwe state voor productielijn
+  const [blue, setBlue] = useState("");
+  const [red, setRed] = useState("");
+  const [gray, setGray] = useState("");
+  const [productionLine, setProductionLine] = useState(""); // Nieuwe state voor productielijn
 
   const planningDisplayItems: PlanningItem[] = [
     { type: "", periode: "", aantal: null, orderId: null },
@@ -34,23 +34,23 @@ const PlanningPage: FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const blauwAantal = Number(blauw);
-    const roodAantal = Number(rood);
-    const grijsAantal = Number(grijs);
+    const blueAmount = Number(blue);
+    const redAmount = Number(red);
+    const grayAmount = Number(gray);
 
-    console.log("Blauw:", blauwAantal);
-    console.log("Rood:", roodAantal);
-    console.log("Grijs:", grijsAantal);
-    console.log("Productielijn:", productieLijn); // Log de productielijn
+    console.log("Blauw:", blueAmount);
+    console.log("Rood:", redAmount);
+    console.log("Grijs:", grayAmount);
+    console.log("Productielijn:", productionLine); // Log de productielijn
 
     alert(
-      `Aantallen ingevoerd: Blauw=${blauwAantal}, Rood=${roodAantal}, Grijs=${grijsAantal}, Productielijn=${productieLijn}`,
+      `Aantallen ingevoerd: Blauw=${blueAmount}, Rood=${redAmount}, Grijs=${grayAmount}, Productielijn=${productionLine}`,
     );
 
-    setBlauw("");
-    setRood("");
-    setGrijs("");
-    setProductieLijn("");
+    setBlue("");
+    setRed("");
+    setGray("");
+    setProductionLine("");
   };
 
   return (
@@ -115,8 +115,8 @@ const PlanningPage: FC = () => {
                 <input
                   id="blauw"
                   type="number"
-                  value={blauw}
-                  onChange={(e) => setBlauw(e.target.value)}
+                  value={blue}
+                  onChange={(e) => setBlue(e.target.value)}
                   className={styles.inputField}
                   min="0"
                   placeholder="Voer aantal in"
@@ -130,8 +130,8 @@ const PlanningPage: FC = () => {
                 <input
                   id="rood"
                   type="number"
-                  value={rood}
-                  onChange={(e) => setRood(e.target.value)}
+                  value={red}
+                  onChange={(e) => setRed(e.target.value)}
                   className={styles.inputField}
                   min="0"
                   placeholder="Voer aantal in"
@@ -145,8 +145,8 @@ const PlanningPage: FC = () => {
                 <input
                   id="grijs"
                   type="number"
-                  value={grijs}
-                  onChange={(e) => setGrijs(e.target.value)}
+                  value={gray}
+                  onChange={(e) => setGray(e.target.value)}
                   className={styles.inputField}
                   min="0"
                   placeholder="Voer aantal in"
@@ -161,8 +161,8 @@ const PlanningPage: FC = () => {
                 <input
                   id="productielijn"
                   type="text"
-                  value={productieLijn}
-                  onChange={(e) => setProductieLijn(e.target.value)}
+                  value={productionLine}
+                  onChange={(e) => setProductionLine(e.target.value)}
                   className={styles.inputField}
                   placeholder="Bijv. Lijn A, Lijn B"
                 />

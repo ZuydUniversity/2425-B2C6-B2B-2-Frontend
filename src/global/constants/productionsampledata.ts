@@ -11,6 +11,7 @@ export const sampleData = [
     productielijn: 1,
     leverdatum: "2025-06-15",
     status: Status.InProduction,
+    productiePeriode: { start: "", einde: "" },
   },
   {
     orderId: "ORD002",
@@ -19,6 +20,7 @@ export const sampleData = [
     productielijn: 2,
     leverdatum: "2025-06-16",
     status: Status.WaitingForParts,
+    productiePeriode: { start: "", einde: "" },
   },
   {
     orderId: "ORD003",
@@ -27,6 +29,7 @@ export const sampleData = [
     productielijn: 3,
     leverdatum: "2025-06-17",
     status: Status.WaitingForExpedition,
+    productiePeriode: { start: "", einde: "" },
   },
   {
     orderId: "ORD004",
@@ -35,6 +38,7 @@ export const sampleData = [
     productielijn: 1,
     leverdatum: "2025-06-17",
     status: Status.InProduction,
+    productiePeriode: { start: "", einde: "" },
   },
   {
     orderId: "ORD005",
@@ -43,6 +47,7 @@ export const sampleData = [
     productielijn: 2,
     leverdatum: "2025-06-16",
     status: Status.WaitingForParts,
+    productiePeriode: { start: "", einde: "" },
   },
   {
     orderId: "ORD006",
@@ -51,6 +56,7 @@ export const sampleData = [
     productielijn: 3,
     leverdatum: "2025-06-17",
     status: Status.WaitingForExpedition,
+    productiePeriode: { start: "", einde: "" },
   },
   {
     orderId: "ORD007",
@@ -59,6 +65,7 @@ export const sampleData = [
     productielijn: 1,
     leverdatum: "2025-06-17",
     status: Status.InProduction,
+    productiePeriode: { start: "", einde: "" },
   },
   {
     orderId: "ORD008",
@@ -67,6 +74,7 @@ export const sampleData = [
     productielijn: 2,
     leverdatum: "2025-06-16",
     status: Status.WaitingForParts,
+    productiePeriode: { start: "", einde: "" },
   },
   {
     orderId: "ORD009",
@@ -75,5 +83,6 @@ export const sampleData = [
     productielijn: 1,
     leverdatum: "2025-06-17",
     status: Status.WaitingForExpedition,
+    productiePeriode: { start: "", einde: "" },
   },
 ];
