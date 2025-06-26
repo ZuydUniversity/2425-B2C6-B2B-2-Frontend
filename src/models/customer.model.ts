@@ -1,6 +1,6 @@
 import Order from "./order.model";
 
-interface customerConstructor {
+interface CustomerConstructor {
   id: number;
   username: string;
   name: string;
@@ -21,7 +21,7 @@ export default class Customer {
     name,
     password,
     orders = [],
-  }: customerConstructor) {
+  }: CustomerConstructor) {
     this.id = id;
     this.username = username;
     this.name = name;
