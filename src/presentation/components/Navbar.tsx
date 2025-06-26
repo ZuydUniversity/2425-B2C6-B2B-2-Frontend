@@ -1,6 +1,6 @@
 import Link from "next/link";
 import styles from "./Navbar.module.scss";
-import { pagesList } from "../data/pageslist";
+import { pagesList } from "../../global/constants/pageslist";
 import { FC, useState } from "react"; // Import the pages list
 
 const Navbar: FC = () => {
@@ -41,15 +41,13 @@ const Navbar: FC = () => {
               onFocus={() => setListHover(true)}
               onBlur={() => setListHover(false)}
             >
-              {pagesList.map((page) =>
-                page ? (
-                  <li key={page.href}>
-                    <Link href={page.href} className={styles.dropdownLink}>
-                      {page.name}
-                    </Link>
-                  </li>
-                ) : null,
-              )}
+              {pagesList.map((page) => (
+                <li key={page.href}>
+                  <Link href={page.href} className={styles.dropdownLink}>
+                    {page.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           )}
         </div>

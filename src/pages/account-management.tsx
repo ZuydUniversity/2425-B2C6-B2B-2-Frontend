@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import styles from "./accountmanager.module.scss";
-import { sampleData } from "../data/productionsampledata";
-import { motorImagesList } from "../data/motorimageslist";
-import { AccountStatus } from "../data/accountstatuslist";
+import { sampleData } from "../global/constants/productionsampledata";
+import { motorImagesList } from "../global/constants/motorimageslist";
+import { AccountStatus } from "../global/constants/accountstatuslist";
 
 type Order = {
   orderId: string;

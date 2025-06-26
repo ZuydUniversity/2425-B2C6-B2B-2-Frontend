@@ -1,7 +1,7 @@
 import { Status } from "./statuseslist";
 
 /**
- * Sample data for the production page
+ * Sample global for the production page
  */
 export const sampleData = [
   {
@@ -26,7 +26,7 @@ export const sampleData = [
     aantal: 8,
     productielijn: 3,
     leverdatum: "2025-06-17",
-    status: Status.Complete,
+    status: Status.WaitingForExpedition,
   },
   {
     orderId: "ORD004",
@@ -50,7 +50,7 @@ export const sampleData = [
     aantal: 8,
     productielijn: 3,
     leverdatum: "2025-06-17",
-    status: Status.Complete,
+    status: Status.WaitingForExpedition,
   },
   {
     orderId: "ORD007",
@@ -74,6 +74,6 @@ export const sampleData = [
     aantal: 8,
     productielijn: 1,
     leverdatum: "2025-06-17",
-    status: Status.Complete,
+    status: Status.WaitingForExpedition,
   },
 ];
