@@ -1,6 +1,6 @@
 import Link from "next/link";
 import styles from "./Navbar.module.scss";
-import { pagesList } from "../data/pageslist";
+import { pagesList } from "../../global/constants/pageslist";
 import { FC, useState } from "react"; // Import the pages list
 
 const Navbar: FC = () => {
