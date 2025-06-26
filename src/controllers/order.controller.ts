@@ -8,7 +8,7 @@ import * as EitherModule from "fp-ts/Either";
 export default class OrderController {
   public static getAll(): EitherModule.Either<string, Order[]> {
     axios
-      .get<any[]>("https://10.0.2.4:8080/api/Orders")
+      .get<any[]>("http://b2b2buildingblocks.westeurope.cloudapp.azure.com:8080/api/Orders")
       .then((response) => {
         const result: Order[] = [];
         const data = response.data;
@@ -200,5 +200,30 @@ export default class OrderController {
     } else {
       return EitherModule.left("Order not found");
     }
+  }
+
+  public static async addEventLog(
+    orderId: number,
+    eventLog: EventLog
+  ): Promise<EitherModule.Either<string, Order>> {
+    const orderEither = await this.getOneById(orderId);
+    if (EitherModule.isLeft(orderEither)) {
+      return EitherModule.left("Order niet gevonden");
+    }
+    const order = orderEither.right;
+
+    const highestId = (order.eventLogs ?? []).reduce((maxId, log) => {
+      return log.id > maxId ? log.id : maxId;
+    }, 0);
+
+    const newEventLog = eventLog
+    newEventLog.id = highestId + 1;
+
+    if (!order.eventLogs) {
+      order.eventLogs = [];
+    }
+    order.eventLogs.push(newEventLog);
+
+    return await this.updateOrder(order);
   }
 }

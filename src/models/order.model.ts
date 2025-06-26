@@ -11,9 +11,9 @@ interface OrderConstructor {
   totalPrice: number;
   status: string;
   orderDate: Date;
-  approvedDate: Date;
-  rejectedDate: Date;
-  deliveredDate: Date;
+  approvedDate?: Date | null;
+  rejectedDate?: Date | null;
+  deliveredDate?: Date | null;
   comment: string;
   forwardedToSupplier: boolean;
   rejectionReason: string;
@@ -30,9 +30,9 @@ export default class Order {
   public totalPrice: number;
   public status: string;
   public orderDate: Date;
-  public approvedDate: Date;
-  public rejectedDate: Date;
-  public deliveredDate: Date;
+  public approvedDate?: Date | null;
+  public rejectedDate?: Date | null;
+  public deliveredDate?: Date | null;
   public comment: string;
   public forwardedToSupplier: boolean;
   public rejectionReason: string;

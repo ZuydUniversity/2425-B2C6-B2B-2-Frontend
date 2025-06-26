@@ -3,36 +3,30 @@ import Product from "../models/product.model";
 import * as EitherModule from "fp-ts/Either";
 
 export default class ProductController {
-  public static getAll(): EitherModule.Either<string, Product[]> {
-    axios
-      .get<any[]>("https://10.0.2.4:8080/api/Products")
-      .then((response) => {
-        const result: Product[] = [];
-        const data = response.data;
+  public static async getAll(): Promise<EitherModule.Either<string, Product[]>> {
+    try {
+      const response = await axios.get<any[]>("https://10.0.2.4:8080/api/Products");
+      const data = response.data;
 
-        data.forEach((item) => {
-          result.push(
-            new Product({
-              id: item["id"] as number,
-              name: item["name"] as string,
-              price: item["price"] as number,
-              costPrice: item["costPrice"] as number,
-              blueBlocks: item["blueBlocks"] as number,
-              redBlocks: item["redBlocks"] as number,
-              greyBlocks: item["greyBlocks"] as number,
-              productionTime: item["productionTime"] as number
-            }),
-          );
-        });
+      const result: Product[] = data.map((item) =>
+        new Product({
+          id: item["id"] as number,
+          name: item["name"] as string,
+          price: item["price"] as number,
+          costPrice: item["costPrice"] as number,
+          blueBlocks: item["blueBlocks"] as number,
+          redBlocks: item["redBlocks"] as number,
+          greyBlocks: item["greyBlocks"] as number,
+          productionTime: item["productionTime"] as number,
+        })
+      );
 
-        return EitherModule.right(result);
-      })
-      .catch((error) => {
-        return EitherModule.left(error);
-      });
-
-    return EitherModule.left("Failed to fetch products");
+      return EitherModule.right(result);
+    } catch (error: any) {
+      return EitherModule.left("Fout bij ophalen van producten: " + error.message);
+    }
   }
+
 
   public static getById(id: number): EitherModule.Either<string, Product> {
     axios
