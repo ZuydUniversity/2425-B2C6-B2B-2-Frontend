@@ -1,32 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./accountmanager.module.scss";
-import {
-  apiUpdateOrderStatus,
-  apiCreateApprovalForm,
-  /*apiGetAllOrders,
-  apiGetOrder,
-  apiGetCustomer,*/
-  apiCreateEventLog as apiCreateAccountEventLog,
-} from "../api/account";
-//import { apiCreateEventLog } from "../api/eventLogs";
+import Order from "../models/order.model";
+import OrderController from "controllers/order.controller";
 import { sampleData } from "../global/constants/productionsampledata";
 import { motorImagesList } from "../global/constants/motorimageslist";
 import { AccountStatus } from "../global/constants/accountstatuslist";
 
-type Order = {
-  orderId: string;
-  klantnaam: string;
-  productType: "A" | "B" | "C";
-  aantal: number;
-  orderdatum: string;
-  status: AccountStatus;
-  accountmanagerPeriode?: { start: string; einde?: string };
-  notificaties?: string[];
-};
-
 function generateNextOrderId(orders: Order[]): string {
   const maxNumber = orders.reduce((max, order) => {
-    const num = parseInt(order.orderId.replace("ORD", ""), 10);
+    const num = parseInt(order.id.replace("ORD", ""), 10);
     return isNaN(num) ? max : Math.max(max, num);
   }, 0);
 
@@ -35,16 +17,21 @@ function generateNextOrderId(orders: Order[]): string {
 }
 
 const AccountManagementPage: React.FC = () => {
-  const [orders, setOrders] = useState<Order[]>(
-    sampleData.map((item, index) => ({
-      orderId: item.orderId,
-      klantnaam: `Klant ${index + 1}`,
-      productType: item.productType as "A" | "B" | "C",
-      aantal: item.aantal,
-      orderdatum: "2025-06-01",
-      status: AccountStatus.Pending,
-    })),
-  );
+  const [orders, setOrders] = useState<Order[]>([]);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      const result = await OrderController.getAll();
+
+      if (result._tag === "Right") {
+        setOrders(result.right);
+      } else {
+        console.error("Fout bij ophalen orders:", result.left);
+      }
+    };
+
+    fetchOrders();
+  }, []);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -64,18 +51,9 @@ const AccountManagementPage: React.FC = () => {
       const numericOrderId = Number(orderId.replace(/\D/g, ""));
 
       if (newStatus === AccountStatus.Approved) {
-        await apiUpdateOrderStatus(
-          Number(numericOrderId),
-          "Approved",
-          "Goedgekeurd door accountmanager",
-        );
-        await apiCreateApprovalForm(Number(numericOrderId));
+        await OrderController.updateStatus(Number(numericOrderId), "Approved");
       } else if (newStatus === AccountStatus.Rejected) {
-        await apiUpdateOrderStatus(
-          Number(numericOrderId),
-          "Rejected",
-          "Afgekeurd door accountmanager",
-        );
+        await OrderController.updateStatus(Number(numericOrderId), "Rejected");
       }
 
       const notificatie =
@@ -93,7 +71,7 @@ const AccountManagementPage: React.FC = () => {
 
       setOrders((prev) =>
         prev.map((order) => {
-          if (order.orderId !== orderId) return order;
+          if (order.id !== orderId) return order;
 
           const wasHandledBefore = !!order.accountmanagerPeriode?.start;
           const updatedPeriode = wasHandledBefore
