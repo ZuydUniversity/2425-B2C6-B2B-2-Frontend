@@ -1,38 +1,22 @@
-import { sampleData } from "../global/constants/productionsampledata";
+
+import Order from "../models/order.model";
+import OrderController from "controllers/order.controller";
+import PlanningController from "controllers/planning.controller";
 import { Status } from "../global/constants/statuseslist";
 import { motorImagesList } from "../global/constants/motorimageslist";
 import styles from "./production.module.scss";
-import React, { useState } from "react";
-
-type Order = {
-  orderId: string;
-  productType: string;
-  aantal: number;
-  productielijn: number;
-  leverdatum: string;
-  status: Status;
-  productiePeriode?: {
-    start?: string;
-    einde?: string;
-  };
-};
+import React, { useState, useEffect } from "react";
 
 const ProductionPage = () => {
+  const [selectedOrder, setSelectedOrder] = useState<EnrichedOrder | null>(null);
+  const [showProblemModal, setShowProblemModal] = useState(false);
+  const [problemText, setProblemText] = useState("");
+  const [ordersData, setOrdersData] = useState<EnrichedOrder[]>([]);
   const [openDropdown, setOpenDropdown] = useState<{
-    orderId: string;
+    id: string;
     x: number;
     y: number;
   } | null>(null);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [showProblemModal, setShowProblemModal] = useState(false);
-  const [problemText, setProblemText] = useState("");
-  const [ordersData, setOrdersData] = useState(sampleData);
-
-  const groupedByLine = [1, 2, 3].map((lijn) => ({
-    lijn,
-    orders: ordersData.filter((o) => o.productielijn === lijn),
-  }));
-
   const [filters, setFilters] = useState<{
     [key: number]: { status: string; leverdatum: string };
   }>({
@@ -40,6 +24,60 @@ const ProductionPage = () => {
     2: { status: "", leverdatum: "" },
     3: { status: "", leverdatum: "" },
   });
+
+  type EnrichedOrder = Order & {
+    productielijn: number;
+    productType: string;
+    aantal: number;
+    leverdatum: string;
+    productiePeriode?: {
+      start: string;
+      einde: string;
+    };
+  };
+
+
+  useEffect(() => {
+    async function fetchData() {
+      const [orderRes, planningRes] = await Promise.all([
+        OrderController.getAll(),
+        PlanningController.getAll(),
+      ]);
+
+      if (
+        orderRes._tag === "Right" &&
+        planningRes._tag === "Right"
+      ) {
+        const orders = orderRes.right;
+        const planning = planningRes.right;
+
+        const mappedOrders: EnrichedOrder[] = orders.map((order) => {
+          const plan = planning.find((p) => p.orderId === order.id);
+          return {
+            ...order,
+            productType: order.product.name,
+            aantal: order.quantity,
+            leverdatum: order.deliveredDate?.toString() ?? "Onbekend",
+            productielijn: plan?.productionLineId ?? 0,
+            productiePeriode: plan
+              ? { start: plan.plannedDate.toString(), einde: "" }
+              : undefined,
+          };
+        });
+
+        setOrdersData(mappedOrders);
+      } else {
+        console.error("Fout bij ophalen data");
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  const groupedByLine = [1, 2, 3].map((lijn) => ({
+    lijn,
+    orders: ordersData.filter((o) => o.productielijn === lijn),
+  }));
 
   const handleProblemSubmit = () => {
     console.log("Gemeld probleem:", problemText);
@@ -66,7 +104,7 @@ const ProductionPage = () => {
             const { status, leverdatum } = filters[lijn];
             return (
               (!status || order.status === status) &&
-              (!leverdatum || order.leverdatum === leverdatum)
+              (!leverdatum || (order.deliveredDate?.toString() === leverdatum))
             );
           });
 
@@ -126,12 +164,12 @@ const ProductionPage = () => {
                   </thead>
                   <tbody>
                     {filteredOrders.map((order) => (
-                      <tr key={order.orderId}>
-                        <td>{order.orderId}</td>
-                        <td>{order.productType}</td>
-                        <td>{order.aantal}</td>
+                      <tr key={order.id}>
+                        <td>{order.id}</td>
+                        <td>{order.product.name}</td>
+                        <td>{order.quantity}</td>
                         <td>{order.productielijn}</td>
-                        <td>{order.leverdatum}</td>
+                        <td>{(order.deliveredDate?.toString())}</td>
                         <td>
                           <span
                             className={`${styles.status} ${
@@ -151,7 +189,7 @@ const ProductionPage = () => {
                                 e.target as HTMLElement
                               ).getBoundingClientRect();
                               setOpenDropdown({
-                                orderId: order.orderId,
+                                id: order.id.toString(),
                                 x: rect.left,
                                 y: rect.bottom,
                               });
@@ -184,20 +222,20 @@ const ProductionPage = () => {
           onClick={() => setSelectedOrder(null)}
         >
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <h3>Details voor Order {selectedOrder.orderId}</h3>
+            <h3>Details voor Order {selectedOrder.id}</h3>
             <div className={styles.modalContent}>
               <div className={styles.details}>
                 <p>
-                  <strong>Producttype:</strong> {selectedOrder.productType}
+                  <strong>Producttype:</strong> {selectedOrder.product.name}
                 </p>
                 <p>
-                  <strong>Aantal:</strong> {selectedOrder.aantal}
+                  <strong>Aantal:</strong> {selectedOrder.quantity}
                 </p>
                 <p>
                   <strong>Productielijn:</strong> {selectedOrder.productielijn}
                 </p>
                 <p>
-                  <strong>Leverdatum:</strong> {selectedOrder.leverdatum}
+                  <strong>Leverdatum:</strong> {selectedOrder.deliveredDate?.toString() ?? "Onbekend"}
                 </p>
                 <p>
                   <strong>Status:</strong> {selectedOrder.status}
@@ -212,11 +250,11 @@ const ProductionPage = () => {
                         const newStart = e.target.value;
                         setOrdersData((prev) =>
                           prev.map((order) =>
-                            order.orderId === selectedOrder.orderId
+                            order.id === selectedOrder.id
                               ? {
                                   ...order,
                                   productiePeriode: {
-                                    ...order.productiePeriode,
+                                    einde: order.productiePeriode?.einde ?? "",
                                     start: newStart,
                                   },
                                 }
@@ -228,7 +266,7 @@ const ProductionPage = () => {
                             ? {
                                 ...prev,
                                 productiePeriode: {
-                                  ...prev.productiePeriode,
+                                  einde: prev.productiePeriode?.einde ?? "",
                                   start: newStart,
                                 },
                               }
@@ -248,11 +286,11 @@ const ProductionPage = () => {
                         const newEnd = e.target.value;
                         setOrdersData((prev) =>
                           prev.map((order) =>
-                            order.orderId === selectedOrder.orderId
+                            order.id === selectedOrder.id
                               ? {
                                   ...order,
                                   productiePeriode: {
-                                    ...order.productiePeriode,
+                                    start: order.productiePeriode?.start ?? "",
                                     einde: newEnd,
                                   },
                                 }
@@ -264,7 +302,7 @@ const ProductionPage = () => {
                             ? {
                                 ...prev,
                                 productiePeriode: {
-                                  ...prev.productiePeriode,
+                                  start: prev.productiePeriode?.start ?? "",
                                   einde: newEnd,
                                 },
                               }
@@ -280,10 +318,10 @@ const ProductionPage = () => {
                 {/*product image*/}
                 <img
                   src={
-                    motorImagesList[selectedOrder.productType] ||
+                    motorImagesList[selectedOrder.product.name] ||
                     motorImagesList["A"]
                   }
-                  alt={`Motor ${selectedOrder.productType}`}
+                  alt={`Motor ${selectedOrder.product.name}`}
                   className={styles.productImage}
                 />
               </div>
@@ -346,10 +384,8 @@ const ProductionPage = () => {
               key={status}
               className={styles.dropdownLink}
               onClick={() => {
-                // update status in backend/locaal
-                // hier moet je je state update doen, vb:
-                const orderToUpdate = sampleData.find(
-                  (o) => o.orderId === openDropdown.orderId,
+                const orderToUpdate = ordersData.find(
+                  (o) => o.id === Number(openDropdown.id),
                 );
                 if (orderToUpdate) orderToUpdate.status = status;
                 setOpenDropdown(null);

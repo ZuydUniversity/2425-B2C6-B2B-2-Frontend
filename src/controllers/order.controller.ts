@@ -8,7 +8,7 @@ import * as EitherModule from "fp-ts/Either";
 export default class OrderController {
   public static getAll(): EitherModule.Either<string, Order[]> {
     axios
-      .get<any[]>("http://b2b2buildingblocks.westeurope.cloudapp.azure.com:8080/api/Orders")
+      .get<any[]>("https://10.0.2.4:8080/api/Orders")
       .then((response) => {
         const result: Order[] = [];
         const data = response.data;
