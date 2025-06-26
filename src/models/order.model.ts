@@ -1,4 +1,7 @@
 ﻿import { Status } from "../global/constants/statuseslist";
+import Customer from "./customer.model";
+import Product from "./product.model";
+import EventLog from "./eventLog.model";
 
 interface OrderConstructor {
   id: number;
@@ -12,12 +15,11 @@ interface OrderConstructor {
   rejectedDate: Date;
   deliveredDate: Date;
   comment: string;
-  orderType: string;
-  isSignedByInkoop: boolean;
-  isSignedByAccountmanager: boolean;
   forwardedToSupplier: boolean;
-  picklistStatus: string;
   rejectionReason: string;
+  customer: Customer;
+  product: Product;
+  eventLogs?: EventLog[];
 }
 
 export default class Order {
@@ -32,12 +34,11 @@ export default class Order {
   public rejectedDate: Date;
   public deliveredDate: Date;
   public comment: string;
-  public orderType: string;
-  public isSignedByInkoop: boolean;
-  public isSignedByAccountmanager: boolean;
   public forwardedToSupplier: boolean;
-  public picklistStatus: string;
   public rejectionReason: string;
+  public customer: Customer;
+  public product: Product;
+  public eventLogs?: EventLog[];
 
   constructor({
     id,
@@ -51,12 +52,11 @@ export default class Order {
     rejectedDate,
     deliveredDate,
     comment,
-    orderType,
-    isSignedByInkoop,
-    isSignedByAccountmanager,
     forwardedToSupplier,
-    picklistStatus,
     rejectionReason,
+    customer,
+    product,
+    eventLogs = [],
   }: OrderConstructor) {
     this.id = id;
     this.customerId = customerId;
@@ -69,11 +69,13 @@ export default class Order {
     this.rejectedDate = rejectedDate;
     this.deliveredDate = deliveredDate;
     this.comment = comment;
-    this.orderType = orderType;
-    this.isSignedByInkoop = isSignedByInkoop;
-    this.isSignedByAccountmanager = isSignedByAccountmanager;
     this.forwardedToSupplier = forwardedToSupplier;
-    this.picklistStatus = picklistStatus;
     this.rejectionReason = rejectionReason;
+    this.customer =
+      customer instanceof Customer ? customer : new Customer(customer);
+    this.product = product instanceof Product ? product : new Product(product);
+    this.eventLogs = eventLogs.map((log) =>
+      log instanceof EventLog ? log : new EventLog(log),
+    );
   }
 }

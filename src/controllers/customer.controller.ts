@@ -35,7 +35,7 @@ export default class CustomerController {
         username: customer.username,
         name: customer.name,
         password: customer.password,
-        orders: customer.orders,
+        orders: customer.orders || [],
       })
       .then((response) => {
         const created = new Customer({
@@ -55,7 +55,7 @@ export default class CustomerController {
 
   public static getById(id: number): EitherModule.Either<string, Customer> {
     axios
-      .get<any>(`https://10.0.2.4:8080/api/Customers/${id}`)
+      .get<any>("https://10.0.2.4:8080/api/Customers/${id}")
       .then((response) => {
         const item = response.data;
         const customer = new Customer({
@@ -77,7 +77,7 @@ export default class CustomerController {
     customer: Customer,
   ): EitherModule.Either<string, Customer> {
     axios
-      .put<any>(`https://10.0.2.4:8080/api/Customers/${customer.id}`, {
+      .put<any>("https://10.0.2.4:8080/api/Customers/${customer.id}", {
         id: customer.id,
         username: customer.username,
         name: customer.name,
@@ -102,16 +102,17 @@ export default class CustomerController {
 
   public static deleteCustomer(
     id: number,
-  ): Promise<EitherModule.Either<string, string>> {
-    return axios
+  ): EitherModule.Either<string, string> {
+    axios
       .delete(`https://10.0.2.4:8080/api/Customers/${id}`)
       .then(() => {
         return EitherModule.right(
-          `Customer met ID ${id} succesvol verwijderd.`,
+          "Customer met ID ${id} succesvol verwijderd.",
         );
       })
       .catch((error) => {
         return EitherModule.left(error.toString());
       });
+    return EitherModule.left("Failed to delete customer");
   }
 }

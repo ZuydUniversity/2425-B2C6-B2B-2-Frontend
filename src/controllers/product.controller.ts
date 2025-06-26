@@ -112,10 +112,8 @@ export default class ProductController {
     return EitherModule.left("Failed to update product");
   }
 
-  public static deleteProduct(
-    id: number,
-  ): Promise<EitherModule.Either<string, string>> {
-    return axios
+  public static deleteProduct(id: number): EitherModule.Either<string, string> {
+    axios
       .delete(`https://10.0.2.4:8080/api/Products/${id}`)
       .then(() => {
         return EitherModule.right(`Product met ID ${id} succesvol verwijderd.`);
@@ -123,5 +121,6 @@ export default class ProductController {
       .catch((error) => {
         return EitherModule.left(error.toString());
       });
+    return EitherModule.left("Failed to delete product");
   }
 }
