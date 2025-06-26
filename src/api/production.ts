@@ -1,7 +1,7 @@
-import type { ProductLine, Product } from "../types";
+import type { ProductionLine, Product } from "../types";
 
 // Alle productielijnen
-export async function apiGetProductLines(): Promise<ProductLine[]> {
+export async function apiGetProductLines(): Promise<ProductionLine[]> {
   const response = await fetch("/api/ProductLine");
   if (!response.ok) throw new Error("Failed to fetch product lines");
   return response.json();
