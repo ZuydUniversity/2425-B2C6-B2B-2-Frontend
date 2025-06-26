@@ -1,5 +1,6 @@
 import axios from "axios";
 import RejectionForm from "../models/rejectionForm.model";
+import PurchaseOrder from "models/purchaseOrder.model";
 import * as EitherModule from "fp-ts/Either";
 
 export default class RejectionFormController {
@@ -17,7 +18,7 @@ export default class RejectionFormController {
               purchaseOrderId: item["purchaseOrderId"] as number,
               Reason: item["Reason"] as string,
               rejectionDate: item["rejectionDate"] as Date,
-              purchaseOrder: item["purchaseOrder"],
+              purchaseOrder: item["purchaseOrder"] as PurchaseOrder,
               orderId: item["orderId"] as number,
             }),
           );
