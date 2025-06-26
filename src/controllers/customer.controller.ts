@@ -2,18 +2,14 @@ import axios from "axios";
 import Customer from "../models/customer.model";
 import Order from "../models/order.model";
 import * as EitherModule from "fp-ts/Either";
-import { id } from "fp-ts/lib/Refinement";
 
 export default class CustomerController {
-  public static getAll(): EitherModule.Either<string, Customer[]> {
-    axios
+  public static getAll(): Promise<EitherModule.Either<string, Customer[]>> {
+    return axios
       .get<any[]>("https://10.0.2.4:8080/api/Customers")
-      .then((responce) => {
-        const result: Customer[] = [];
-        const data = responce.data;
-
-        data.forEach((item) => {
-          result.push(
+      .then((response) => {
+        const customers: Customer[] = response.data.map(
+          (item) =>
             new Customer({
               id: item["id"] as number,
               username: item["username"] as string,
@@ -21,49 +17,45 @@ export default class CustomerController {
               password: item["password"] as string,
               orders: item["orders"] || ([] as Order[]),
             }),
-          );
-        });
-
-        return EitherModule.right(result);
+        );
+        return EitherModule.right(customers);
       })
       .catch((error) => {
-        return EitherModule.left(error);
+        return EitherModule.left(error.toString());
       });
-    return EitherModule.right([]);
   }
 
-  public static async createCustomer(
+  public static createCustomer(
     customer: Customer,
   ): Promise<EitherModule.Either<string, Customer>> {
-    try {
-      const response = await axios.post<any>(
-        "https://10.0.2.4:8080/api/Customers",
-        {
-          id: customer.id,
-          username: customer.username,
-          name: customer.name,
-          password: customer.password,
-          orders: customer.orders,
-        },
-      );
-
-      const created = new Customer({
-        id: response.data.id,
-        username: response.data.username,
-        name: response.data.name,
-        password: response.data.password,
-        orders: response.data.orders || [],
+    return axios
+      .post<any>("https://10.0.2.4:8080/api/Customers", {
+        id: customer.id,
+        username: customer.username,
+        name: customer.name,
+        password: customer.password,
+        orders: customer.orders,
+      })
+      .then((response) => {
+        const created = new Customer({
+          id: response.data.id,
+          username: response.data.username,
+          name: response.data.name,
+          password: response.data.password,
+          orders: response.data.orders || [],
+        });
+        return EitherModule.right(created);
+      })
+      .catch((error) => {
+        return EitherModule.left(error.toString());
       });
-
-      return EitherModule.right(created);
-    } catch (error: any) {
-      return EitherModule.left(error.toString());
-    }
   }
 
-  public static getById(id: number): EitherModule.Either<string, Customer> {
-    axios
-      .get<any>("https://10.0.2.4:8080/api/Customers" + id)
+  public static getById(
+    id: number,
+  ): Promise<EitherModule.Either<string, Customer>> {
+    return axios
+      .get<any>(`https://10.0.2.4:8080/api/Customers/${id}`)
       .then((response) => {
         const item = response.data;
         const customer = new Customer({
@@ -78,8 +70,46 @@ export default class CustomerController {
       .catch((error) => {
         return EitherModule.left(error.toString());
       });
-    return EitherModule.right(
-      new Customer({ id: 0, username: "", name: "", password: "", orders: [] }),
-    );
+  }
+
+  public static updateCustomer(
+    customer: Customer,
+  ): Promise<EitherModule.Either<string, Customer>> {
+    return axios
+      .put<any>(`https://10.0.2.4:8080/api/Customers/${customer.id}`, {
+        id: customer.id,
+        username: customer.username,
+        name: customer.name,
+        password: customer.password,
+        orders: customer.orders,
+      })
+      .then((response) => {
+        const updatedCustomer = new Customer({
+          id: response.data.id,
+          username: response.data.username,
+          name: response.data.name,
+          password: response.data.password,
+          orders: response.data.orders || [],
+        });
+        return EitherModule.right(updatedCustomer);
+      })
+      .catch((error) => {
+        return EitherModule.left(error.toString());
+      });
+  }
+
+  public static deleteCustomer(
+    id: number,
+  ): Promise<EitherModule.Either<string, string>> {
+    return axios
+      .delete(`https://10.0.2.4:8080/api/Customers/${id}`)
+      .then(() => {
+        return EitherModule.right(
+          `Customer met ID ${id} succesvol verwijderd.`,
+        );
+      })
+      .catch((error) => {
+        return EitherModule.left(error.toString());
+      });
   }
 }
