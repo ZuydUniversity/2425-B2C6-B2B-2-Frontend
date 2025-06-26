@@ -4,8 +4,8 @@ import Order from "../models/order.model";
 import * as EitherModule from "fp-ts/Either";
 
 export default class CustomerController {
-  public static getAll(): Promise<EitherModule.Either<string, Customer[]>> {
-    return axios
+  public static getAll(): EitherModule.Either<string, Customer[]> {
+    axios
       .get<any[]>("https://10.0.2.4:8080/api/Customers")
       .then((response) => {
         const customers: Customer[] = response.data.map(
@@ -23,12 +23,13 @@ export default class CustomerController {
       .catch((error) => {
         return EitherModule.left(error.toString());
       });
+    return EitherModule.left("Failed to fetch customers");
   }
 
   public static createCustomer(
     customer: Customer,
-  ): Promise<EitherModule.Either<string, Customer>> {
-    return axios
+  ): EitherModule.Either<string, Customer> {
+    axios
       .post<any>("https://10.0.2.4:8080/api/Customers", {
         id: customer.id,
         username: customer.username,
@@ -49,12 +50,11 @@ export default class CustomerController {
       .catch((error) => {
         return EitherModule.left(error.toString());
       });
+    return EitherModule.left("Failed to create customer");
   }
 
-  public static getById(
-    id: number,
-  ): Promise<EitherModule.Either<string, Customer>> {
-    return axios
+  public static getById(id: number): EitherModule.Either<string, Customer> {
+    axios
       .get<any>(`https://10.0.2.4:8080/api/Customers/${id}`)
       .then((response) => {
         const item = response.data;
@@ -70,12 +70,13 @@ export default class CustomerController {
       .catch((error) => {
         return EitherModule.left(error.toString());
       });
+    return EitherModule.left("Failed to fetch customer by ID");
   }
 
   public static updateCustomer(
     customer: Customer,
-  ): Promise<EitherModule.Either<string, Customer>> {
-    return axios
+  ): EitherModule.Either<string, Customer> {
+    axios
       .put<any>(`https://10.0.2.4:8080/api/Customers/${customer.id}`, {
         id: customer.id,
         username: customer.username,
@@ -96,6 +97,7 @@ export default class CustomerController {
       .catch((error) => {
         return EitherModule.left(error.toString());
       });
+    return EitherModule.left("Failed to update customer");
   }
 
   public static deleteCustomer(

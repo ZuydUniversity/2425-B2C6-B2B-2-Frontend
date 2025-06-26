@@ -25,6 +25,31 @@ export default class ProductionLineController {
       .catch((error) => {
         return EitherModule.left(error.toString());
       });
-    return EitherModule.right([]);
+    return EitherModule.left("Failed to fetch production lines");
+  }
+
+  public static CreateProductionLine(
+    productionLine: ProductionLine,
+  ): EitherModule.Either<string, ProductionLine> {
+    axios
+      .post<any>("https://10.0.2.4:8080/api/ProductLine", {
+        id: productionLine.id,
+        lineName: productionLine.lineName,
+        isActive: productionLine.isActive,
+      })
+      .then((response) => {
+        const item = response.data;
+
+        const newProductionLine = new ProductionLine({
+          id: response.data["id"] as number,
+          lineName: response.data["lineName"] as string,
+          isActive: response.data["isActive"] as boolean,
+        });
+        return EitherModule.right(newProductionLine);
+      })
+      .catch((error) => {
+        return EitherModule.left(error.toString());
+      });
+    return EitherModule.left("Failed to create production line");
   }
 }
