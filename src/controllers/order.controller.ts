@@ -10,9 +10,9 @@ import { Controller } from "../global/abstracts/controller";
 export class OrderController extends Controller<Order> {
   protected static BASE_URL = "Orders";
 
-  public static getAll(): EitherModule.Either<string, Order[]> {
+  public getAll(): EitherModule.Either<string, Order[]> {
     axios
-      .get<any[]>(createBackendRoute(this.BASE_URL))
+      .get<any[]>(createBackendRoute(OrderController.BASE_URL))
       .then((response) => {
         const result: Order[] = [];
         const data = response.data;
@@ -49,9 +49,9 @@ export class OrderController extends Controller<Order> {
     return EitherModule.right([]);
   }
 
-  public static getOneById(id: number): EitherModule.Either<string, Order[]> {
+  public getOneById(id: number): EitherModule.Either<string, Order> {
     axios
-      .get<any>(createBackendRoute([this.BASE_URL, id.toString()]))
+      .get<any>(createBackendRoute([OrderController.BASE_URL, id.toString()]))
       .then((response) => {
         const item = response.data;
 
@@ -83,9 +83,9 @@ export class OrderController extends Controller<Order> {
     return EitherModule.left("No Order found with that id");
   }
 
-  public static create(model: Order): EitherModule.Either<string, Order> {
+  public create(model: Order): EitherModule.Either<string, Order> {
     axios
-      .post<any>(createBackendRoute(this.BASE_URL), {
+      .post<any>(createBackendRoute(OrderController.BASE_URL), {
         id: model.id,
         customerId: model.customerId,
         productId: model.productId,
@@ -130,26 +130,29 @@ export class OrderController extends Controller<Order> {
     return EitherModule.left("Failed to create order");
   }
 
-  public static update(model: Order): EitherModule.Either<string, Order> {
+  public update(model: Order): EitherModule.Either<string, Order> {
     axios
-      .put<any>(createBackendRoute([this.BASE_URL, model.id.toString()]), {
-        id: model.id,
-        customerId: model.customerId,
-        productId: model.productId,
-        quantity: model.quantity,
-        totalPrice: model.totalPrice,
-        status: model.status,
-        orderDate: model.orderDate,
-        approvedDate: model.approvedDate,
-        rejectedDate: model.rejectedDate,
-        deliveredDate: model.deliveredDate,
-        comment: model.comment,
-        forwardedToSupplier: model.forwardedToSupplier,
-        rejectionReason: model.rejectionReason,
-        customer: model.customer,
-        product: model.product,
-        eventLogs: model.eventLogs || [],
-      })
+      .put<any>(
+        createBackendRoute([OrderController.BASE_URL, model.id.toString()]),
+        {
+          id: model.id,
+          customerId: model.customerId,
+          productId: model.productId,
+          quantity: model.quantity,
+          totalPrice: model.totalPrice,
+          status: model.status,
+          orderDate: model.orderDate,
+          approvedDate: model.approvedDate,
+          rejectedDate: model.rejectedDate,
+          deliveredDate: model.deliveredDate,
+          comment: model.comment,
+          forwardedToSupplier: model.forwardedToSupplier,
+          rejectionReason: model.rejectionReason,
+          customer: model.customer,
+          product: model.product,
+          eventLogs: model.eventLogs || [],
+        },
+      )
       .then((response) => {
         const updatedOrder = new Order({
           id: response.data.id,
@@ -177,13 +180,13 @@ export class OrderController extends Controller<Order> {
     return EitherModule.left("Failed to update order");
   }
 
-  public static delete(id: number): EitherModule.Either<string, boolean> {
+  public delete(model: Order): EitherModule.Either<string, Order> {
     axios
-      .delete<any>(createBackendRoute(["Orders", id.toString()]))
+      .delete<any>(
+        createBackendRoute([OrderController.BASE_URL, model.id.toString()]),
+      )
       .then(() => {
-        return EitherModule.right(
-          "Customer met ID ${id} succesvol verwijderd.",
-        );
+        return EitherModule.right(model);
       })
       .catch((error) => {
         return EitherModule.left(error.toString());

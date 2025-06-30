@@ -7,9 +7,9 @@ import { Controller } from "../global/abstracts/controller";
 export class ProductController extends Controller<Product> {
   protected static BASE_URL = "Products";
 
-  public static getAll(): EitherModule.Either<string, Product[]> {
+  public getAll(): EitherModule.Either<string, Product[]> {
     axios
-      .get<any[]>(createBackendRoute(this.BASE_URL))
+      .get<any[]>(createBackendRoute(ProductController.BASE_URL))
       .then((response) => {
         const result: Product[] = [];
         const data = response.data;
@@ -36,9 +36,9 @@ export class ProductController extends Controller<Product> {
     return EitherModule.left("Failed to fetch products");
   }
 
-  public static getOneById(id: number): EitherModule.Either<string, Product> {
+  public getOneById(id: number): EitherModule.Either<string, Product> {
     axios
-      .get<any>(createBackendRoute([this.BASE_URL, id.toString()]))
+      .get<any>(createBackendRoute([ProductController.BASE_URL, id.toString()]))
       .then((response) => {
         const item = response.data;
 
@@ -58,16 +58,19 @@ export class ProductController extends Controller<Product> {
     return EitherModule.left("Failed to fetch product by ID");
   }
 
-  public static create(model: Product): EitherModule.Either<string, Product> {
+  public create(model: Product): EitherModule.Either<string, Product> {
     axios
-      .post<any>(createBackendRoute(this.BASE_URL, model.id.toString()), {
-        id: model.id,
-        name: model.name,
-        description: model.description,
-        price: model.price,
-        costPrice: model.costPrice,
-        stockQuantity: model.stockQuantity,
-      })
+      .post<any>(
+        createBackendRoute([ProductController.BASE_URL, model.id.toString()]),
+        {
+          id: model.id,
+          name: model.name,
+          description: model.description,
+          price: model.price,
+          costPrice: model.costPrice,
+          stockQuantity: model.stockQuantity,
+        },
+      )
       .then((response) => {
         const created = new Product({
           id: response.data["id"] as number,
@@ -85,16 +88,19 @@ export class ProductController extends Controller<Product> {
     return EitherModule.left("Failed to create product");
   }
 
-  public static update(model: Product): EitherModule.Either<string, Product> {
+  public update(model: Product): EitherModule.Either<string, Product> {
     axios
-      .put<any>(createBackendRoute([this.BASE_URL, model.id.toString()]), {
-        id: model.id,
-        name: model.name,
-        description: model.description,
-        price: model.price,
-        costPrice: model.costPrice,
-        stockQuantity: model.stockQuantity,
-      })
+      .put<any>(
+        createBackendRoute([ProductController.BASE_URL, model.id.toString()]),
+        {
+          id: model.id,
+          name: model.name,
+          description: model.description,
+          price: model.price,
+          costPrice: model.costPrice,
+          stockQuantity: model.stockQuantity,
+        },
+      )
       .then((response) => {
         const updated = new Product({
           id: response.data.id,
@@ -112,11 +118,13 @@ export class ProductController extends Controller<Product> {
     return EitherModule.left("Failed to update product");
   }
 
-  public static delete(id: number): EitherModule.Either<string, string> {
+  public delete(model: Product): EitherModule.Either<string, Product> {
     axios
-      .delete(createBackendRoute(this.BASE_URL, id.toString()))
+      .delete(
+        createBackendRoute([ProductController.BASE_URL, model.id.toString()]),
+      )
       .then(() => {
-        return EitherModule.right(`Product met ID ${id} succesvol verwijderd.`);
+        return EitherModule.right(model);
       })
       .catch((error) => {
         return EitherModule.left(error.toString());

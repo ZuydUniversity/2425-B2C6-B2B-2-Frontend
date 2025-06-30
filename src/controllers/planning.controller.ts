@@ -9,9 +9,9 @@ import { Controller } from "../global/abstracts/controller";
 export class PlanningController extends Controller<Planning> {
   protected static BASE_URL = "Planning";
 
-  public static getAll(): EitherModule.Either<string, Planning[]> {
+  public getAll(): EitherModule.Either<string, Planning[]> {
     axios
-      .get<any[]>(createBackendRoute(this.BASE_URL))
+      .get<any[]>(createBackendRoute(PlanningController.BASE_URL))
       .then((response) => {
         const result: Planning[] = [];
         const data = response.data;
@@ -36,9 +36,11 @@ export class PlanningController extends Controller<Planning> {
     return EitherModule.left("Failed to fetch planning data");
   }
 
-  public static getOneById(id: number): EitherModule.Either<string, Planning> {
+  public getOneById(id: number): EitherModule.Either<string, Planning> {
     axios
-      .get<any>(createBackendRoute([this.BASE_URL, id.toString()]))
+      .get<any>(
+        createBackendRoute([PlanningController.BASE_URL, id.toString()]),
+      )
       .then((response) => {
         const item = response.data;
         const planning = new Planning({
@@ -57,9 +59,9 @@ export class PlanningController extends Controller<Planning> {
     return EitherModule.left("Failed to fetch planning by ID");
   }
 
-  public static create(model: Planning): EitherModule.Either<string, Planning> {
+  public create(model: Planning): EitherModule.Either<string, Planning> {
     axios
-      .post<any>(createBackendRoute(this.BASE_URL), {
+      .post<any>(createBackendRoute(PlanningController.BASE_URL), {
         id: model.id,
         plannedDate: model.plannedDate,
         orderId: model.orderId,
@@ -84,16 +86,19 @@ export class PlanningController extends Controller<Planning> {
     return EitherModule.left("Failed to create planning");
   }
 
-  public static update(model: Planning): EitherModule.Either<string, Planning> {
+  public update(model: Planning): EitherModule.Either<string, Planning> {
     axios
-      .put<any>(createBackendRoute([this.BASE_URL, model.id.toString()]), {
-        id: model.id,
-        plannedDate: model.plannedDate,
-        orderId: model.orderId,
-        order: model.order,
-        productionLineId: model.productionLineId,
-        productionLine: model.productionLine,
-      })
+      .put<any>(
+        createBackendRoute([PlanningController.BASE_URL, model.id.toString()]),
+        {
+          id: model.id,
+          plannedDate: model.plannedDate,
+          orderId: model.orderId,
+          order: model.order,
+          productionLineId: model.productionLineId,
+          productionLine: model.productionLine,
+        },
+      )
       .then((response) => {
         const updated = new Planning({
           id: response.data.id,
@@ -111,13 +116,13 @@ export class PlanningController extends Controller<Planning> {
     return EitherModule.left("Failed to update planning");
   }
 
-  public static delete(id: number): EitherModule.Either<string, string> {
+  public delete(model: Planning): EitherModule.Either<string, Planning> {
     axios
-      .delete(createBackendRoute([this.BASE_URL, id.toString()]))
+      .delete(
+        createBackendRoute([PlanningController.BASE_URL, model.id.toString()]),
+      )
       .then(() => {
-        return EitherModule.right(
-          `Planning met ID ${id} succesvol verwijderd.`,
-        );
+        return EitherModule.right(model);
       })
       .catch((error) => {
         return EitherModule.left(error.toString());

@@ -8,9 +8,9 @@ import { Controller } from "../global/abstracts/controller";
 export class CustomerController implements Controller<Customer> {
   protected static BASE_URL = "Customers";
 
-  public static getAll(): EitherModule.Either<string, Customer[]> {
+  public getAll(): EitherModule.Either<string, Customer[]> {
     axios
-      .get<any[]>(createBackendRoute(this.BASE_URL))
+      .get<any[]>(createBackendRoute(CustomerController.BASE_URL))
       .then((response) => {
         const customers: Customer[] = response.data.map(
           (item) =>
@@ -30,9 +30,11 @@ export class CustomerController implements Controller<Customer> {
     return EitherModule.left("Failed to fetch customers");
   }
 
-  public static getOneById(id: number): EitherModule.Either<string, Customer> {
+  public getOneById(id: number): EitherModule.Either<string, Customer> {
     axios
-      .get<any>(createBackendRoute([this.BASE_URL, id.toString()]))
+      .get<any>(
+        createBackendRoute([CustomerController.BASE_URL, id.toString()]),
+      )
       .then((response) => {
         const item = response.data;
         const customer = new Customer({
@@ -50,9 +52,9 @@ export class CustomerController implements Controller<Customer> {
     return EitherModule.left("Failed to fetch customer by ID");
   }
 
-  public static create(model: Customer): EitherModule.Either<string, Customer> {
+  public create(model: Customer): EitherModule.Either<string, Customer> {
     axios
-      .post<any>(createBackendRoute(this.BASE_URL), {
+      .post<any>(createBackendRoute(CustomerController.BASE_URL), {
         id: model.id,
         username: model.username,
         name: model.name,
@@ -75,15 +77,18 @@ export class CustomerController implements Controller<Customer> {
     return EitherModule.left("Failed to create customer");
   }
 
-  public static update(model: Customer): EitherModule.Either<string, Customer> {
+  public update(model: Customer): EitherModule.Either<string, Customer> {
     axios
-      .put<any>(createBackendRoute([this.BASE_URL, model.id.toString()]), {
-        id: model.id,
-        username: model.username,
-        name: model.name,
-        password: model.password,
-        orders: model.orders,
-      })
+      .put<any>(
+        createBackendRoute([CustomerController.BASE_URL, model.id.toString()]),
+        {
+          id: model.id,
+          username: model.username,
+          name: model.name,
+          password: model.password,
+          orders: model.orders,
+        },
+      )
       .then((response) => {
         const updatedCustomer = new Customer({
           id: response.data.id,
@@ -100,13 +105,13 @@ export class CustomerController implements Controller<Customer> {
     return EitherModule.left("Failed to update customer");
   }
 
-  public static delete(id: number): EitherModule.Either<string, string> {
+  public delete(model: Customer): EitherModule.Either<string, Customer> {
     axios
-      .delete(createBackendRoute([this.BASE_URL, id.toString()]))
+      .delete(
+        createBackendRoute([CustomerController.BASE_URL, model.id.toString()]),
+      )
       .then(() => {
-        return EitherModule.right(
-          "Customer met ID ${id} succesvol verwijderd.",
-        );
+        return EitherModule.right(model);
       })
       .catch((error) => {
         return EitherModule.left(error.toString());

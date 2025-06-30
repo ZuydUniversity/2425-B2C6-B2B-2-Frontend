@@ -7,9 +7,9 @@ import { createBackendRoute } from "../global/constants/env";
 export class ProductionLineController extends Controller<ProductionLine> {
   protected static BASE_URL = "ProductLine";
 
-  public static getAll(): EitherModule.Either<string, ProductionLine[]> {
+  public getAll(): EitherModule.Either<string, ProductionLine[]> {
     axios
-      .get<any[]>(createBackendRoute(this.BASE_URL, id.toString()))
+      .get<any[]>(createBackendRoute(ProductionLineController.BASE_URL))
       .then((response) => {
         const result: ProductionLine[] = [];
         const data = response.data;
@@ -32,15 +32,25 @@ export class ProductionLineController extends Controller<ProductionLine> {
     return EitherModule.left("Failed to fetch production lines");
   }
 
-  public static create(
+  public getOneById(id: number): EitherModule.Either<string, ProductionLine> {
+    return EitherModule.left("Method is not implemented.");
+  }
+
+  public create(
     model: ProductionLine,
   ): EitherModule.Either<string, ProductionLine> {
     axios
-      .post<any>(createBackendRoute(this.BASE_URL, model), {
-        id: model.id,
-        lineName: model.lineName,
-        isActive: model.isActive,
-      })
+      .post<any>(
+        createBackendRoute([
+          ProductionLineController.BASE_URL,
+          model.id.toString(),
+        ]),
+        {
+          id: model.id,
+          lineName: model.lineName,
+          isActive: model.isActive,
+        },
+      )
       .then((response) => {
         const item = response.data;
 
@@ -55,5 +65,17 @@ export class ProductionLineController extends Controller<ProductionLine> {
         return EitherModule.left(error.toString());
       });
     return EitherModule.left("Failed to create production line");
+  }
+
+  public update(
+    model: ProductionLine,
+  ): EitherModule.Either<string, ProductionLine> {
+    return EitherModule.left("Method is not implemented.");
+  }
+
+  public delete(
+    model: ProductionLine,
+  ): EitherModule.Either<string, ProductionLine> {
+    return EitherModule.left("Method is not implemented.");
   }
 }
