@@ -54,7 +54,7 @@
   transition:
     transform 0.2s ease-in-out,
     box-shadow 0.2s ease-in-out;
-  text-align: center; /* Centreer tekst in de kaartjes */
+  text-align: center;
 }
 
 .card:hover {
@@ -70,12 +70,11 @@
 }
 
 .cardValue {
-  font-size: 1.5rem; /* Grotere tekst voor de waarden */
+  font-size: 1.5rem;
   font-weight: 700;
   color: #102a43;
 }
 
-/* Media Queries voor responsiviteit */
 @media (max-width: 768px) {
   .pageTitle {
     font-size: 2rem;

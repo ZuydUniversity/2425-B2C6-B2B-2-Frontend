@@ -1,5 +1,5 @@
-import React, { FC, useState } from "react";
-import styles from "./planning.module.scss"; // Controleer dit pad!
+import React, { FC, useState, useEffect } from "react";
+import styles from "./planning.module.scss";
 
 interface PlanningItem {
   type: string;
@@ -17,13 +17,11 @@ const PlanningPage: FC = () => {
   const [blauw, setBlauw] = useState("");
   const [rood, setRood] = useState("");
   const [grijs, setGrijs] = useState("");
-  const [productieLijn, setProductieLijn] = useState(""); // Nieuwe state voor productielijn
+  const [productieLijn, setProductieLijn] = useState("");
 
-  const planningDisplayItems: PlanningItem[] = [
-    { type: "", periode: "", aantal: null, orderId: null },
-    { type: "", periode: "", aantal: null, orderId: null },
-    { type: "", periode: "", aantal: null, orderId: null },
-  ];
+  const [planningDisplayItems, setPlanningDisplayItems] = useState<
+    PlanningItem[]
+  >([]);
 
   const productionLineStatuses: ProductionLineStatus[] = [
     { line: "Productielijn A", ordersInProgress: null },
@@ -31,17 +29,41 @@ const PlanningPage: FC = () => {
     { line: "Productielijn C", ordersInProgress: null },
   ];
 
+  useEffect(() => {
+    const fetchPlanning = async () => {
+      try {
+        const response = await fetch("http://10.0.2.4:8080/api/planning");
+        if (!response.ok) throw new Error("Fout bij ophalen planning");
+        const data = await response.json();
+        setPlanningDisplayItems(data);
+      } catch {
+        console.warn("API niet bereikbaar. Dummydata wordt gebruikt.");
+        setPlanningDisplayItems([
+          {
+            type: "test",
+            periode: "test",
+            aantal: 2,
+            orderId: "123",
+          },
+          {
+            type: "test",
+            periode: "3",
+            aantal: 3,
+            orderId: "456",
+          },
+        ]);
+      }
+    };
+
+    fetchPlanning();
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     const blauwAantal = Number(blauw);
     const roodAantal = Number(rood);
     const grijsAantal = Number(grijs);
-
-    console.log("Blauw:", blauwAantal);
-    console.log("Rood:", roodAantal);
-    console.log("Grijs:", grijsAantal);
-    console.log("Productielijn:", productieLijn); // Log de productielijn
 
     alert(
       `Aantallen ingevoerd: Blauw=${blauwAantal}, Rood=${roodAantal}, Grijs=${grijsAantal}, Productielijn=${productieLijn}`,
@@ -58,9 +80,6 @@ const PlanningPage: FC = () => {
       <h1 className={styles.pageTitle}>Planningsoverzicht</h1>
 
       <div className={styles.contentWrapper}>
-        {" "}
-        {/* Nieuwe wrapper voor flex layout */}
-        {/* Sectie voor Productielijn Status (links) */}
         <section className={styles.productionLineStatusSection}>
           <h2 className={styles.sectionTitle}>Productielijnen Status</h2>
           <div className={styles.statusList}>
@@ -77,34 +96,35 @@ const PlanningPage: FC = () => {
             ))}
           </div>
         </section>
+
         <div className={styles.mainContent}>
-          {" "}
-          {/* Wrapper voor planning en formulier */}
-          {/* Huidige Planning Sectie (rechtsboven) */}
           <section className={styles.planningSection}>
             <h2 className={styles.sectionTitle}>Huidige Planning</h2>
             <div className={styles.grid}>
-              {planningDisplayItems.map((_, index) => (
+              {planningDisplayItems.map((item, index) => (
                 <div key={index} className={styles.card}>
                   <div className={styles.cardHeader}>
                     <span className={styles.cardTypePlaceholder}>
-                      Type: ____
+                      Type: {item.type}
                     </span>
-                    <span className={styles.cardOrderId}>OrderID: ____</span>
+                    <span className={styles.cardOrderId}>
+                      OrderID: {item.orderId ?? "____"}
+                    </span>
                   </div>
                   <div className={styles.cardBody}>
                     <p>
-                      <strong>Periode:</strong> ____
+                      <strong>Periode:</strong> {item.periode || "____"}
                     </p>
                     <p>
-                      <strong>Aantal:</strong> ____
+                      <strong>Aantal:</strong>{" "}
+                      {item.aantal !== null ? item.aantal : "____"}
                     </p>
                   </div>
                 </div>
               ))}
             </div>
           </section>
-          {/* Formulier Sectie (rechtsonder) */}
+
           <section className={styles.formSection}>
             <h2 className={styles.sectionTitle}>Aantal blokjes invoeren</h2>
             <form onSubmit={handleSubmit}>
@@ -153,7 +173,6 @@ const PlanningPage: FC = () => {
                 />
               </div>
 
-              {/* NIEUW: Productielijn Invoer Veld */}
               <div className={styles.inputGroup}>
                 <label htmlFor="productielijn" className={styles.inputLabel}>
                   Productielijn:

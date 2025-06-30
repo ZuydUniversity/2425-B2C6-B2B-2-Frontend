@@ -257,3 +257,12 @@
     grid-template-columns: 1fr;
   }
 }
+.selectedCard {
+  border: 2px solid #3498db;
+  background-color: #ecf7ff;
+}
+.selectionInfo {
+  margin-top: 0.5rem;
+  font-style: italic;
+  color: #333;
+}
