@@ -1,61 +1,136 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./accountmanager.module.scss";
-import { sampleData } from "../data/productionsampledata";
-import { motorImagesList } from "../data/motorimageslist";
-import { AccountStatus } from "../data/accountstatuslist";
+import Order from "../models/order.model";
+import Customer from "../models/customer.model";
+import Product from "../models/product.model";
+import OrderController from "controllers/order.controller";
+import ProductController from "controllers/product.controller";
+import CustomerController from "controllers/customer.controller";
+import { motorImagesList } from "../global/constants/motorimageslist";
+import { AccountStatus } from "../global/constants/accountstatuslist";
+import EventLog from "models/eventLog.model";
 
-type Order = {
-  orderId: string;
-  klantnaam: string;
-  productType: "A" | "B" | "C";
-  aantal: number;
-  orderdatum: string;
-  status: AccountStatus;
-};
-
-function generateNextOrderId(orders: Order[]): string {
-  const maxNumber = orders.reduce((max, order) => {
-    const num = parseInt(order.orderId.replace("ORD", ""), 10);
-    return isNaN(num) ? max : Math.max(max, num);
-  }, 0);
-
-  const nextNumber = (maxNumber + 1).toString().padStart(3, "0");
-  return `ORD${nextNumber}`;
+function generateNextOrderId(orders: Order[]): number {
+  if (orders.length === 0) return 1;
+  const maxNumber = Math.max(...orders.map((o) => o.id));
+  return maxNumber + 1;
 }
 
 const AccountManagementPage: React.FC = () => {
-  const [orders, setOrders] = useState<Order[]>(
-    sampleData.map((item, index) => ({
-      orderId: item.orderId,
-      klantnaam: `Klant ${index + 1}`,
-      productType: item.productType as "A" | "B" | "C",
-      aantal: item.aantal,
-      orderdatum: "2025-06-01",
-      status: AccountStatus.Pending,
-    })),
-  );
+  const [error, setError] = useState<string | null>(null);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [createOrder, setCreateOrder] = useState<{
+    klantId?: number;
+    productId?: number;
+    aantal: number;
+    leverdatum?: string;
+  }>({
+    aantal: 1,
+  });
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const orderResult = await OrderController.getAll();
+        if (orderResult._tag === "Right") {
+          console.log("Orders opgehaald:", orderResult.right);
+          setOrders(orderResult.right);
+        } else {
+          setError("Fout bij het ophalen van orders: " + orderResult.left);
+          return;
+        }
+
+        const customerResult = await CustomerController.getAll();
+        if (customerResult._tag === "Right") {
+          console.log("customers opgehaald:", customerResult.right);
+          setCustomers(customerResult.right);
+        } else {
+          setError("Fout bij het ophalen van klanten: " + customerResult.left);
+          return;
+        }
+
+        const productResult = await ProductController.getAll();
+        if (productResult._tag === "Right") {
+          console.log("products opgehaald:", productResult.right);
+          setProducts(productResult.right);
+        } else {
+          setError("Fout bij het ophalen van producten: " + productResult.left);
+          return;
+        }
+
+        setError(null);
+      } catch (e) {
+        setError(
+          "Er is een onverwachte fout opgetreden: " + (e as Error).message,
+        );
+      }
+    }
+    fetchData();
+  }, []);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [notificatieModalOpen, setNotificatieModalOpen] = useState(false);
+  const [laatsteNotificaties, setLaatsteNotificaties] = useState<string[]>([]);
 
-  const [createOrder, setCreateOrder] = useState({
-    klantnaam: "",
-    producttype: "Type A",
-    aantal: 1,
-    leverdatum: "",
-  });
+  const updateStatus = async (
+    currentorderId: number,
+    newStatus: AccountStatus,
+  ) => {
+    try {
+      const now = new Date().toISOString().split("T")[0];
+      const eitherCurrentOrder =
+        await OrderController.getOneById(currentorderId);
 
-  const updateStatus = (orderId: string, newStatus: AccountStatus) => {
-    setOrders((prev) =>
-      prev.map((order) =>
-        order.orderId === orderId ? { ...order, status: newStatus } : order,
-      ),
-    );
+      if (eitherCurrentOrder._tag === "Left") {
+        throw new Error(eitherCurrentOrder.left);
+      }
+
+      const currentOrder = eitherCurrentOrder.right;
+      currentOrder.status = newStatus.toString();
+
+      const updateResult = await OrderController.updateOrder(currentOrder);
+
+      if (updateResult._tag === "Left") {
+        throw new Error(updateResult.left);
+      }
+
+      const notificatie =
+        newStatus === AccountStatus.Rejected
+          ? `Klant geïnformeerd: order ${currentorderId} is afgekeurd op ${now}`
+          : `Planning geïnformeerd: order ${currentorderId} is goedgekeurd op ${now}`;
+
+      const newEventLog = new EventLog({
+        id: 1,
+        orderId: currentorderId,
+        timestamp: new Date(),
+        activity: "Statuswijziging",
+        details: notificatie,
+        order: updateResult.right,
+      });
+
+      const eventLogResult = await OrderController.addEventLog(
+        currentorderId,
+        newEventLog,
+      );
+
+      if (eventLogResult._tag === "Left") {
+        throw new Error(eventLogResult.left);
+      }
+
+      setLaatsteNotificaties([notificatie]);
+      setNotificatieModalOpen(true);
+    } catch (error) {
+      console.error("Fout bij statusupdate:", error);
+      alert("Er is iets misgegaan bij het verwerken van deze order.");
+    }
   };
 
   const [filters, setFilters] = useState({
     searchTerm: "",
-    orderdatum: "",
+    orderdate: "",
     status: "",
   });
 
@@ -64,6 +139,7 @@ const AccountManagementPage: React.FC = () => {
       <div className={styles.title}>
         <h1>Account management</h1>
         <hr className={styles.separator} />
+        {error && <div className={styles.error}>{error}</div>}
       </div>
 
       <div className={styles.page}>
@@ -107,10 +183,10 @@ const AccountManagementPage: React.FC = () => {
               </label>
 
               <label>
-                Orderdatum:
+                orderdate:
                 <input
                   type="date"
-                  value={filters.orderdatum}
+                  value={filters.orderdate}
                   onChange={(e) =>
                     setFilters((prev) => ({
                       ...prev,
@@ -140,7 +216,7 @@ const AccountManagementPage: React.FC = () => {
                 <th className={styles.normalColumn}>Klant</th>
                 <th className={styles.normalColumn}>Producttype</th>
                 <th className={styles.normalColumn}>Aantal</th>
-                <th className={styles.normalColumn}>Orderdatum</th>
+                <th className={styles.normalColumn}>orderdate</th>
                 <th className={styles.normalColumn}>Status</th>
                 <th className={styles.buttonColumn}>Acties</th>
               </tr>
@@ -150,10 +226,8 @@ const AccountManagementPage: React.FC = () => {
                 .filter((order) => {
                   const matchesSearchTerm =
                     filters.searchTerm === "" ||
-                    order.orderId
-                      .toLowerCase()
-                      .includes(filters.searchTerm.toLowerCase()) ||
-                    order.productType
+                    order.id ||
+                    order.product.name
                       .toLowerCase()
                       .includes(filters.searchTerm.toLowerCase());
 
@@ -161,18 +235,18 @@ const AccountManagementPage: React.FC = () => {
                     filters.status === "" || order.status === filters.status;
 
                   const matchesDate =
-                    filters.orderdatum === "" ||
-                    order.orderdatum === filters.orderdatum;
+                    filters.orderdate === "" ||
+                    order.orderDate.toString() === filters.orderdate;
 
                   return matchesSearchTerm && matchesStatus && matchesDate;
                 })
                 .map((order) => (
-                  <tr key={order.orderId}>
-                    <td>{order.orderId}</td>
-                    <td>{order.klantnaam}</td>
-                    <td>{order.productType}</td>
-                    <td>{order.aantal}</td>
-                    <td>{order.orderdatum}</td>
+                  <tr key={order.id}>
+                    <td>{order.id}</td>
+                    <td>{order.customer.name}</td>
+                    <td>{order.product.name}</td>
+                    <td>{order.quantity}</td>
+                    <td>{order.orderDate.toString()}</td>
                     <td>
                       <span
                         className={`${styles.status} ${
@@ -189,7 +263,7 @@ const AccountManagementPage: React.FC = () => {
                         <button
                           className={styles.button}
                           onClick={() =>
-                            updateStatus(order.orderId, AccountStatus.Approved)
+                            updateStatus(order.id, AccountStatus.Approved)
                           }
                         >
                           Goedkeuren
@@ -197,7 +271,7 @@ const AccountManagementPage: React.FC = () => {
                         <button
                           className={styles.button}
                           onClick={() =>
-                            updateStatus(order.orderId, AccountStatus.Rejected)
+                            updateStatus(order.id, AccountStatus.Rejected)
                           }
                         >
                           Afkeuren
@@ -222,20 +296,21 @@ const AccountManagementPage: React.FC = () => {
             onClick={() => setSelectedOrder(null)}
           >
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-              <h3>Details voor Order {selectedOrder.orderId}</h3>
+              <h3>Details voor Order {selectedOrder.id}</h3>
               <div className={styles.modalContent}>
                 <div className={styles.details}>
                   <p>
-                    <strong>Klant:</strong> {selectedOrder.klantnaam}
+                    <strong>Klant:</strong> {selectedOrder.customer.name}
                   </p>
                   <p>
-                    <strong>Producttype:</strong> {selectedOrder.productType}
+                    <strong>Producttype:</strong> {selectedOrder.product.name}
                   </p>
                   <p>
-                    <strong>Aantal:</strong> {selectedOrder.aantal}
+                    <strong>Aantal:</strong> {selectedOrder.quantity}
                   </p>
                   <p>
-                    <strong>Orderdatum:</strong> {selectedOrder.orderdatum}
+                    <strong>orderdate:</strong>{" "}
+                    {selectedOrder.orderDate.toString()}
                   </p>
                   <p>
                     <strong>Status:</strong> {selectedOrder.status}
@@ -244,10 +319,10 @@ const AccountManagementPage: React.FC = () => {
                 <div className={styles.imageContainer}>
                   <img
                     src={
-                      motorImagesList[selectedOrder.productType] ||
+                      motorImagesList[selectedOrder.product.name] ||
                       motorImagesList["A"]
                     }
-                    alt={`Motor ${selectedOrder.productType}`}
+                    alt={`Motor ${selectedOrder.product.name}`}
                     className={styles.productImage}
                   />
                 </div>
@@ -276,31 +351,44 @@ const AccountManagementPage: React.FC = () => {
               <div className={styles.modalContent}>
                 <label>
                   Klantnaam:
-                  <input
-                    type="text"
-                    value={createOrder.klantnaam}
+                  <select
+                    value={createOrder.klantId ?? ""}
                     onChange={(e) =>
                       setCreateOrder((prev) => ({
                         ...prev,
-                        klantnaam: e.target.value,
+                        klantId: Number(e.target.value),
                       }))
                     }
-                  />
+                  >
+                    <option value="" disabled>
+                      Selecteer een klant
+                    </option>
+                    {customers.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
                 </label>
                 <label>
                   Producttype:
                   <select
-                    value={createOrder.producttype}
+                    value={createOrder.productId ?? ""}
                     onChange={(e) =>
                       setCreateOrder((prev) => ({
                         ...prev,
-                        producttype: e.target.value,
+                        productId: Number(e.target.value),
                       }))
                     }
                   >
-                    <option value="Type A">Type A</option>
-                    <option value="Type B">Type B</option>
-                    <option value="Type C">Type C</option>
+                    <option value="" disabled>
+                      Selecteer een product
+                    </option>
+                    {products.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
                   </select>
                 </label>
                 <label>
@@ -321,7 +409,7 @@ const AccountManagementPage: React.FC = () => {
                   Gewenste leverdatum:
                   <input
                     type="date"
-                    value={createOrder.leverdatum}
+                    value={createOrder.leverdatum ?? ""}
                     onChange={(e) =>
                       setCreateOrder((prev) => ({
                         ...prev,
@@ -336,19 +424,43 @@ const AccountManagementPage: React.FC = () => {
                 <button
                   className={styles.button}
                   onClick={() => {
+                    if (!createOrder.klantId || !createOrder.productId) {
+                      alert("Selecteer een klant en product.");
+                      return;
+                    }
+
                     const nextId = generateNextOrderId(orders);
 
-                    const newOrder: Order = {
-                      orderId: nextId,
-                      klantnaam: createOrder.klantnaam,
-                      productType: createOrder.producttype.split(" ")[1] as
-                        | "A"
-                        | "B"
-                        | "C",
-                      aantal: createOrder.aantal,
-                      orderdatum: new Date().toISOString().split("T")[0],
+                    const selectedCustomer = customers.find(
+                      (c) => c.id === createOrder.klantId,
+                    );
+                    const selectedProduct = products.find(
+                      (p) => p.id === createOrder.productId,
+                    );
+
+                    if (!selectedCustomer || !selectedProduct) {
+                      alert("Ongeldige klant of product.");
+                      return;
+                    }
+
+                    const newOrder = new Order({
+                      id: nextId,
+                      customerId: selectedCustomer.id,
+                      productId: selectedProduct.id,
+                      quantity: createOrder.aantal,
+                      totalPrice: 0,
                       status: AccountStatus.Pending,
-                    };
+                      orderDate: new Date(),
+                      approvedDate: null,
+                      rejectedDate: null,
+                      deliveredDate: null,
+                      comment: "",
+                      forwardedToSupplier: false,
+                      rejectionReason: "",
+                      customer: selectedCustomer,
+                      product: selectedProduct,
+                      eventLogs: [],
+                    });
 
                     setOrders((prev) => [...prev, newOrder]);
                     setShowCreateModal(false);
@@ -361,6 +473,27 @@ const AccountManagementPage: React.FC = () => {
                   onClick={() => setShowCreateModal(false)}
                 >
                   Annuleren
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {notificatieModalOpen && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.notifModalContent}>
+                <h3>Notificatie verzonden</h3>
+                <ul>
+                  {laatsteNotificaties.map((n, i) => (
+                    <li key={i}>{n}</li>
+                  ))}
+                </ul>
+                <button
+                  className={styles.button}
+                  onClick={() => setNotificatieModalOpen(false)}
+                >
+                  Sluiten
                 </button>
               </div>
             </div>

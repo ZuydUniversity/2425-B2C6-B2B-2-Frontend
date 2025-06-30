@@ -3,6 +3,6 @@
  */
 export enum Status {
   InProduction = "In productie",
-  Complete = "Afgerond",
+  WaitingForExpedition = "wachten op expeditie",
   WaitingForParts = "Wachten op onderdelen",
 }
