@@ -1,11 +1,15 @@
 import axios from "axios";
 import ProductionLine from "../models/productionLine.model";
 import * as EitherModule from "fp-ts/Either";
+import { Controller } from "../global/abstracts/controller";
+import { createBackendRoute } from "../global/constants/env";
 
-export default class ProductionLineController {
-  public static GetAll(): EitherModule.Either<string, ProductionLine[]> {
+export class ProductionLineController extends Controller<ProductionLine> {
+  protected static BASE_URL = "ProductLine";
+
+  public static getAll(): EitherModule.Either<string, ProductionLine[]> {
     axios
-      .get<any[]>("https://10.0.2.4:8080/api/ProductLine")
+      .get<any[]>(createBackendRoute(this.BASE_URL, id.toString()))
       .then((response) => {
         const result: ProductionLine[] = [];
         const data = response.data;
@@ -28,14 +32,14 @@ export default class ProductionLineController {
     return EitherModule.left("Failed to fetch production lines");
   }
 
-  public static CreateProductionLine(
-    productionLine: ProductionLine,
+  public static create(
+    model: ProductionLine,
   ): EitherModule.Either<string, ProductionLine> {
     axios
-      .post<any>("https://10.0.2.4:8080/api/ProductLine", {
-        id: productionLine.id,
-        lineName: productionLine.lineName,
-        isActive: productionLine.isActive,
+      .post<any>(createBackendRoute(this.BASE_URL, model), {
+        id: model.id,
+        lineName: model.lineName,
+        isActive: model.isActive,
       })
       .then((response) => {
         const item = response.data;

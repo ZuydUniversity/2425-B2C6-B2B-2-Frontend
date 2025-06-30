@@ -4,11 +4,15 @@ import Customer from "../models/customer.model";
 import Product from "../models/product.model";
 import EventLog from "../models/eventLog.model";
 import * as EitherModule from "fp-ts/Either";
+import { createBackendRoute } from "../global/constants/env";
+import { Controller } from "../global/abstracts/controller";
 
-export default class OrderController {
+export class OrderController extends Controller<Order> {
+  protected static BASE_URL = "Orders";
+
   public static getAll(): EitherModule.Either<string, Order[]> {
     axios
-      .get<any[]>("https://10.0.2.4:8080/api/Orders")
+      .get<any[]>(createBackendRoute(this.BASE_URL))
       .then((response) => {
         const result: Order[] = [];
         const data = response.data;
@@ -45,58 +49,9 @@ export default class OrderController {
     return EitherModule.right([]);
   }
 
-  public static CreateOrder(order: Order): EitherModule.Either<string, Order> {
+  public static getOneById(id: number): EitherModule.Either<string, Order[]> {
     axios
-      .post<any>("https://10.0.2.4:8080/api/Orders", {
-        id: order.id,
-        customerId: order.customerId,
-        productId: order.productId,
-        quantity: order.quantity,
-        totalPrice: order.totalPrice,
-        status: order.status,
-        orderDate: order.orderDate,
-        approvedDate: order.approvedDate,
-        rejectedDate: order.rejectedDate,
-        deliveredDate: order.deliveredDate,
-        comment: order.comment,
-        forwardedToSupplier: order.forwardedToSupplier,
-        rejectionReason: order.rejectionReason,
-        customer: order.customer,
-        product: order.product,
-        eventLogs: order.eventLogs || [],
-      })
-      .then((response) => {
-        const created = new Order({
-          id: response.data.id,
-          customerId: response.data.customerId,
-          productId: response.data.productId,
-          quantity: response.data.quantity,
-          totalPrice: response.data.totalPrice,
-          status: response.data.status,
-          orderDate: response.data.orderDate,
-          approvedDate: response.data.approvedDate,
-          rejectedDate: response.data.rejectedDate,
-          deliveredDate: response.data.deliveredDate,
-          comment: response.data.comment,
-          forwardedToSupplier: response.data.forwardedToSupplier,
-          rejectionReason: response.data.rejectionReason,
-          customer: response.data.customer as Customer,
-          product: response.data.product as Product,
-          eventLogs: response.data.eventLogs || [],
-        });
-        return EitherModule.right(created);
-      })
-      .catch((error) => {
-        return EitherModule.left(error.toString());
-      });
-    return EitherModule.left("Failed to create order");
-  }
-
-  public static getOneById(
-    idToGet: number,
-  ): EitherModule.Either<string, Order[]> {
-    axios
-      .get<any>("https://10.0.2.4:8080/api/Orders/" + idToGet)
+      .get<any>(createBackendRoute([this.BASE_URL, id.toString()]))
       .then((response) => {
         const item = response.data;
 
@@ -128,25 +83,72 @@ export default class OrderController {
     return EitherModule.left("No Order found with that id");
   }
 
-  public static updateOrder(order: Order): EitherModule.Either<string, Order> {
+  public static create(model: Order): EitherModule.Either<string, Order> {
     axios
-      .put<any>("https://10.0.2.4:8080/api/Orders/" + order.id, {
-        id: order.id,
-        customerId: order.customerId,
-        productId: order.productId,
-        quantity: order.quantity,
-        totalPrice: order.totalPrice,
-        status: order.status,
-        orderDate: order.orderDate,
-        approvedDate: order.approvedDate,
-        rejectedDate: order.rejectedDate,
-        deliveredDate: order.deliveredDate,
-        comment: order.comment,
-        forwardedToSupplier: order.forwardedToSupplier,
-        rejectionReason: order.rejectionReason,
-        customer: order.customer,
-        product: order.product,
-        eventLogs: order.eventLogs || [],
+      .post<any>(createBackendRoute(this.BASE_URL), {
+        id: model.id,
+        customerId: model.customerId,
+        productId: model.productId,
+        quantity: model.quantity,
+        totalPrice: model.totalPrice,
+        status: model.status,
+        orderDate: model.orderDate,
+        approvedDate: model.approvedDate,
+        rejectedDate: model.rejectedDate,
+        deliveredDate: model.deliveredDate,
+        comment: model.comment,
+        forwardedToSupplier: model.forwardedToSupplier,
+        rejectionReason: model.rejectionReason,
+        customer: model.customer,
+        product: model.product,
+        eventLogs: model.eventLogs || [],
+      })
+      .then((response) => {
+        const created = new Order({
+          id: response.data.id,
+          customerId: response.data.customerId,
+          productId: response.data.productId,
+          quantity: response.data.quantity,
+          totalPrice: response.data.totalPrice,
+          status: response.data.status,
+          orderDate: response.data.orderDate,
+          approvedDate: response.data.approvedDate,
+          rejectedDate: response.data.rejectedDate,
+          deliveredDate: response.data.deliveredDate,
+          comment: response.data.comment,
+          forwardedToSupplier: response.data.forwardedToSupplier,
+          rejectionReason: response.data.rejectionReason,
+          customer: response.data.customer as Customer,
+          product: response.data.product as Product,
+          eventLogs: response.data.eventLogs || [],
+        });
+        return EitherModule.right(created);
+      })
+      .catch((error) => {
+        return EitherModule.left(error.toString());
+      });
+    return EitherModule.left("Failed to create order");
+  }
+
+  public static update(model: Order): EitherModule.Either<string, Order> {
+    axios
+      .put<any>(createBackendRoute([this.BASE_URL, model.id.toString()]), {
+        id: model.id,
+        customerId: model.customerId,
+        productId: model.productId,
+        quantity: model.quantity,
+        totalPrice: model.totalPrice,
+        status: model.status,
+        orderDate: model.orderDate,
+        approvedDate: model.approvedDate,
+        rejectedDate: model.rejectedDate,
+        deliveredDate: model.deliveredDate,
+        comment: model.comment,
+        forwardedToSupplier: model.forwardedToSupplier,
+        rejectionReason: model.rejectionReason,
+        customer: model.customer,
+        product: model.product,
+        eventLogs: model.eventLogs || [],
       })
       .then((response) => {
         const updatedOrder = new Order({
@@ -175,9 +177,9 @@ export default class OrderController {
     return EitherModule.left("Failed to update order");
   }
 
-  public static deleteOrder(id: number): EitherModule.Either<string, boolean> {
+  public static delete(id: number): EitherModule.Either<string, boolean> {
     axios
-      .delete<any>("https://10.0.2.4:8080/api/Orders/" + id)
+      .delete<any>(createBackendRoute(["Orders", id.toString()]))
       .then(() => {
         return EitherModule.right(
           "Customer met ID ${id} succesvol verwijderd.",

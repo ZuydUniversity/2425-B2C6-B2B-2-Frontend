@@ -1,11 +1,15 @@
 import axios from "axios";
 import PurchaseOrder from "../models/purchaseOrder.model";
 import * as EitherModule from "fp-ts/Either";
+import { Controller } from "../global/abstracts/controller";
+import { createBackendRoute } from "../global/constants/env";
 
-export default class PurchaseOrderController {
+export class PurchaseOrderController extends Controller<PurchaseOrder> {
+  protected static BASE_URL = "PurchaseOrders";
+
   public static getAll(): EitherModule.Either<string, PurchaseOrder[]> {
     axios
-      .get<any[]>("https://10.0.2.4:8080/api/PurchaseOrders")
+      .get<any[]>(createBackendRoute(this.BASE_URL))
       .then((response) => {
         const result: PurchaseOrder[] = response.data.map(
           (item) =>
@@ -27,11 +31,11 @@ export default class PurchaseOrderController {
     return EitherModule.left("Failed to fetch purchase orders");
   }
 
-  public static getById(
+  public static getOneById(
     id: number,
   ): EitherModule.Either<string, PurchaseOrder> {
     axios
-      .get<any>("https://10.0.2.4:8080/api/PurchaseOrders/${id}")
+      .get<any>(createBackendRoute([this.BASE_URL, id.toString()]))
       .then((response) => {
         const item = response.data;
         const purchaseOrder = new PurchaseOrder({
@@ -51,18 +55,18 @@ export default class PurchaseOrderController {
     return EitherModule.left("Failed to fetch purchase order by ID");
   }
 
-  public static createPurchaseOrder(
-    purchaseOrder: PurchaseOrder,
+  public static create(
+    model: PurchaseOrder,
   ): EitherModule.Either<string, PurchaseOrder> {
     axios
-      .post<any>("https://10.0.2.4:8080/api/PurchaseOrders", {
-        id: purchaseOrder.id,
-        orderNumber: purchaseOrder.orderNumber,
-        orderDate: purchaseOrder.orderDate,
-        status: purchaseOrder.status,
-        productId: purchaseOrder.productId,
-        supplierId: purchaseOrder.supplierId,
-        quantity: purchaseOrder.quantity,
+      .post<any>(createBackendRoute([this.BASE_URL, model.id.toString()]), {
+        id: model.id,
+        orderNumber: model.orderNumber,
+        orderDate: model.orderDate,
+        status: model.status,
+        productId: model.productId,
+        supplierId: model.supplierId,
+        quantity: model.quantity,
       })
       .then((response) => {
         const created = new PurchaseOrder({
@@ -82,22 +86,19 @@ export default class PurchaseOrderController {
     return EitherModule.left("Failed to create purchase order");
   }
 
-  public static updatePurchaseOrder(
-    purchaseOrder: PurchaseOrder,
+  public static update(
+    model: PurchaseOrder,
   ): EitherModule.Either<string, PurchaseOrder> {
     axios
-      .put<any>(
-        "https://10.0.2.4:8080/api/PurchaseOrders/${purchaseOrder.id}",
-        {
-          id: purchaseOrder.id,
-          orderNumber: purchaseOrder.orderNumber,
-          orderDate: purchaseOrder.orderDate,
-          status: purchaseOrder.status,
-          productId: purchaseOrder.productId,
-          supplierId: purchaseOrder.supplierId,
-          quantity: purchaseOrder.quantity,
-        },
-      )
+      .put<any>(createBackendRoute([this.BASE_URL, model.id.toString()]), {
+        id: model.id,
+        orderNumber: model.orderNumber,
+        orderDate: model.orderDate,
+        status: model.status,
+        productId: model.productId,
+        supplierId: model.supplierId,
+        quantity: model.quantity,
+      })
       .then((response) => {
         const updated = new PurchaseOrder({
           id: response.data["id"],
@@ -116,11 +117,9 @@ export default class PurchaseOrderController {
     return EitherModule.left("Failed to update purchase order");
   }
 
-  public static deletePurchaseOrder(
-    id: number,
-  ): EitherModule.Either<string, string> {
+  public static delete(id: number): EitherModule.Either<string, string> {
     axios
-      .delete(`https://10.0.2.4:8080/api/PurchaseOrders/${id}`)
+      .delete(createBackendRoute([this.BASE_URL, id.toString()]))
       .then(() => {
         return EitherModule.right(
           `Purchase order met ID ${id} succesvol verwijderd.`,

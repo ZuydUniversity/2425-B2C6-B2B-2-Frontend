@@ -1,11 +1,15 @@
 import axios from "axios";
 import Product from "../models/product.model";
 import * as EitherModule from "fp-ts/Either";
+import { createBackendRoute } from "../global/constants/env";
+import { Controller } from "../global/abstracts/controller";
 
-export default class ProductController {
+export class ProductController extends Controller<Product> {
+  protected static BASE_URL = "Products";
+
   public static getAll(): EitherModule.Either<string, Product[]> {
     axios
-      .get<any[]>("https://10.0.2.4:8080/api/Products")
+      .get<any[]>(createBackendRoute(this.BASE_URL))
       .then((response) => {
         const result: Product[] = [];
         const data = response.data;
@@ -32,9 +36,9 @@ export default class ProductController {
     return EitherModule.left("Failed to fetch products");
   }
 
-  public static getById(id: number): EitherModule.Either<string, Product> {
+  public static getOneById(id: number): EitherModule.Either<string, Product> {
     axios
-      .get<any>(`https://10.0.2.4:8080/api/Products/${id}`)
+      .get<any>(createBackendRoute([this.BASE_URL, id.toString()]))
       .then((response) => {
         const item = response.data;
 
@@ -54,17 +58,15 @@ export default class ProductController {
     return EitherModule.left("Failed to fetch product by ID");
   }
 
-  public static createProduct(
-    product: Product,
-  ): EitherModule.Either<string, Product> {
+  public static create(model: Product): EitherModule.Either<string, Product> {
     axios
-      .post<any>("https://10.0.2.4:8080/api/Products", {
-        id: product.id,
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        costPrice: product.costPrice,
-        stockQuantity: product.stockQuantity,
+      .post<any>(createBackendRoute(this.BASE_URL, model.id.toString()), {
+        id: model.id,
+        name: model.name,
+        description: model.description,
+        price: model.price,
+        costPrice: model.costPrice,
+        stockQuantity: model.stockQuantity,
       })
       .then((response) => {
         const created = new Product({
@@ -83,17 +85,15 @@ export default class ProductController {
     return EitherModule.left("Failed to create product");
   }
 
-  public static updateProduct(
-    product: Product,
-  ): EitherModule.Either<string, Product> {
+  public static update(model: Product): EitherModule.Either<string, Product> {
     axios
-      .put<any>(`https://10.0.2.4:8080/api/Products/${product.id}`, {
-        id: product.id,
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        costPrice: product.costPrice,
-        stockQuantity: product.stockQuantity,
+      .put<any>(createBackendRoute([this.BASE_URL, model.id.toString()]), {
+        id: model.id,
+        name: model.name,
+        description: model.description,
+        price: model.price,
+        costPrice: model.costPrice,
+        stockQuantity: model.stockQuantity,
       })
       .then((response) => {
         const updated = new Product({
@@ -112,9 +112,9 @@ export default class ProductController {
     return EitherModule.left("Failed to update product");
   }
 
-  public static deleteProduct(id: number): EitherModule.Either<string, string> {
+  public static delete(id: number): EitherModule.Either<string, string> {
     axios
-      .delete(`https://10.0.2.4:8080/api/Products/${id}`)
+      .delete(createBackendRoute(this.BASE_URL, id.toString()))
       .then(() => {
         return EitherModule.right(`Product met ID ${id} succesvol verwijderd.`);
       })

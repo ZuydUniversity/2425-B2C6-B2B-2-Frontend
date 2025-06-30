@@ -3,11 +3,15 @@ import Order from "../models/order.model";
 import Planning from "../models/planning.model";
 import ProductionLine from "models/productionLine.model";
 import * as EitherModule from "fp-ts/Either";
+import { createBackendRoute } from "../global/constants/env";
+import { Controller } from "../global/abstracts/controller";
 
-export default class PlanningController {
+export class PlanningController extends Controller<Planning> {
+  protected static BASE_URL = "Planning";
+
   public static getAll(): EitherModule.Either<string, Planning[]> {
     axios
-      .get<any[]>("https://10.0.2.4:8080/api/Planning")
+      .get<any[]>(createBackendRoute(this.BASE_URL))
       .then((response) => {
         const result: Planning[] = [];
         const data = response.data;
@@ -32,9 +36,9 @@ export default class PlanningController {
     return EitherModule.left("Failed to fetch planning data");
   }
 
-  public static getById(id: number): EitherModule.Either<string, Planning> {
+  public static getOneById(id: number): EitherModule.Either<string, Planning> {
     axios
-      .get<any>(`https://10.0.2.4:8080/api/Planning/${id}`)
+      .get<any>(createBackendRoute([this.BASE_URL, id.toString()]))
       .then((response) => {
         const item = response.data;
         const planning = new Planning({
@@ -53,17 +57,15 @@ export default class PlanningController {
     return EitherModule.left("Failed to fetch planning by ID");
   }
 
-  public static createPlanning(
-    planning: Planning,
-  ): EitherModule.Either<string, Planning> {
+  public static create(model: Planning): EitherModule.Either<string, Planning> {
     axios
-      .post<any>("https://10.0.2.4:8080/api/Planning", {
-        id: planning.id,
-        plannedDate: planning.plannedDate,
-        orderId: planning.orderId,
-        order: planning.order,
-        productionLineId: planning.productionLineId,
-        productionLine: planning.productionLine,
+      .post<any>(createBackendRoute(this.BASE_URL), {
+        id: model.id,
+        plannedDate: model.plannedDate,
+        orderId: model.orderId,
+        order: model.order,
+        productionLineId: model.productionLineId,
+        productionLine: model.productionLine,
       })
       .then((response) => {
         const created = new Planning({
@@ -82,17 +84,15 @@ export default class PlanningController {
     return EitherModule.left("Failed to create planning");
   }
 
-  public static updatePlanning(
-    planning: Planning,
-  ): EitherModule.Either<string, Planning> {
+  public static update(model: Planning): EitherModule.Either<string, Planning> {
     axios
-      .put<any>(`https://10.0.2.4:8080/api/Planning/${planning.id}`, {
-        id: planning.id,
-        plannedDate: planning.plannedDate,
-        orderId: planning.orderId,
-        order: planning.order,
-        productionLineId: planning.productionLineId,
-        productionLine: planning.productionLine,
+      .put<any>(createBackendRoute([this.BASE_URL, model.id.toString()]), {
+        id: model.id,
+        plannedDate: model.plannedDate,
+        orderId: model.orderId,
+        order: model.order,
+        productionLineId: model.productionLineId,
+        productionLine: model.productionLine,
       })
       .then((response) => {
         const updated = new Planning({
@@ -111,11 +111,9 @@ export default class PlanningController {
     return EitherModule.left("Failed to update planning");
   }
 
-  public static deletePlanning(
-    id: number,
-  ): EitherModule.Either<string, string> {
+  public static delete(id: number): EitherModule.Either<string, string> {
     axios
-      .delete(`https://10.0.2.4:8080/api/Planning/${id}`)
+      .delete(createBackendRoute([this.BASE_URL, id.toString()]))
       .then(() => {
         return EitherModule.right(
           `Planning met ID ${id} succesvol verwijderd.`,

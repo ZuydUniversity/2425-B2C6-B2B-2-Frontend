@@ -2,11 +2,15 @@ import axios from "axios";
 import Customer from "../models/customer.model";
 import Order from "../models/order.model";
 import * as EitherModule from "fp-ts/Either";
+import { createBackendRoute } from "../global/constants/env";
+import { Controller } from "../global/abstracts/controller";
 
-export default class CustomerController {
+export class CustomerController implements Controller<Customer> {
+  protected static BASE_URL = "Customers";
+
   public static getAll(): EitherModule.Either<string, Customer[]> {
     axios
-      .get<any[]>("https://10.0.2.4:8080/api/Customers")
+      .get<any[]>(createBackendRoute(this.BASE_URL))
       .then((response) => {
         const customers: Customer[] = response.data.map(
           (item) =>
@@ -26,36 +30,9 @@ export default class CustomerController {
     return EitherModule.left("Failed to fetch customers");
   }
 
-  public static createCustomer(
-    customer: Customer,
-  ): EitherModule.Either<string, Customer> {
+  public static getOneById(id: number): EitherModule.Either<string, Customer> {
     axios
-      .post<any>("https://10.0.2.4:8080/api/Customers", {
-        id: customer.id,
-        username: customer.username,
-        name: customer.name,
-        password: customer.password,
-        orders: customer.orders || [],
-      })
-      .then((response) => {
-        const created = new Customer({
-          id: response.data.id,
-          username: response.data.username,
-          name: response.data.name,
-          password: response.data.password,
-          orders: response.data.orders || [],
-        });
-        return EitherModule.right(created);
-      })
-      .catch((error) => {
-        return EitherModule.left(error.toString());
-      });
-    return EitherModule.left("Failed to create customer");
-  }
-
-  public static getById(id: number): EitherModule.Either<string, Customer> {
-    axios
-      .get<any>("https://10.0.2.4:8080/api/Customers/${id}")
+      .get<any>(createBackendRoute([this.BASE_URL, id.toString()]))
       .then((response) => {
         const item = response.data;
         const customer = new Customer({
@@ -73,16 +50,39 @@ export default class CustomerController {
     return EitherModule.left("Failed to fetch customer by ID");
   }
 
-  public static updateCustomer(
-    customer: Customer,
-  ): EitherModule.Either<string, Customer> {
+  public static create(model: Customer): EitherModule.Either<string, Customer> {
     axios
-      .put<any>("https://10.0.2.4:8080/api/Customers/${customer.id}", {
-        id: customer.id,
-        username: customer.username,
-        name: customer.name,
-        password: customer.password,
-        orders: customer.orders,
+      .post<any>(createBackendRoute(this.BASE_URL), {
+        id: model.id,
+        username: model.username,
+        name: model.name,
+        password: model.password,
+        orders: model.orders || [],
+      })
+      .then((response) => {
+        const created = new Customer({
+          id: response.data.id,
+          username: response.data.username,
+          name: response.data.name,
+          password: response.data.password,
+          orders: response.data.orders || [],
+        });
+        return EitherModule.right(created);
+      })
+      .catch((error) => {
+        return EitherModule.left(error.toString());
+      });
+    return EitherModule.left("Failed to create customer");
+  }
+
+  public static update(model: Customer): EitherModule.Either<string, Customer> {
+    axios
+      .put<any>(createBackendRoute([this.BASE_URL, model.id.toString()]), {
+        id: model.id,
+        username: model.username,
+        name: model.name,
+        password: model.password,
+        orders: model.orders,
       })
       .then((response) => {
         const updatedCustomer = new Customer({
@@ -100,11 +100,9 @@ export default class CustomerController {
     return EitherModule.left("Failed to update customer");
   }
 
-  public static deleteCustomer(
-    id: number,
-  ): EitherModule.Either<string, string> {
+  public static delete(id: number): EitherModule.Either<string, string> {
     axios
-      .delete(`https://10.0.2.4:8080/api/Customers/${id}`)
+      .delete(createBackendRoute([this.BASE_URL, id.toString()]))
       .then(() => {
         return EitherModule.right(
           "Customer met ID ${id} succesvol verwijderd.",
