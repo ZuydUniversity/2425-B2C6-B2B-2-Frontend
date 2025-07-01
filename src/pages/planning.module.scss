@@ -105,12 +105,21 @@
   border: 1px solid #e0e6ed;
   transition:
     transform 0.2s ease-in-out,
-    box-shadow 0.2s ease-in-out;
+    box-shadow 0.2s ease-in-out,
+    border-color 0.2s ease; /* Toevoegen voor selectie effect */
+  cursor: pointer; /* Maak duidelijk dat de kaart klikbaar is */
 }
 
 .card:hover {
   transform: translateY(-5px);
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+// NIEUW: Stijl voor de geselecteerde kaart
+.selectedCard {
+  border: 2px solid #4a90e2; /* Dikke blauwe rand */
+  background-color: #e6f7ff; /* Lichtblauwe achtergrond */
+  box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.2); /* Extra gloed */
 }
 
 .cardHeader {
@@ -209,7 +218,8 @@
   width: 100%;
 }
 
-.formButton:hover {
+.formButton:hover:not(:disabled) {
+  /* Alleen hover effect als niet disabled */
   background-color: #357abd;
   transform: translateY(-2px);
 }
@@ -218,15 +228,36 @@
   transform: translateY(0);
 }
 
+.formButton:disabled {
+  background-color: #cccccc; /* Grijze kleur voor disabled button */
+  cursor: not-allowed;
+}
+
+// NIEUW: Stijl voor de selectie-informatie
+.selectionInfo {
+  margin-bottom: 1.5rem;
+  padding: 0.8rem 1rem;
+  background-color: #e0f2f7; /* Lichtblauwe achtergrond */
+  border: 1px solid #a7d9ee;
+  border-radius: 8px;
+  color: #005f73;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.selectionInfo strong {
+  color: #102a43;
+  font-weight: 700;
+}
+
 /* Media Queries voor responsiviteit */
 @media (max-width: 992px) {
-  /* Pas dit breakpoint aan voor de layout */
   .contentWrapper {
-    flex-direction: column; /* Stapel kolommen op kleinere schermen */
+    flex-direction: column;
   }
   .productionLineStatusSection {
-    flex: none; /* Verwijder vaste breedte */
-    width: 100%; /* Volledige breedte */
+    flex: none;
+    width: 100%;
   }
 }
 

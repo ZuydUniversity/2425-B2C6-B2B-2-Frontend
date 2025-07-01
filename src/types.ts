@@ -111,3 +111,11 @@ export type PartsDelivery = {
   deliveryDate: string;
   isComplete: boolean;
 };
+
+export type Planning = {
+  id: number;
+  orderId: number;
+  productionLineId: number;
+  order?: Order;
+  productionLine?: ProductionLine;
+};
