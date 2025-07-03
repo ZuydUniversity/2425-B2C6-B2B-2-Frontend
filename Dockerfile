@@ -7,6 +7,9 @@ WORKDIR /app
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
+RUN yarn config set --home enableTelemetry 0
+RUN yarn config set enableTelemetry 0
+
 COPY yarn.lock package.json ./
 
 RUN yarn install --frozen-lockfile
@@ -22,6 +25,9 @@ WORKDIR /app
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+
+RUN yarn config set --home enableTelemetry 0
+RUN yarn config set enableTelemetry 0
 
 COPY --from=builder /app/package.json /app/yarn.lock ./
 COPY --from=builder /app/.next .next
