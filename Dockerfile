@@ -1,5 +1,7 @@
-﻿# ---------- BUILDER ----------
-FROM node:24.2.0-alpine3.22 AS builder
+﻿ARG NODE_IMAGE=node:24.2.0-alpine3.22
+
+# ---------- BUILDER ----------
+FROM ${NODE_IMAGE} AS builder
 
 WORKDIR /app
 
@@ -14,7 +16,7 @@ COPY . .
 RUN yarn build
 
 # ---------- RUNNER ----------
-FROM node:24.2.0-alpine3.22 AS runner
+FROM ${NODE_IMAGE} AS runner
 
 WORKDIR /app
 
