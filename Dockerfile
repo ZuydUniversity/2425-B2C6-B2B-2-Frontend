@@ -3,12 +3,12 @@
 # ---------- BUILDER ----------
 FROM ${NODE_IMAGE} AS builder
 
-WORKDIR /app
-
+# telemetry disabling
 ENV NEXT_TELEMETRY_DISABLED=1
-
 RUN yarn config set --home enableTelemetry 0
 RUN yarn config set enableTelemetry 0
+
+WORKDIR /app
 
 COPY yarn.lock package.json ./
 
@@ -21,13 +21,14 @@ RUN yarn build
 # ---------- RUNNER ----------
 FROM ${NODE_IMAGE} AS runner
 
-WORKDIR /app
-
+# telemetry disabling
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
-
 RUN yarn config set --home enableTelemetry 0
 RUN yarn config set enableTelemetry 0
+
+WORKDIR /app
+
+ENV NODE_ENV=production
 
 COPY --from=builder /app/package.json /app/yarn.lock ./
 COPY --from=builder /app/.next .next
