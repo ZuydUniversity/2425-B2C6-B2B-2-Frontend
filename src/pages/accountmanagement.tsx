@@ -14,7 +14,7 @@ interface OrderDataDTO {
   productQuantity: number;
   status: string;
   customerName: string;
-  orderDate: date;
+  orderDate: string;
 }
 
 const AccountManagementPage: FC = () => {
