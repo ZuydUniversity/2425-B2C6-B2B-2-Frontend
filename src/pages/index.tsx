@@ -1,28 +1,50 @@
-﻿import styles from "./index.module.scss";
-import { FC } from "react";
-import Link from "next/link";
-import { pagesList } from "../global/constants/pageslist"; // Import the pages list
+﻿import { FC, useEffect, useState } from "react";
+import { Col, Row, Space, Statistic, Typography } from "antd";
+import { Content } from "antd/es/layout/layout";
 
-// list with all pages.
-const pages = pagesList;
+interface Order {
+  status: string;
+  productQuantity: number;
+  Products: {
+    blueBlocks: number;
+    redBlocks: number;
+    greyBlocks: number;
+  };
+}
 
-/**
- * Homepage component.
- */
-const Home: FC = () => {
+const HomePage: FC = () => {
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [totalOrdersFinished, setTotalOrdersFinished] = useState(0);
+  const [totalBlocks, setTotalBlocks] = useState(0);
+  const [totalProducts, setTotalProducts] = useState(0);
+
+  useEffect(() => {}, []);
+
   return (
-    <div className={styles.wrapper}>
-      <h1 className={styles.title}>Welkom op de Startpagina</h1>
-      <div className={styles.list}>
-        {pages.map((page) => (
-          <Link key={page.name} href={page.href} className={styles.linkItem}>
-            <div className={styles.circle}></div>
-            <span>{page.name}</span>
-          </Link>
-        ))}
-      </div>
-    </div>
+    <Content>
+      <Typography.Title>Dashboard</Typography.Title>
+      <Row>
+        <Col span={6}>
+          <Statistic title="Totaal aantal orders" value={totalOrders} />
+        </Col>
+        <Col span={6}>
+          <Statistic
+            title="Aantal orders succesvol geleverd"
+            value={totalOrdersFinished}
+          />
+        </Col>
+        <Col span={6}>
+          <Statistic title="Aantal producten geleverd" value={totalProducts} />
+        </Col>
+        <Col span={6}>
+          <Statistic
+            title="Aantal blokjes geleverd aan ons totaal"
+            value={totalBlocks}
+          />
+        </Col>
+      </Row>
+    </Content>
   );
 };
 
-export default Home;
+export default HomePage;

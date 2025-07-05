@@ -1,172 +1,246 @@
-import React, { FC, useState } from "react";
-import styles from "./planning.module.scss"; // Controleer dit pad!
+﻿import { FC, useEffect, useState } from "react";
+import {
+  Button,
+  Checkbox,
+  Dropdown,
+  Form,
+  InputNumber,
+  MenuProps,
+  Modal,
+  Space,
+  Table,
+  Typography,
+} from "antd";
+import { Content } from "antd/es/layout/layout";
 
-interface PlanningItem {
-  type: string;
-  periode: string;
-  aantal: number | null;
-  orderId: string | null;
-}
-
-interface ProductionLineStatus {
-  line: string;
-  ordersInProgress: number | null;
+interface WorkOrder {
+  id: number;
+  productionLineId: string;
+  Orders: {
+    id: number;
+    productQuantity: number;
+    status: string;
+  };
 }
 
 const PlanningPage: FC = () => {
-  // Verwijderd: blue, red, gray states
-  const [productionLine, setProductionLine] = useState(""); // State voor geselecteerde productielijn
-  const [selectedOrder, setSelectedOrder] = useState<PlanningItem | null>(null); // State voor de geselecteerde order
+  const [form] = Form.useForm();
+  const [orders, setOrders] = useState<any[] | undefined>(undefined);
+  const [statusFilter, setStatusFilter] = useState<string>("Planning");
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [selectedLine, setSelectedLine] = useState<string | null>(null);
+  const [productionLines, setProductionLines] = useState<any[]>([]);
+  const [selectedProductionLineId, setSelectedProductionLineId] = useState<
+    string | null
+  >();
+  const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
 
-  // Voorbeelddata voor het overzicht: ALLEMAAL LEEG, zoals eerder afgesproken.
-  // Ik heb hier dummy data met orderId's toegevoegd zodat je orders kunt selecteren.
-  // Deze orderId's zouden in een echt scenario van de backend komen.
-  const planningDisplayItems: PlanningItem[] = [
-    { type: "A", periode: "Week 28", aantal: null, orderId: "ORD-001" },
-    { type: "B", periode: "Week 29", aantal: null, orderId: "ORD-002" },
-    { type: "C", periode: "Week 30", aantal: null, orderId: "ORD-003" },
-    { type: "A", periode: "Week 31", aantal: null, orderId: "ORD-004" },
-  ];
+  useEffect(() => {}, []);
 
-  // Dummy data voor het overzicht van productielijnen (placeholders)
-  const productionLineStatuses: ProductionLineStatus[] = [
-    { line: "Productielijn A", ordersInProgress: null }, // ordersInProgress is hier tijd
-    { line: "Productielijn B", ordersInProgress: null },
-    { line: "Productielijn C", ordersInProgress: null },
-  ];
+  const filteredOrders = orders?.filter((order) => {
+    if (statusFilter === "All") return true;
+    return order.status === statusFilter;
+  });
 
-  const handleOrderSelect = (order: PlanningItem) => {
+  const showModal = async (order: any) => {
     setSelectedOrder(order);
-    // Optioneel: scroll naar het formulier na selectie
-    document
-      .getElementById("planningForm")
-      ?.scrollIntoView({ behavior: "smooth" });
+    setIsModalVisible(true);
+
+    /*const { data, error } = await supabase
+      .from("ProductionLines")
+      .select("id, name");
+    if (error) console.error(error);
+    else setProductionLines(data);*/
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (values: any) => {
+    (async () => {
+      /*const { error: updateOrderError } = await supabase
+        .from("Orders")
+        .update({
+          status: "WaitingForPurchasing",
+        })
+        .eq("id", selectedOrder.key);
 
-    if (!selectedOrder) {
-      alert("Selecteer eerst een order uit de planning.");
-      return;
-    }
+      const { data, error: workOrderError } = await supabase
+        .from("WorkOrders")
+        .insert([
+          {
+            orderId: selectedOrder.key,
+            plannedPeriod: values.period,
+            productionLineId: selectedProductionLineId,
+          },
+        ])
+        .select();*/
+      /*if (!data || data.length <= 0) {
+        console.error("Data length is", data.length);
+        return;
+      }*/
+    })();
 
-    if (!productionLine) {
-      alert("Selecteer een productielijn.");
-      return;
-    }
+    console.table(values);
+    form.resetFields();
+    setSelectedProductionLineId(null);
+    handleModalClose();
+  };
 
-    console.log("Geselecteerde Order ID:", selectedOrder.orderId);
-    console.log("Toegewezen aan Productielijn:", productionLine);
+  const handleModalOk = () => {
+    form.submit();
+  };
 
-    // Hier zou je de logica toevoegen om de data naar een backend te sturen
-    alert(
-      `Order ${selectedOrder.orderId} is ingepland op Productielijn: ${productionLine}.`,
+  const handleModalClose = () => {
+    setIsModalVisible(false);
+    setSelectedOrder(null);
+    setSelectedLine(null);
+  };
+
+  const columns = [
+    {
+      title: "Klantnaam",
+      dataIndex: "customerName",
+      key: "customerName",
+    },
+    {
+      title: "Product",
+      dataIndex: "productName",
+      key: "productName",
+    },
+    {
+      title: "Aantal",
+      dataIndex: "quantity",
+      key: "quantity",
+    },
+    {
+      title: "Orderperiode",
+      dataIndex: "orderPeriod",
+      key: "orderPeriod",
+    },
+    {
+      title: "Acties",
+      key: "actions",
+      render: (_: any, record: any) => {
+        const isPlanning = record.status === "Planning";
+        const isRejected = record.status === "Rejected";
+
+        return (
+          <Space>
+            <Button
+              type={isPlanning ? "primary" : "default"}
+              onClick={() => showModal(record)}
+            >
+              Plannen
+            </Button>
+          </Space>
+        );
+      },
+    },
+  ];
+
+  const getProductionBacklog = (productionLineId: string): number => {
+    let total = 0;
+    const filteredWorkOrders = workOrders.filter(
+      (workOrder) => workOrder.productionLineId === productionLineId,
     );
 
-    // Reset de formuliervelden en de geselecteerde order na verzending
-    setProductionLine("");
-    setSelectedOrder(null);
+    filteredWorkOrders.forEach((workOrder) => {
+      total += workOrder.Orders.productQuantity;
+    });
+
+    return total;
   };
 
+  const handleMenuClick: MenuProps["onClick"] = (info) => {
+    setSelectedProductionLineId(info.key);
+    form.setFieldsValue({ productionLine: info.key });
+  };
+
+  const menuItems: MenuProps["items"] = productionLines.map(
+    (productionLine) => ({
+      key: productionLine.id,
+      label:
+        productionLine.name +
+        " Backlog: " +
+        getProductionBacklog(productionLine.id),
+    }),
+  );
+
+  const selectedProductionLine = productionLines.find(
+    (productionLine) => productionLine.id === selectedProductionLineId,
+  );
+
   return (
-    <div className={styles.container}>
-      <h1 className={styles.pageTitle}>Planningsoverzicht</h1>
-
-      <div className={styles.contentWrapper}>
-        {/* Sectie voor Productielijn Status (links) */}
-        <section className={styles.productionLineStatusSection}>
-          <h2 className={styles.sectionTitle}>Productielijnen Status</h2>
-          <div className={styles.statusList}>
-            {productionLineStatuses.map((status, index) => (
-              <div key={index} className={styles.statusItem}>
-                <span className={styles.statusLineName}>{status.line}:</span>
-                <span className={styles.statusOrders}>
-                  Tijd bezig:{" "}
-                  {status.ordersInProgress !== null
-                    ? `${status.ordersInProgress} uur` // Voorbeeld: toon als uren
-                    : "____"}
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <div className={styles.mainContent}>
-          {/* Huidige Planning Sectie (rechtsboven) */}
-          <section className={styles.planningSection}>
-            <h2 className={styles.sectionTitle}>Orders om in te plannen</h2>
-            <div className={styles.grid}>
-              {planningDisplayItems.map((item, index) => (
-                <div
-                  key={item.orderId || index} // Gebruik orderId als key indien aanwezig
-                  className={`${styles.card} ${selectedOrder?.orderId === item.orderId ? styles.selectedCard : ""}`}
-                  onClick={() => handleOrderSelect(item)}
+    <Content>
+      <Table dataSource={filteredOrders} columns={columns} />
+      <Modal
+        title="Order plannen"
+        open={isModalVisible}
+        onOk={handleModalOk}
+        onCancel={handleModalClose}
+      >
+        {selectedOrder && (
+          <>
+            <p>
+              <strong>Klant:</strong> {selectedOrder.customerName}
+            </p>
+            <p>
+              <strong>Product:</strong> {selectedOrder.productName}
+            </p>
+            <p>
+              <strong>Aantal:</strong> {selectedOrder.quantity}
+            </p>
+            <p>
+              <strong>Periode:</strong> {selectedOrder.orderPeriod}
+            </p>
+            <p>
+              <strong>Status:</strong> {selectedOrder.status}
+            </p>
+            <div>
+              <p>
+                <strong>Verder benodigde informatie:</strong>
+              </p>
+              <Form form={form} onFinish={handleSubmit}>
+                <Form.Item
+                  label="Productielijn"
+                  name="productionLine"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Kies a.u.b. een productielijn",
+                    },
+                  ]}
                 >
-                  <div className={styles.cardHeader}>
-                    <span className={styles.cardTypePlaceholder}>
-                      Type: {item.type || "____"}
-                    </span>
-                    <span className={styles.cardOrderId}>
-                      OrderID: {item.orderId || "____"}
-                    </span>
-                  </div>
-                  <div className={styles.cardBody}>
-                    <p>
-                      <strong>Periode:</strong> {item.periode || "____"}
-                    </p>
-                    <p>
-                      <strong>Aantal:</strong>{" "}
-                      {item.aantal !== null ? item.aantal : "____"}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                  <Dropdown
+                    menu={{
+                      items: menuItems,
+                      onClick: handleMenuClick,
+                    }}
+                  >
+                    <Button>
+                      {selectedProductionLine
+                        ? selectedProductionLine.name
+                        : "Kies uw gewenste productielijn ↓"}
+                    </Button>
+                  </Dropdown>
+                </Form.Item>
+                <Form.Item
+                  label="Geplande periode"
+                  name="period"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Vul a.u.b. de huidige periode in",
+                    },
+                  ]}
+                >
+                  <InputNumber min={1} max={80} />
+                </Form.Item>
+              </Form>
             </div>
-          </section>
-
-          {/* Formulier Sectie (rechtsonder) */}
-          <section className={styles.formSection}>
-            <h2 className={styles.sectionTitle}>Order Inplannen</h2>
-            <form onSubmit={handleSubmit} id="planningForm">
-              {selectedOrder ? (
-                <p className={styles.selectionInfo}>
-                  Geselecteerde order: <strong>{selectedOrder.orderId}</strong>{" "}
-                  (Type: {selectedOrder.type})
-                </p>
-              ) : (
-                <p className={styles.selectionInfo}>
-                  Selecteer een order uit het overzicht hierboven.
-                </p>
-              )}
-
-              {/* Productielijn Invoer Veld */}
-              <div className={styles.inputGroup}>
-                <label htmlFor="productielijn" className={styles.inputLabel}>
-                  Toewijzen aan Productielijn:
-                </label>
-                <input
-                  id="productielijn"
-                  type="text"
-                  value={productionLine}
-                  onChange={(e) => setProductionLine(e.target.value)}
-                  className={styles.inputField}
-                  placeholder="Bijv. Lijn A, Lijn B"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className={styles.formButton}
-                disabled={!selectedOrder}
-              >
-                Order Inplannen
-              </button>
-            </form>
-          </section>
-        </div>
-      </div>
-    </div>
+          </>
+        )}
+      </Modal>
+    </Content>
   );
 };
 

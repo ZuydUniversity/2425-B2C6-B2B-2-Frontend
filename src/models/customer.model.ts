@@ -1,31 +1,35 @@
-import Order from "./order.model";
+﻿import { Order } from "./order.model";
 
-interface CustomerConstructor {
+export interface CustomerProperties {
   id: number;
-  username: string;
   name: string;
-  password: string;
-  orders?: Order[];
+  orders: Order[];
 }
 
-export default class Customer {
-  public id: number;
-  public username: string;
-  public name: string;
-  public password: string;
-  public orders: Order[];
+export class Customer implements CustomerProperties {
+  public id;
+  public name;
+  public orders;
 
-  constructor({
-    id,
-    username,
-    name,
-    password,
-    orders = [],
-  }: CustomerConstructor) {
-    this.id = id;
-    this.username = username;
-    this.name = name;
-    this.password = password;
-    this.orders = orders.map((order) => new Order(order));
+  public constructor(properties: CustomerProperties) {
+    this.id = properties.id;
+    this.name = properties.name;
+    this.orders = properties.orders;
+  }
+
+  public static fromJSON(json: any): Customer {
+    return new Customer({
+      id: json.id,
+      name: json.name,
+      orders: json.orders?.map((o: any) => Order.fromJSON(o)) ?? [],
+    });
+  }
+
+  public toJSON(): any {
+    return {
+      id: this.id,
+      name: this.name,
+      orders: this.orders.map((order) => order.id),
+    };
   }
 }

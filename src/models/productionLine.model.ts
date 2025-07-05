@@ -1,17 +1,33 @@
-interface ApprovalFormConstructor {
+﻿export interface ProductionLineInterface {
   id: number;
-  lineName: string;
+  name: string;
   isActive: boolean;
 }
 
-export default class ProductionLine {
-  public id: number;
-  public lineName: string;
-  public isActive: boolean;
+export class ProductionLine {
+  public id;
+  public name;
+  public isActive;
 
-  constructor({ id, lineName, isActive }: ApprovalFormConstructor) {
-    this.id = id;
-    this.lineName = lineName;
-    this.isActive = isActive;
+  public constructor(properties: ProductionLineInterface) {
+    this.id = properties.id;
+    this.name = properties.name;
+    this.isActive = properties.isActive;
+  }
+
+  public static fromJSON(json: any): ProductionLine {
+    return new ProductionLine({
+      id: json.id,
+      name: json.name,
+      isActive: json.isActive,
+    });
+  }
+
+  public toJSON(): any {
+    return {
+      id: this.id,
+      name: this.name,
+      isActive: this.isActive,
+    };
   }
 }

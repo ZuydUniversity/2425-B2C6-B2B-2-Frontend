@@ -1,55 +1,69 @@
-import axios from "axios";
-import ProductionLine from "../models/productionLine.model";
-import * as EitherModule from "fp-ts/Either";
+import { ProductionLine } from "../models/productionline.model";
+import { createBackendRoute } from "../global/env";
 
-export default class ProductionLineController {
-  public static GetAll(): EitherModule.Either<string, ProductionLine[]> {
-    axios
-      .get<any[]>("https://10.0.2.4:8080/api/ProductLine")
-      .then((response) => {
-        const result: ProductionLine[] = [];
-        const data = response.data;
+export interface CreateProductionLineDTO {}
 
-        data.forEach((item) => {
-          result.push(
-            new ProductionLine({
-              id: item["id"] as number,
-              lineName: item["lineName"] as string,
-              isActive: item["isActive"] as boolean,
-            }),
-          );
-        });
-
-        return EitherModule.right(result);
-      })
-      .catch((error) => {
-        return EitherModule.left(error.toString());
-      });
-    return EitherModule.left("Failed to fetch production lines");
+export class ProductionLineController {
+  public static async readAll(): Promise<ProductionLine[]> {
+    const response = await fetch(createBackendRoute("ProductionLine"));
+    const data = await response.json();
+    return data.map((item: any) => ProductionLine.fromJSON(item));
   }
 
-  public static CreateProductionLine(
-    productionLine: ProductionLine,
-  ): EitherModule.Either<string, ProductionLine> {
-    axios
-      .post<any>("https://10.0.2.4:8080/api/ProductLine", {
-        id: productionLine.id,
-        lineName: productionLine.lineName,
-        isActive: productionLine.isActive,
-      })
-      .then((response) => {
-        const item = response.data;
+  public static async readOneById(id: number): Promise<ProductionLine> {
+    const response = await fetch(
+      createBackendRoute(["ProductionLine", id.toString()]),
+    );
+    const data = await response.json();
+    return ProductionLine.fromJSON(data);
+  }
 
-        const newProductionLine = new ProductionLine({
-          id: response.data["id"] as number,
-          lineName: response.data["lineName"] as string,
-          isActive: response.data["isActive"] as boolean,
-        });
-        return EitherModule.right(newProductionLine);
-      })
-      .catch((error) => {
-        return EitherModule.left(error.toString());
-      });
-    return EitherModule.left("Failed to create production line");
+  public static async create(
+    productionLine: CreateProductionLineDTO,
+  ): Promise<ProductionLine> {
+    const response = await fetch(createBackendRoute("ProductionLine"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(productionLine),
+    });
+
+    const data = response.json();
+
+    return ProductionLine.fromJSON(data);
+  }
+
+  public static async update(
+    productionLine: ProductionLine,
+  ): Promise<ProductionLine> {
+    const id = productionLine.id;
+
+    const productionLineJSON = productionLine.toJSON();
+
+    const response = await fetch(
+      createBackendRoute(["ProductionLine", id.toString()]),
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(productionLineJSON),
+      },
+    );
+
+    const data = await response.json();
+
+    return ProductionLine.fromJSON(data);
+  }
+
+  public static async delete(id: number): Promise<ProductionLine> {
+    const response = await fetch(
+      createBackendRoute(["ProductionLine", id.toString()]),
+      {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+
+    const data = await response.json();
+
+    return ProductionLine.fromJSON(data);
   }
 }

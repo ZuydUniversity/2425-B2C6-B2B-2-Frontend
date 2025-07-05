@@ -1,4 +1,4 @@
-interface ProductConstructor {
+﻿export interface ProductProperties {
   id: number;
   name: string;
   price: number;
@@ -9,33 +9,50 @@ interface ProductConstructor {
   productionTime: number;
 }
 
-export default class Product {
-  public id: number;
-  public name: string;
-  public price: number;
-  public costPrice: number;
-  public blueBlocks: number;
-  public redBlocks: number;
-  public greyBlocks: number;
-  public productionTime: number;
+export class Product implements ProductProperties {
+  public id;
+  public name;
+  public price;
+  public costPrice;
+  public blueBlocks;
+  public redBlocks;
+  public greyBlocks;
+  public productionTime;
 
-  constructor({
-    id,
-    name,
-    price,
-    costPrice,
-    blueBlocks,
-    redBlocks,
-    greyBlocks,
-    productionTime,
-  }: ProductConstructor) {
-    this.id = id;
-    this.name = name;
-    this.price = price;
-    this.costPrice = costPrice;
-    this.blueBlocks = blueBlocks;
-    this.redBlocks = redBlocks;
-    this.greyBlocks = greyBlocks;
-    this.productionTime = productionTime;
+  public constructor(properties: ProductProperties) {
+    this.id = properties.id;
+    this.name = properties.name;
+    this.price = properties.price;
+    this.costPrice = properties.costPrice;
+    this.blueBlocks = properties.blueBlocks;
+    this.redBlocks = properties.redBlocks;
+    this.greyBlocks = properties.greyBlocks;
+    this.productionTime = properties.productionTime;
+  }
+
+  public static fromJSON(json: any): Product {
+    return new Product({
+      id: json.id,
+      name: json.name,
+      price: json.price,
+      costPrice: json.costPrice,
+      blueBlocks: json.blueBlocks,
+      redBlocks: json.redBlocks,
+      greyBlocks: json.greyBlocks,
+      productionTime: json.productionTime,
+    });
+  }
+
+  public toJSON(): any {
+    return {
+      id: this.id,
+      name: this.name,
+      price: this.price,
+      costPrice: this.costPrice,
+      blueBlocks: this.blueBlocks,
+      redBlocks: this.redBlocks,
+      greyBlocks: this.greyBlocks,
+      productionTime: this.productionTime,
+    };
   }
 }

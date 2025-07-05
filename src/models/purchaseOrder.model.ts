@@ -1,37 +1,41 @@
-interface PurchaseOrderConstructor {
+﻿import { Product } from "./product.model";
+import { ProductionLine } from "./productionline.model";
+
+export interface PurchaseOrderProperties {
   id: number;
-  orderNumber: string;
-  orderDate: Date;
   status: string;
-  productId: number;
-  supplierId: number;
-  quantity: number;
+  product: Product;
+  productionLine: ProductionLine;
 }
 
-export default class PurchaseOrder {
-  public id: number;
-  public orderNumber: string;
-  public orderDate: Date;
-  public status: string;
-  public productId: number;
-  public supplierId: number;
-  public quantity: number;
+export class PurchaseOrder implements PurchaseOrderProperties {
+  public id;
+  public status;
+  public product;
+  public productionLine;
 
-  constructor({
-    id,
-    orderNumber,
-    orderDate,
-    status,
-    productId,
-    supplierId,
-    quantity,
-  }: PurchaseOrderConstructor) {
-    this.id = id;
-    this.orderNumber = orderNumber;
-    this.orderDate = orderDate;
-    this.status = status;
-    this.productId = productId;
-    this.supplierId = supplierId;
-    this.quantity = quantity;
+  public constructor(properties: PurchaseOrderProperties) {
+    this.id = properties.id;
+    this.status = properties.status;
+    this.product = properties.product;
+    this.productionLine = properties.productionLine;
+  }
+
+  public static fromJSON(json: any): PurchaseOrder {
+    return new PurchaseOrder({
+      id: json.id,
+      status: json.status,
+      product: Product.fromJSON(json.product),
+      productionLine: ProductionLine.fromJSON(json.productionLine),
+    });
+  }
+
+  public toJSON(): any {
+    return {
+      id: this.id,
+      status: this.status,
+      productId: this.product.id,
+      productionLineId: this.productionLine.id,
+    };
   }
 }

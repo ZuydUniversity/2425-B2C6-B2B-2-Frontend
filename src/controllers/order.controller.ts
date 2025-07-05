@@ -1,229 +1,72 @@
-﻿import axios from "axios";
-import Order from "../models/order.model";
-import Customer from "../models/customer.model";
-import Product from "../models/product.model";
-import EventLog from "../models/eventLog.model";
-import * as EitherModule from "fp-ts/Either";
+﻿import { Order } from "../models/order.model";
+import { createBackendRoute } from "../global/env";
 
-export default class OrderController {
-  public static getAll(): EitherModule.Either<string, Order[]> {
-    axios
-      .get<any[]>("https://10.0.2.4:8080/api/Orders")
-      .then((response) => {
-        const result: Order[] = [];
-        const data = response.data;
+export interface CreateOrderDTO {
+  quantity: number;
+  customerId: number;
+  productId: number;
+  status: string;
+}
 
-        data.forEach((item) => {
-          result.push(
-            new Order({
-              id: item["id"] as number,
-              customerId: item["customerId"] as number,
-              productId: item["productId"] as number,
-              quantity: item["quantity"] as number,
-              totalPrice: item["totalPrice"] as number,
-              status: item["status"] as string,
-              orderDate: item["orderDate"] as Date,
-              approvedDate: item["approvedDate"] as Date,
-              rejectedDate: item["rejectedDate"] as Date,
-              deliveredDate: item["deliveredDate"] as Date,
-              comment: item["comment"] as string,
-              forwardedToSupplier: item["forwardedToSupplier"] as boolean,
-              rejectionReason: item["rejectionReason"] as string,
-              customer: item["customer"] as Customer,
-              product: item["product"] as Product,
-              eventLogs: item["eventLogs"] || ([] as EventLog[]),
-            }),
-          );
-        });
-
-        return EitherModule.right(result);
-      })
-      .catch((error) => {
-        return EitherModule.left(error.toString());
-      });
-
-    return EitherModule.right([]);
+export class OrderController {
+  public static async readAll(): Promise<Order[]> {
+    const response = await fetch(createBackendRoute("Orders"));
+    const data = await response.json();
+    return data.map((item: any) => Order.fromJSON(item));
   }
 
-  public static CreateOrder(order: Order): EitherModule.Either<string, Order> {
-    axios
-      .post<any>("https://10.0.2.4:8080/api/Orders", {
-        id: order.id,
-        customerId: order.customerId,
-        productId: order.productId,
-        quantity: order.quantity,
-        totalPrice: order.totalPrice,
-        status: order.status,
-        orderDate: order.orderDate,
-        approvedDate: order.approvedDate,
-        rejectedDate: order.rejectedDate,
-        deliveredDate: order.deliveredDate,
-        comment: order.comment,
-        forwardedToSupplier: order.forwardedToSupplier,
-        rejectionReason: order.rejectionReason,
-        customer: order.customer,
-        product: order.product,
-        eventLogs: order.eventLogs || [],
-      })
-      .then((response) => {
-        const created = new Order({
-          id: response.data.id,
-          customerId: response.data.customerId,
-          productId: response.data.productId,
-          quantity: response.data.quantity,
-          totalPrice: response.data.totalPrice,
-          status: response.data.status,
-          orderDate: response.data.orderDate,
-          approvedDate: response.data.approvedDate,
-          rejectedDate: response.data.rejectedDate,
-          deliveredDate: response.data.deliveredDate,
-          comment: response.data.comment,
-          forwardedToSupplier: response.data.forwardedToSupplier,
-          rejectionReason: response.data.rejectionReason,
-          customer: response.data.customer as Customer,
-          product: response.data.product as Product,
-          eventLogs: response.data.eventLogs || [],
-        });
-        return EitherModule.right(created);
-      })
-      .catch((error) => {
-        return EitherModule.left(error.toString());
-      });
-    return EitherModule.left("Failed to create order");
+  public static async readOneById(id: number): Promise<Order> {
+    const response = await fetch(createBackendRoute(["Orders", id.toString()]));
+    const data = await response.json();
+    return Order.fromJSON(data);
   }
 
-  public static async getOneById(
-    idToGet: number,
-  ): Promise<EitherModule.Either<string, Order>> {
-    try {
-      const response = await axios.get<any>(
-        "https://10.0.2.4:8080/api/Orders/" + idToGet,
-      );
-      const item = response.data;
+  public static async create(order: CreateOrderDTO): Promise<Order> {
+    console.log("create order called!");
+    console.table(order);
+    console.log(JSON.stringify(order));
 
-      const order = new Order({
-        id: item["id"] as number,
-        customerId: item["customerId"] as number,
-        productId: item["productId"] as number,
-        quantity: item["quantity"] as number,
-        totalPrice: item["totalPrice"] as number,
-        status: item["status"] as string,
-        orderDate: item["orderDate"] as Date,
-        approvedDate: item["approvedDate"] as Date,
-        rejectedDate: item["rejectedDate"] as Date,
-        deliveredDate: item["deliveredDate"] as Date,
-        comment: item["comment"] as string,
-        forwardedToSupplier: item["forwardedToSupplier"] as boolean,
-        rejectionReason: item["rejectionReason"] as string,
-        customer: item["customer"] as Customer,
-        product: item["product"] as Product,
-        eventLogs: item["eventLogs"] || ([] as EventLog[]),
-      });
+    const response = await fetch(createBackendRoute("Orders"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(order),
+    });
 
-      return EitherModule.right(order);
-    } catch (error: any) {
-      return EitherModule.left(error.toString());
-    }
+    const data = await response.json();
+
+    return Order.fromJSON(data);
   }
 
-  public static updateOrder(order: Order): EitherModule.Either<string, Order> {
-    axios
-      .put<any>("https://10.0.2.4:8080/api/Orders/" + order.id, {
-        id: order.id,
-        customerId: order.customerId,
-        productId: order.productId,
-        quantity: order.quantity,
-        totalPrice: order.totalPrice,
-        status: order.status,
-        orderDate: order.orderDate,
-        approvedDate: order.approvedDate,
-        rejectedDate: order.rejectedDate,
-        deliveredDate: order.deliveredDate,
-        comment: order.comment,
-        forwardedToSupplier: order.forwardedToSupplier,
-        rejectionReason: order.rejectionReason,
-        customer: order.customer,
-        product: order.product,
-        eventLogs: order.eventLogs || [],
-      })
-      .then((response) => {
-        const updatedOrder = new Order({
-          id: response.data.id,
-          customerId: response.data.customerId,
-          productId: response.data.productId,
-          quantity: response.data.quantity,
-          totalPrice: response.data.totalPrice,
-          status: response.data.status,
-          orderDate: response.data.orderDate,
-          approvedDate: response.data.approvedDate,
-          rejectedDate: response.data.rejectedDate,
-          deliveredDate: response.data.deliveredDate,
-          comment: response.data.comment,
-          forwardedToSupplier: response.data.forwardedToSupplier,
-          rejectionReason: response.data.rejectionReason,
-          customer: response.data.customer as Customer,
-          product: response.data.product as Product,
-          eventLogs: response.data.eventLogs || [],
-        });
-        return EitherModule.right(updatedOrder);
-      })
-      .catch((error) => {
-        return EitherModule.left(error.toString());
-      });
-    return EitherModule.left("Failed to update order");
+  public static async update(order: Order): Promise<Order> {
+    const id = order.id;
+
+    const orderJSON = order.toJSON();
+
+    const response = await fetch(
+      createBackendRoute(["Orders", id.toString()]),
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderJSON),
+      },
+    );
+
+    const data = await response.json();
+
+    return Order.fromJSON(data);
   }
 
-  public static deleteOrder(id: number): EitherModule.Either<string, boolean> {
-    axios
-      .delete<any>("https://10.0.2.4:8080/api/Orders/" + id)
-      .then(() => {
-        return EitherModule.right(
-          "Customer met ID ${id} succesvol verwijderd.",
-        );
-      })
-      .catch((error) => {
-        return EitherModule.left(error.toString());
-      });
-    return EitherModule.left("Failed to delete order");
-  }
+  public static async delete(id: number): Promise<Order> {
+    const response = await fetch(
+      createBackendRoute(["Orders", id.toString()]),
+      {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      },
+    );
 
-  public static async updateStatus(
-    id: number,
-    newStatus: string,
-  ): Promise<EitherModule.Either<string, Order>> {
-    const orderEither = await this.getOneById(id);
-    if (EitherModule.isRight(orderEither)) {
-      const order = orderEither.right;
-      order.status = newStatus;
+    const data = response.json();
 
-      return this.updateOrder(order);
-    } else {
-      return EitherModule.left("Order not found");
-    }
-  }
-
-  public static async addEventLog(
-    orderId: number,
-    eventLog: EventLog,
-  ): Promise<EitherModule.Either<string, Order>> {
-    const orderEither = await this.getOneById(orderId);
-    if (EitherModule.isLeft(orderEither)) {
-      return EitherModule.left("Order niet gevonden");
-    }
-    const order = orderEither.right;
-
-    const highestId = (order.eventLogs ?? []).reduce((maxId, log) => {
-      return log.id > maxId ? log.id : maxId;
-    }, 0);
-
-    const newEventLog = eventLog;
-    newEventLog.id = highestId + 1;
-
-    if (!order.eventLogs) {
-      order.eventLogs = [];
-    }
-    order.eventLogs.push(newEventLog);
-
-    return await this.updateOrder(order);
+    return Order.fromJSON(data);
   }
 }

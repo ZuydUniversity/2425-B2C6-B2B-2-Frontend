@@ -1,124 +1,67 @@
-import axios from "axios";
-import Customer from "../models/customer.model";
-import Order from "../models/order.model";
-import * as EitherModule from "fp-ts/Either";
+﻿import { Customer } from "../models/customer.model";
+import { createBackendRoute } from "../global/env";
 
-export default class CustomerController {
-  public static async getAll(): Promise<
-    EitherModule.Either<string, Customer[]>
-  > {
-    try {
-      const response = await axios.get<any[]>(
-        "https://10.0.2.4:8080/api/Customers",
-      );
-      const data = response.data;
+export interface CreateCustomerDTO {
+  name: string;
+}
 
-      const result: Customer[] = data.map(
-        (item) =>
-          new Customer({
-            id: item["id"] as number,
-            username: item["username"] as string,
-            name: item["name"] as string,
-            password: item["password"] as string,
-            orders: item["orders"] || ([] as Order[]),
-          }),
-      );
-
-      return EitherModule.right(result);
-    } catch (error: any) {
-      return EitherModule.left(
-        "Fout bij ophalen van klanten: " + error.message,
-      );
-    }
+export class CustomerController {
+  public static async readAll(): Promise<Customer[]> {
+    const response = await fetch(createBackendRoute("Customers"));
+    const data = await response.json();
+    return data.map((item: any) => Customer.fromJSON(item));
   }
 
-  public static createCustomer(
-    customer: Customer,
-  ): EitherModule.Either<string, Customer> {
-    axios
-      .post<any>("https://10.0.2.4:8080/api/Customers", {
-        id: customer.id,
-        username: customer.username,
-        name: customer.name,
-        password: customer.password,
-        orders: customer.orders || [],
-      })
-      .then((response) => {
-        const created = new Customer({
-          id: response.data.id,
-          username: response.data.username,
-          name: response.data.name,
-          password: response.data.password,
-          orders: response.data.orders || [],
-        });
-        return EitherModule.right(created);
-      })
-      .catch((error) => {
-        return EitherModule.left(error.toString());
-      });
-    return EitherModule.left("Failed to create customer");
+  public static async readOneById(id: number): Promise<Customer> {
+    const response = await fetch(
+      createBackendRoute(["Customers", id.toString()]),
+    );
+    const data = await response.json();
+    return Customer.fromJSON(data);
   }
 
-  public static getById(id: number): EitherModule.Either<string, Customer> {
-    axios
-      .get<any>("https://10.0.2.4:8080/api/Customers/${id}")
-      .then((response) => {
-        const item = response.data;
-        const customer = new Customer({
-          id: item["id"] as number,
-          username: item["username"] as string,
-          name: item["name"] as string,
-          password: item["password"] as string,
-          orders: item["orders"] || ([] as Order[]),
-        });
-        return EitherModule.right(customer);
-      })
-      .catch((error) => {
-        return EitherModule.left(error.toString());
-      });
-    return EitherModule.left("Failed to fetch customer by ID");
+  public static async create(customer: CreateCustomerDTO): Promise<Customer> {
+    const response = await fetch(createBackendRoute("Customers"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(customer),
+    });
+
+    const data = await response.json();
+
+    return Customer.fromJSON(data);
   }
 
-  public static updateCustomer(
-    customer: Customer,
-  ): EitherModule.Either<string, Customer> {
-    axios
-      .put<any>("https://10.0.2.4:8080/api/Customers/${customer.id}", {
-        id: customer.id,
-        username: customer.username,
-        name: customer.name,
-        password: customer.password,
-        orders: customer.orders,
-      })
-      .then((response) => {
-        const updatedCustomer = new Customer({
-          id: response.data.id,
-          username: response.data.username,
-          name: response.data.name,
-          password: response.data.password,
-          orders: response.data.orders || [],
-        });
-        return EitherModule.right(updatedCustomer);
-      })
-      .catch((error) => {
-        return EitherModule.left(error.toString());
-      });
-    return EitherModule.left("Failed to update customer");
+  public static async update(customer: Customer): Promise<Customer> {
+    const id = customer.id;
+
+    const customerJSON = customer.toJSON();
+
+    const response = await fetch(
+      createBackendRoute(["Customers", id.toString()]),
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(customerJSON),
+      },
+    );
+
+    const data = await response.json();
+
+    return Customer.fromJSON(data);
   }
 
-  public static deleteCustomer(
-    id: number,
-  ): EitherModule.Either<string, string> {
-    axios
-      .delete(`https://10.0.2.4:8080/api/Customers/${id}`)
-      .then(() => {
-        return EitherModule.right(
-          "Customer met ID ${id} succesvol verwijderd.",
-        );
-      })
-      .catch((error) => {
-        return EitherModule.left(error.toString());
-      });
-    return EitherModule.left("Failed to delete customer");
+  public static async delete(id: number): Promise<Customer> {
+    const response = await fetch(
+      createBackendRoute(["Customers", id.toString()]),
+      {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+
+    const data = await response.json();
+
+    return Customer.fromJSON(data);
   }
 }

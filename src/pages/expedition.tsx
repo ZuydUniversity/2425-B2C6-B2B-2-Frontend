@@ -1,98 +1,140 @@
-import React, { useState } from "react";
-import { apiCreateExpedition } from "../api/expedition";
-import type { Expedition } from "../types";
+﻿import { FC, useEffect, useState } from "react";
+import { Button, Form, Input, Skeleton, Space, Table, Typography } from "antd";
+import { Order } from "../models/order.model";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { OrderController } from "../controllers/order.controller";
+import { queryClient } from "./_app";
 
-const emptyExpedition: Expedition = {
-  id: 0,
-  shipmentReference: "",
-  shipmentDate: "",
-  destination: "",
-  isDelivered: false,
-};
+interface OrderDataDTO {
+  key: number;
+  orderId: number;
+  productName: string;
+  productQuantity: number;
+  blueBlocks: number;
+  redBlocks: number;
+  greyBlocks: number;
+  customerName: string;
+}
 
-const ExpeditionPage = () => {
-  const [expeditions, setExpeditions] = useState<Expedition[]>([]);
-  const [newExpedition, setNewExpedition] = useState<Expedition>({
-    ...emptyExpedition,
+const ExpeditionPage: FC = () => {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const { isPending, error, data } = useQuery({
+    queryKey: ["expedition_orders"],
+    queryFn: OrderController.readAll,
   });
-  const [message, setMessage] = useState<string | null>(null);
+  useEffect(() => setOrders(data || []), [data]);
 
-  const handleChange = (field: keyof Expedition, value: string | boolean) => {
-    setNewExpedition((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+  const mutation = useMutation({
+    mutationFn: OrderController.update,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expedition_orders"] });
+    },
+  });
+
+  const dataSource: OrderDataDTO[] = orders
+    .filter((order) => order.status === "ReadyForDelivery")
+    .map(
+      (order): OrderDataDTO => ({
+        key: order.id,
+        orderId: order.id,
+        productName: order.product.name,
+        productQuantity: order.quantity,
+        blueBlocks: order.product.blueBlocks,
+        redBlocks: order.product.redBlocks,
+        greyBlocks: order.product.greyBlocks,
+        customerName: order.customer.name,
+      }),
+    );
+
+  const handleDelivered = async (orderId: number) => {
+    const order = orders.find((order) => order.id === orderId);
+
+    if (order === undefined) return;
+
+    order.status = "Delivered";
+
+    mutation.mutate(order);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await apiCreateExpedition(newExpedition);
-      setExpeditions((prev) => [...prev, newExpedition]);
-      setNewExpedition({ ...emptyExpedition });
-      setMessage("Expeditie toegevoegd!");
-    } catch {
-      setMessage("Fout bij toevoegen van expeditie.");
-    }
+  const handleRejected = async (orderId: number, rejectedReason: string) => {
+    const order = orders.find((order) => order.id === orderId);
+
+    if (order === undefined) return;
+
+    order.status = "Rejected";
+    order.rejectedDate = new Date();
+    order.rejectionReason = rejectedReason;
+
+    mutation.mutate(order);
   };
+
+  const columns = [
+    {
+      title: "Klantnaam",
+      dataIndex: "customerName",
+      key: "customerName",
+    },
+    {
+      title: "Type",
+      dataIndex: "productName",
+      key: "productName",
+    },
+    {
+      title: "Aantal",
+      dataIndex: "productQuantity",
+      key: "productQuantity",
+    },
+    {
+      title: "Acties",
+      key: "actions",
+      render: (_: any, record: OrderDataDTO) => {
+        return (
+          <Space>
+            <Button
+              type="primary"
+              onClick={() => handleDelivered(record.orderId)}
+            >
+              Geleverd
+            </Button>
+            <Form
+              onFinish={(values) =>
+                handleRejected(record.orderId, values["rejectedReason"])
+              }
+            >
+              <Form.Item
+                label="Rede voor afwijzing"
+                name="rejectedReason"
+                rules={[
+                  {
+                    required: true,
+                    message: "Vul a.u.b de rede voor afwijzing in.",
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item label={null}>
+                <Button type="default" danger htmlType="submit">
+                  Afwijzen
+                </Button>
+              </Form.Item>
+            </Form>
+          </Space>
+        );
+      },
+    },
+  ];
+
+  if (isPending) return <Skeleton />;
+  if (error)
+    return (
+      <Typography>Er was een fout bij het ophalen van de gegevens.</Typography>
+    );
 
   return (
-    <div style={{ padding: 24 }}>
-      <h2>Expedities</h2>
-      <form onSubmit={handleSubmit} style={{ marginBottom: 24 }}>
-        <input
-          type="text"
-          placeholder="Shipment Reference"
-          value={newExpedition.shipmentReference}
-          onChange={(e) => handleChange("shipmentReference", e.target.value)}
-          required
-        />
-        <input
-          type="date"
-          placeholder="Shipment Date"
-          value={newExpedition.shipmentDate}
-          onChange={(e) => handleChange("shipmentDate", e.target.value)}
-          required
-        />
-        <input
-          type="text"
-          placeholder="Destination"
-          value={newExpedition.destination}
-          onChange={(e) => handleChange("destination", e.target.value)}
-          required
-        />
-        <label>
-          <input
-            type="checkbox"
-            checked={newExpedition.isDelivered}
-            onChange={(e) => handleChange("isDelivered", e.target.checked)}
-          />
-          Is Delivered
-        </label>
-        <button type="submit">Toevoegen</button>
-      </form>
-      {message && <div>{message}</div>}
-      <table border={1} cellPadding={8}>
-        <thead>
-          <tr>
-            <th>Shipment Reference</th>
-            <th>Shipment Date</th>
-            <th>Destination</th>
-            <th>Is Delivered</th>
-          </tr>
-        </thead>
-        <tbody>
-          {expeditions.map((e, idx) => (
-            <tr key={idx}>
-              <td>{e.shipmentReference}</td>
-              <td>{e.shipmentDate}</td>
-              <td>{e.destination}</td>
-              <td>{e.isDelivered ? "Ja" : "Nee"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <Table dataSource={dataSource} columns={columns} />
+    </>
   );
 };
 
