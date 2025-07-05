@@ -7,43 +7,97 @@ import {
   InputNumber,
   MenuProps,
   Modal,
+  Skeleton,
   Space,
   Table,
   Typography,
 } from "antd";
 import { Content } from "antd/es/layout/layout";
+import { Order } from "../models/order.model";
+import { useQuery } from "@tanstack/react-query";
+import { OrderController } from "../controllers/order.controller";
+import { Planning } from "../models/planning.model";
+import { PlanningController } from "../controllers/planning.controller";
+import { ProductionLine } from "../models/productionline.model";
+import { ProductionLineController } from "../controllers/productionline.controller";
 
-interface WorkOrder {
-  id: number;
-  productionLineId: string;
-  Orders: {
-    id: number;
-    productQuantity: number;
-    status: string;
-  };
+interface OrderDataDTO {
+  key: number;
+  orderId: number;
+  status: string;
+  customerName: string;
+  productName: string;
+  quantity: number;
+  orderPeriod: number;
 }
 
 const PlanningPage: FC = () => {
   const [form] = Form.useForm();
-  const [orders, setOrders] = useState<any[] | undefined>(undefined);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const {
+    isPending: ordersIsPending,
+    error: ordersError,
+    data: ordersData,
+  } = useQuery({
+    queryKey: ["planning_orders"],
+    queryFn: OrderController.readAll,
+  });
+  useEffect(() => setOrders(ordersData || []), [ordersData]);
+
+  const [plannings, setPlannings] = useState<Planning[]>([]);
+  const {
+    isPending: planningsIsPending,
+    error: planningsError,
+    data: planningsData,
+  } = useQuery({
+    queryKey: ["planning_plannings"],
+    queryFn: PlanningController.readAll,
+  });
+  useEffect(() => setPlannings(planningsData || []), [planningsData]);
+
+  const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
+  const {
+    isPending: productionLineIsPending,
+    error: productionLineError,
+    data: productionLineData,
+  } = useQuery({
+    queryKey: ["planning_production_lines"],
+    queryFn: ProductionLineController.readAll,
+  });
+  useEffect(
+    () => setProductionLines(productionLineData || []),
+    [productionLineData],
+  );
+
   const [statusFilter, setStatusFilter] = useState<string>("Planning");
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<OrderDataDTO | null>(null);
   const [selectedLine, setSelectedLine] = useState<string | null>(null);
-  const [productionLines, setProductionLines] = useState<any[]>([]);
+
   const [selectedProductionLineId, setSelectedProductionLineId] = useState<
-    string | null
+    number | null
   >();
-  const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
 
   useEffect(() => {}, []);
 
-  const filteredOrders = orders?.filter((order) => {
+  const filteredOrders = orders.filter((order) => {
     if (statusFilter === "All") return true;
     return order.status === statusFilter;
   });
 
-  const showModal = async (order: any) => {
+  const dataSource: OrderDataDTO[] = filteredOrders.map(
+    (order): OrderDataDTO => ({
+      key: order.id,
+      orderId: order.id,
+      status: order.status,
+      customerName: order.customer.name,
+      productName: order.product.name,
+      quantity: order.quantity,
+      orderPeriod: 1,
+    }),
+  );
+
+  const showModal = async (order: OrderDataDTO) => {
     setSelectedOrder(order);
     setIsModalVisible(true);
 
@@ -119,7 +173,7 @@ const PlanningPage: FC = () => {
     {
       title: "Acties",
       key: "actions",
-      render: (_: any, record: any) => {
+      render: (_: any, record: OrderDataDTO) => {
         const isPlanning = record.status === "Planning";
         const isRejected = record.status === "Rejected";
 
@@ -137,21 +191,21 @@ const PlanningPage: FC = () => {
     },
   ];
 
-  const getProductionBacklog = (productionLineId: string): number => {
+  const getProductionBacklog = (productionLineId: number): number => {
     let total = 0;
-    const filteredWorkOrders = workOrders.filter(
-      (workOrder) => workOrder.productionLineId === productionLineId,
+    const filteredPlannings = plannings.filter(
+      (planning) => planning.productionLine.id === productionLineId,
     );
 
-    filteredWorkOrders.forEach((workOrder) => {
-      total += workOrder.Orders.productQuantity;
+    filteredPlannings.forEach((planning) => {
+      total += planning.order.quantity;
     });
 
     return total;
   };
 
   const handleMenuClick: MenuProps["onClick"] = (info) => {
-    setSelectedProductionLineId(info.key);
+    setSelectedProductionLineId(Number(info.key));
     form.setFieldsValue({ productionLine: info.key });
   };
 
@@ -169,9 +223,17 @@ const PlanningPage: FC = () => {
     (productionLine) => productionLine.id === selectedProductionLineId,
   );
 
+  if (ordersIsPending || productionLineIsPending || planningsIsPending)
+    return <Skeleton />;
+
+  if (ordersError || productionLineError || planningsError)
+    return (
+      <Typography>Er was een fout bij het ophalen van de data.</Typography>
+    );
+
   return (
     <Content>
-      <Table dataSource={filteredOrders} columns={columns} />
+      <Table dataSource={dataSource} columns={columns} />
       <Modal
         title="Order plannen"
         open={isModalVisible}
