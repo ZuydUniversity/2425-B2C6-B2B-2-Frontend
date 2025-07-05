@@ -14,12 +14,13 @@ import {
 } from "antd";
 import { Content } from "antd/es/layout/layout";
 import { Order } from "../models/order.model";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { OrderController } from "../controllers/order.controller";
 import { Planning } from "../models/planning.model";
 import { PlanningController } from "../controllers/planning.controller";
 import { ProductionLine } from "../models/productionline.model";
 import { ProductionLineController } from "../controllers/productionline.controller";
+import { queryClient } from "./_app";
 
 interface OrderDataDTO {
   key: number;
@@ -39,10 +40,16 @@ const PlanningPage: FC = () => {
     error: ordersError,
     data: ordersData,
   } = useQuery({
-    queryKey: ["planning_orders"],
+    queryKey: ["orders"],
     queryFn: OrderController.readAll,
   });
   useEffect(() => setOrders(ordersData || []), [ordersData]);
+  const orderMutation = useMutation({
+    mutationFn: OrderController.update,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    },
+  });
 
   const [plannings, setPlannings] = useState<Planning[]>([]);
   const {
@@ -50,10 +57,16 @@ const PlanningPage: FC = () => {
     error: planningsError,
     data: planningsData,
   } = useQuery({
-    queryKey: ["planning_plannings"],
+    queryKey: ["plannings"],
     queryFn: PlanningController.readAll,
   });
   useEffect(() => setPlannings(planningsData || []), [planningsData]);
+  const planningMutation = useMutation({
+    mutationFn: PlanningController.create,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["plannings"] });
+    },
+  });
 
   const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
   const {
@@ -61,7 +74,7 @@ const PlanningPage: FC = () => {
     error: productionLineError,
     data: productionLineData,
   } = useQuery({
-    queryKey: ["planning_production_lines"],
+    queryKey: ["production_lines"],
     queryFn: ProductionLineController.readAll,
   });
   useEffect(
@@ -100,12 +113,6 @@ const PlanningPage: FC = () => {
   const showModal = async (order: OrderDataDTO) => {
     setSelectedOrder(order);
     setIsModalVisible(true);
-
-    /*const { data, error } = await supabase
-      .from("ProductionLines")
-      .select("id, name");
-    if (error) console.error(error);
-    else setProductionLines(data);*/
   };
 
   const handleSubmit = (values: any) => {
@@ -131,6 +138,27 @@ const PlanningPage: FC = () => {
         console.error("Data length is", data.length);
         return;
       }*/
+
+      if (
+        selectedProductionLineId === null ||
+        selectedProductionLineId === undefined
+      )
+        return;
+      if (selectedOrder === null) return;
+
+      const order = orders.find((order) => order.id === selectedOrder.key);
+
+      if (order === undefined) return;
+
+      order.status = "WaitingForPurchasing";
+
+      orderMutation.mutate(order);
+
+      planningMutation.mutate({
+        plannedDate: new Date(),
+        orderId: order.id,
+        productionLineId: selectedProductionLineId,
+      });
     })();
 
     console.table(values);
@@ -284,18 +312,6 @@ const PlanningPage: FC = () => {
                         : "Kies uw gewenste productielijn ↓"}
                     </Button>
                   </Dropdown>
-                </Form.Item>
-                <Form.Item
-                  label="Geplande periode"
-                  name="period"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Vul a.u.b. de huidige periode in",
-                    },
-                  ]}
-                >
-                  <InputNumber min={1} max={80} />
                 </Form.Item>
               </Form>
             </div>

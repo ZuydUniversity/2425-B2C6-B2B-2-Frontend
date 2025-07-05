@@ -1,7 +1,11 @@
 ﻿import { Planning } from "../models/planning.model";
 import { createBackendRoute } from "../global/env";
 
-export interface CreatePlanningDTO {}
+export interface CreatePlanningDTO {
+  plannedDate: Date;
+  orderId: number;
+  productionLineId: number;
+}
 
 export class PlanningController {
   public static async readAll(): Promise<Planning[]> {
