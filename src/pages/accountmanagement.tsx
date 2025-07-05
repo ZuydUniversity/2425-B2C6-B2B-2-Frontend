@@ -21,7 +21,7 @@ const AccountManagementPage: FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("PendingApproval");
   const { isPending, error, data } = useQuery({
-    queryKey: ["orders"],
+    queryKey: ["refetch_global", "orders"],
     queryFn: OrderController.readAll,
   });
 

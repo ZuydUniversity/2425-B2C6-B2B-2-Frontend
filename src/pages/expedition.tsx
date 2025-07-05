@@ -19,7 +19,7 @@ interface OrderDataDTO {
 const ExpeditionPage: FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const { isPending, error, data } = useQuery({
-    queryKey: ["orders"],
+    queryKey: ["refetch_global", "orders"],
     queryFn: OrderController.readAll,
   });
   useEffect(() => setOrders(data || []), [data]);

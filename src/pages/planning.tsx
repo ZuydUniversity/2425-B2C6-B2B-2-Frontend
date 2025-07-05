@@ -40,7 +40,7 @@ const PlanningPage: FC = () => {
     error: ordersError,
     data: ordersData,
   } = useQuery({
-    queryKey: ["orders"],
+    queryKey: ["refetch_global", "orders"],
     queryFn: OrderController.readAll,
   });
   useEffect(() => setOrders(ordersData || []), [ordersData]);
@@ -57,7 +57,7 @@ const PlanningPage: FC = () => {
     error: planningsError,
     data: planningsData,
   } = useQuery({
-    queryKey: ["plannings"],
+    queryKey: ["refetch_global", "plannings"],
     queryFn: PlanningController.readAll,
   });
   useEffect(() => setPlannings(planningsData || []), [planningsData]);

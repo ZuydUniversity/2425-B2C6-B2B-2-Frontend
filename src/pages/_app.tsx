@@ -1,6 +1,6 @@
 ﻿import { Provider } from "react-redux";
 import store from "../state/store";
-import { FC, useCallback } from "react";
+import { FC, useCallback, useEffect } from "react";
 import { AppProps } from "next/app";
 import { App, Layout, Menu } from "antd";
 import { Content } from "antd/lib/layout/layout";
@@ -91,6 +91,16 @@ const MyApp: FC<AppProps> = ({ Component, pageProps }: AppProps) => {
     },
     [router],
   );
+
+  useEffect(() => {
+    const refetchInterval = setInterval(() => {
+      console.log("Refetching data...");
+      queryClient.invalidateQueries({ queryKey: ["refetch_global"] });
+      console.log("Succesful refetch!");
+    }, 1000);
+
+    return () => clearInterval(refetchInterval);
+  }, [queryClient]);
 
   return (
     <Provider store={store}>

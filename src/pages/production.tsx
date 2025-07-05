@@ -101,7 +101,7 @@ const ProductionLineView: FC<ProductionLineViewProps> = ({
 }) => {
   const [plannings, setPlannings] = useState<Planning[]>([]);
   const { isPending, error, data } = useQuery({
-    queryKey: ["plannings"],
+    queryKey: ["refetch_global", "plannings"],
     queryFn: PlanningController.readAll,
   });
   useEffect(() => setPlannings(data || []), [data]);
