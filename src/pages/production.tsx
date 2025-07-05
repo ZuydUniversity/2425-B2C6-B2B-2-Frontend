@@ -24,7 +24,7 @@ import { queryClient } from "./_app";
 const ProductionPage: FC = () => {
   const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
   const { isPending, error, data } = useQuery({
-    queryKey: ["production_production_lines"],
+    queryKey: ["production_lines"],
     queryFn: ProductionLineController.readAll,
   });
   useEffect(() => setProductionLines(data || []), [data]);
@@ -101,7 +101,7 @@ const ProductionLineView: FC<ProductionLineViewProps> = ({
 }) => {
   const [plannings, setPlannings] = useState<Planning[]>([]);
   const { isPending, error, data } = useQuery({
-    queryKey: ["production_planning"],
+    queryKey: ["plannings"],
     queryFn: PlanningController.readAll,
   });
   useEffect(() => setPlannings(data || []), [data]);
@@ -109,7 +109,7 @@ const ProductionLineView: FC<ProductionLineViewProps> = ({
   const mutation = useMutation({
     mutationFn: OrderController.update,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["production_planning"] });
+      queryClient.invalidateQueries({ queryKey: ["plannings"] });
     },
   });
 

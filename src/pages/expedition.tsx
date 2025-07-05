@@ -19,7 +19,7 @@ interface OrderDataDTO {
 const ExpeditionPage: FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const { isPending, error, data } = useQuery({
-    queryKey: ["expedition_orders"],
+    queryKey: ["orders"],
     queryFn: OrderController.readAll,
   });
   useEffect(() => setOrders(data || []), [data]);
@@ -27,7 +27,7 @@ const ExpeditionPage: FC = () => {
   const mutation = useMutation({
     mutationFn: OrderController.update,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["expedition_orders"] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
     },
   });
 
