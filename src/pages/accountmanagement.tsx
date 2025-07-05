@@ -1,42 +1,74 @@
 ﻿import { FC, useEffect, useState } from "react";
 import { Space, Typography, List, Collapse, Table, Button } from "antd";
 import { Content } from "antd/lib/layout/layout";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { CustomerController } from "../controllers/customer.controller";
+import { OrderController } from "../controllers/order.controller";
+import { Order } from "../models/order.model";
+import { queryClient } from "./_app";
+
+interface OrderDataDTO {
+  key: number;
+  orderId: number;
+  productName: string;
+  productQuantity: number;
+  status: string;
+  customerName: string;
+  orderDate: date;
+}
 
 const AccountManagementPage: FC = () => {
-  const [orders, setOrders] = useState<any[] | undefined>(undefined);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("PendingApproval");
+  const { isPending, error, data } = useQuery({
+    queryKey: ["orders"],
+    queryFn: OrderController.readAll,
+  });
 
-  useEffect(() => {}, []);
+  useEffect(() => setOrders(data || []), [data]);
 
-  const filteredOrders = orders?.filter((order) => {
-    if (statusFilter === "All") return true;
-    return order.status === statusFilter;
+  const dataSource: OrderDataDTO[] = orders
+    .filter((order) => order.status === statusFilter)
+    .map(
+      (order): OrderDataDTO => ({
+        key: order.id,
+        orderId: order.id,
+        productName: order.product.name,
+        productQuantity: order.quantity,
+        status: order.status,
+        customerName: order.customer.name,
+        orderDate: new Date(order.orderDate).toLocaleString("nl-NL", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      }),
+    );
+
+  const mutation = useMutation({
+    mutationFn: OrderController.update,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    },
   });
 
   const handleStatusUpdate = async (
-    orderId: string,
+    orderId: number,
     currentStatus: string,
     selectedStatus: string,
   ) => {
     const newStatus =
       currentStatus === selectedStatus ? "PendingApproval" : selectedStatus;
 
-    /*const { error } = await supabase
-      .from("Orders")
-      .update({ status: newStatus })
-      .eq("id", orderId);
+    const order = orders.find((order) => order.id === orderId);
 
-    if (error) {
-      console.error("Failed to update status:", error);
-      return;
-    }*/
+    if (order === undefined) return;
 
-    // Update local state
-    setOrders((prev) =>
-      prev?.map((order) =>
-        order.key === orderId ? { ...order, status: newStatus } : order,
-      ),
-    );
+    order.status = newStatus;
+
+    mutation.mutate(order);
   };
 
   const columns = [
@@ -52,13 +84,13 @@ const AccountManagementPage: FC = () => {
     },
     {
       title: "Aantal",
-      dataIndex: "quantity",
-      key: "quantity",
+      dataIndex: "productQuantity",
+      key: "productQuantity",
     },
     {
-      title: "Orderperiode",
-      dataIndex: "orderPeriod",
-      key: "orderPeriod",
+      title: "Order datum",
+      dataIndex: "orderDate",
+      key: "orderDate",
     },
     {
       title: "Order status",
@@ -68,7 +100,7 @@ const AccountManagementPage: FC = () => {
     {
       title: "Acties",
       key: "actions",
-      render: (_: any, record: any) => {
+      render: (_: any, record: OrderDataDTO) => {
         const isPlanning = record.status === "Planning";
         const isRejected = record.status === "Rejected";
 
@@ -101,12 +133,6 @@ const AccountManagementPage: FC = () => {
     <Content>
       <Space style={{ marginBottom: 16 }}>
         <Button
-          type={statusFilter === "All" ? "primary" : "default"}
-          onClick={() => setStatusFilter("All")}
-        >
-          Alles
-        </Button>
-        <Button
           type={statusFilter === "PendingApproval" ? "primary" : "default"}
           onClick={() => setStatusFilter("PendingApproval")}
         >
@@ -125,7 +151,7 @@ const AccountManagementPage: FC = () => {
           Afgewezen
         </Button>
       </Space>
-      <Table dataSource={filteredOrders} columns={columns} />
+      <Table dataSource={dataSource} columns={columns} />
     </Content>
   );
 };
