@@ -3,28 +3,40 @@ import {
   Button,
   Divider,
   Dropdown,
+  Form,
+  Input,
   MenuProps,
+  Skeleton,
   Space,
   Table,
   Typography,
 } from "antd";
 import { Content } from "antd/es/layout/layout";
-
-interface ProductionLine {
-  id: string;
-  name: string;
-}
+import { ProductionLine } from "../models/productionline.model";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { ProductionLineController } from "../controllers/productionline.controller";
+import { Order } from "../models/order.model";
+import { OrderController } from "../controllers/order.controller";
+import { PlanningController } from "../controllers/planning.controller";
+import { Planning } from "models/planning.model";
+import { queryClient } from "./_app";
 
 const ProductionPage: FC = () => {
   const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
+  const { isPending, error, data } = useQuery({
+    queryKey: ["production_production_lines"],
+    queryFn: ProductionLineController.readAll,
+  });
+  useEffect(() => setProductionLines(data || []), [data]);
+
   const [selectedProductionLineId, setSelectedProductionLineId] = useState<
-    string | null
+    number | null
   >(null);
 
   useEffect(() => {}, []);
 
   const handleMenuClick: MenuProps["onClick"] = (info) => {
-    setSelectedProductionLineId(info.key);
+    setSelectedProductionLineId(Number(info.key));
   };
 
   const menuItems: MenuProps["items"] = productionLines.map(
@@ -37,6 +49,12 @@ const ProductionPage: FC = () => {
   const selectedProductionLine = productionLines.find(
     (productionLine) => productionLine.id === selectedProductionLineId,
   );
+
+  if (isPending) return <Skeleton />;
+  if (error)
+    return (
+      <Typography>Er was een fout bij het ophalen van de data.</Typography>
+    );
 
   return (
     <Content style={{ padding: 24 }}>
@@ -64,65 +82,104 @@ const ProductionPage: FC = () => {
   );
 };
 
-interface WorkOrder {
-  id: number;
-  Orders: {
-    id: number;
-    productQuantity: number;
-    Products: {
-      productName: string;
-      blueBlocks: number;
-      redBlocks: number;
-      greyBlocks: number;
-    };
-  };
+interface ProductionLineViewProps {
+  selectedProductionLineId: number;
 }
 
-interface ProductionLineViewProps {
-  selectedProductionLineId: string;
+interface OrderDataDTO {
+  key: number;
+  orderId: number;
+  productName: string;
+  productQuantity: number;
+  blueBlocks: string;
+  redBlocks: string;
+  greyBlocks: string;
 }
 
 const ProductionLineView: FC<ProductionLineViewProps> = ({
   selectedProductionLineId,
 }) => {
-  const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
+  const [plannings, setPlannings] = useState<Planning[]>([]);
+  const { isPending, error, data } = useQuery({
+    queryKey: ["production_planning"],
+    queryFn: PlanningController.readAll,
+  });
+  useEffect(() => setPlannings(data || []), [data]);
+
+  const mutation = useMutation({
+    mutationFn: OrderController.update,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["production_planning"] });
+    },
+  });
 
   useEffect(() => {}, [selectedProductionLineId]);
 
-  const dataSource = workOrders.map((workOrder) => {
-    const quantity = workOrder.Orders.productQuantity;
-    const blueBlocks = workOrder.Orders.Products.blueBlocks;
-    const blueBlocksTotal = blueBlocks * quantity;
-    const redBlocks = workOrder.Orders.Products.redBlocks;
-    const redBlocksTotal = redBlocks * quantity;
-    const greyBlocks = workOrder.Orders.Products.greyBlocks;
-    const greyBlocksTotal = greyBlocks * quantity;
+  const dataSource: OrderDataDTO[] = plannings
+    .filter(
+      (planning) => planning.productionLine.id === selectedProductionLineId,
+    )
+    .filter((planning) => planning.order.status === "InProduction")
+    .map((planning): OrderDataDTO => {
+      const order = planning.order;
 
-    return {
-      key: workOrder.id,
-      productName: workOrder.Orders.Products.productName,
-      productQuantity: quantity,
-      blueBlocks: `P.P.: ${blueBlocks} | T: ${blueBlocksTotal}`,
-      redBlocks: `P.P.: ${redBlocks} | T: ${redBlocksTotal}`,
-      greyBlocks: `P.P.: ${greyBlocks} | T: ${greyBlocksTotal}`,
-      orderId: workOrder.Orders.id,
-    };
-  });
+      const quantity = order.quantity;
+      const blueBlocks = order.product.blueBlocks;
+      const blueBlocksTotal = blueBlocks * quantity;
+      const redBlocks = order.product.redBlocks;
+      const redBlocksTotal = redBlocks * quantity;
+      const greyBlocks = order.product.greyBlocks;
+      const greyBlocksTotal = greyBlocks * quantity;
 
-  const handleStatusUpdate = async (
-    orderId: string,
-    currentStatus: string,
-    selectedStatus: string,
-  ) => {
-    /*const { error } = await supabase
-      .from("Orders")
-      .update({ status: selectedStatus })
-      .eq("id", orderId);
+      return {
+        key: order.id,
+        orderId: order.id,
+        productName: order.product.name,
+        productQuantity: quantity,
+        blueBlocks: `P.P.: ${blueBlocks} | T: ${blueBlocksTotal}`,
+        redBlocks: `P.P.: ${redBlocks} | T: ${redBlocksTotal}`,
+        greyBlocks: `P.P.: ${greyBlocks} | T: ${greyBlocksTotal}`,
+      };
+    });
 
-    if (error) {
-      console.error("Failed to update status:", error);
-      return;
-    }*/
+  if (isPending) return <Skeleton />;
+  if (error)
+    return (
+      <Typography>Er was een fout bij het ophalen van de data.</Typography>
+    );
+
+  const handleReadyForDelivery = async (orderId: number) => {
+    const planning = plannings.find(
+      (planning) => planning.order.id === orderId,
+    );
+
+    if (planning === undefined) return;
+
+    const order = planning.order;
+
+    if (order === undefined) return;
+
+    order.status = "ReadyForDelivery";
+
+    mutation.mutate(order);
+  };
+
+  const handleRejected = async (orderId: number, rejectedReason: string) => {
+    const planning = plannings.find(
+      (planning) => planning.order.id === orderId,
+    );
+
+    if (planning === undefined) return;
+
+    const order = planning.order;
+
+    if (order === undefined) return;
+
+    order.status = "Rejected";
+    order.rejectedDate = new Date();
+    order.rejectionReason = rejectedReason;
+
+    mutation.mutate(order);
   };
 
   const columns = [
@@ -154,30 +211,38 @@ const ProductionLineView: FC<ProductionLineViewProps> = ({
     {
       title: "Acties",
       key: "actions",
-      render: (_: any, record: any) => {
+      render: (_: any, record: OrderDataDTO) => {
         return (
           <Space>
             <Button
-              type={"default"}
-              onClick={() =>
-                handleStatusUpdate(
-                  record.orderId,
-                  record.status,
-                  "ReadyForDelivery",
-                )
-              }
+              type="primary"
+              onClick={() => handleReadyForDelivery(record.orderId)}
             >
               Klaar
             </Button>
-            <Button
-              type={"default"}
-              danger
-              onClick={() =>
-                handleStatusUpdate(record.orderId, record.status, "Planning")
+            <Form
+              onFinish={(values) =>
+                handleRejected(record.orderId, values["rejectedReason"])
               }
             >
-              Afwijzen
-            </Button>
+              <Form.Item
+                label="Rede voor afwijzing"
+                name="rejectedReason"
+                rules={[
+                  {
+                    required: true,
+                    message: "Vul a.u.b de rede voor afwijzing in.",
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item label={null}>
+                <Button type="default" danger htmlType="submit">
+                  Afwijzen
+                </Button>
+              </Form.Item>
+            </Form>
           </Space>
         );
       },
