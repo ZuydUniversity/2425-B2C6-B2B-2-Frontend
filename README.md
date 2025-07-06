@@ -33,8 +33,6 @@ Projectbenodigheden (run dit binnen de map van het project):
 
 `yarn install`
 
-`yarn postinstall`
-
 IDE-benodigheden:
 
 Voor **VSCode** wordt het aangeraden om de uitbereidingen **Prettier** en **Editorconfig** te installeren.
