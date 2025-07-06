@@ -6,12 +6,14 @@ import { App, Layout, Menu } from "antd";
 import { Content } from "antd/lib/layout/layout";
 import Sider from "antd/es/layout/Sider";
 import {
+  AlignLeftOutlined,
   AppstoreOutlined,
   AuditOutlined,
   BuildOutlined,
   CalendarOutlined,
   EuroCircleOutlined,
   MonitorOutlined,
+  SnippetsOutlined,
   TeamOutlined,
   TruckOutlined,
 } from "@ant-design/icons";
@@ -75,6 +77,11 @@ const MyApp: FC<AppProps> = ({ Component, pageProps }: AppProps) => {
       key: "expedition",
       icon: <MonitorOutlined />,
       label: "Expeditie",
+    },
+    {
+      key: "servicelog",
+      icon: <AlignLeftOutlined />,
+      label: "Service Logs",
     },
     /*
     {
