@@ -96,7 +96,7 @@ const MyApp: FC<AppProps> = ({ Component, pageProps }: AppProps) => {
     const refetchInterval = setInterval(() => {
       console.log("Refetching data...");
       queryClient.invalidateQueries({ queryKey: ["refetch_global"] });
-      console.log("Succesful refetch!");
+      console.log("Successful refetch!");
     }, 1000);
 
     return () => clearInterval(refetchInterval);

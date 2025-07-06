@@ -1,43 +1,51 @@
 ﻿import { FC, useEffect, useState } from "react";
-import { Button, Form, InputNumber, Space, Table } from "antd";
+import { Button, Skeleton, Space, Table, Typography } from "antd";
 import { Content } from "antd/es/layout/layout";
+import { Planning } from "../models/planning.model";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { PlanningController } from "../controllers/planning.controller";
+import { Order } from "../models/order.model";
+import { OrderController } from "../controllers/order.controller";
+import { queryClient } from "./_app";
 
-interface PurchaseOrder {
-  id: string;
-  WorkOrders: {
-    Orders: {
-      id: string;
-      productQuantity: number;
-      Products: {
-        blueBlocks: number;
-        redBlocks: number;
-        greyBlocks: number;
-      };
-    };
-    ProductionLines: {
-      name: string;
-    };
-  };
+interface PlanningDataDTO {
+  key: number;
+  order: Order;
+  blueBlocks: number;
+  redBlocks: number;
+  greyBlocks: number;
+  productionLineName: string;
 }
 
 const SupplierPage: FC = () => {
-  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
-
-  useEffect(() => {});
-
-  const dataSource = purchaseOrders.map((purchaseOrder) => {
-    const quantity = purchaseOrder.WorkOrders.Orders.productQuantity;
-
-    return {
-      key: purchaseOrder.id,
-      blueBlocks:
-        purchaseOrder.WorkOrders.Orders.Products.blueBlocks * quantity,
-      redBlocks: purchaseOrder.WorkOrders.Orders.Products.redBlocks * quantity,
-      greyBlocks:
-        purchaseOrder.WorkOrders.Orders.Products.greyBlocks * quantity,
-      productionLineName: purchaseOrder.WorkOrders.ProductionLines.name,
-    };
+  const [plannings, setPlannings] = useState<Planning[]>([]);
+  const { isPending, error, data } = useQuery({
+    queryKey: ["refetch_global", "plannings"],
+    queryFn: PlanningController.readAll,
   });
+  useEffect(() => setPlannings(data || []), [data]);
+
+  const mutation = useMutation({
+    mutationFn: OrderController.update,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["plannings"] });
+    },
+  });
+
+  const dataSource: PlanningDataDTO[] = plannings
+    .filter((planning) => planning.order.status === "WaitingForParts")
+    .map((planning): PlanningDataDTO => {
+      const quantity = planning.order.quantity;
+
+      return {
+        key: planning.id,
+        order: planning.order,
+        blueBlocks: planning.order.product.blueBlocks * quantity,
+        redBlocks: planning.order.product.redBlocks * quantity,
+        greyBlocks: planning.order.product.greyBlocks * quantity,
+        productionLineName: planning.productionLine.name,
+      };
+    });
 
   const columns = [
     {
@@ -63,88 +71,28 @@ const SupplierPage: FC = () => {
     {
       title: "Actions",
       key: "actions",
-      render: (_: any, record: any) => {
-        const handleSubmit = (values: any) => {
-          /*(async () => {
-            const { error: purchaseOrderError } = await supabase
-              .from("PurchaseOrders")
-              .update({ deliveredPeriod: values.period })
-              .eq("id", record.key);
+      render: (_: any, record: PlanningDataDTO) => {
+        const handleSubmit = () => {
+          const order = record.order;
 
-            if (purchaseOrderError) {
-              console.error(
-                "There was an error updating the purchase order",
-                purchaseOrderError,
-              );
-              return;
-            }
+          order.status = "InProduction";
 
-            const { data, error: getOrderError } = await supabase
-              .from("PurchaseOrders")
-              .select(
-                `
-            *,
-            WorkOrders(
-              *,
-              Orders(
-                *,
-                Products(
-                  *
-                )
-              ),
-              ProductionLines(
-                *
-              )
-            )
-          `,
-              )
-              .eq("id", record.key);
-
-            if (getOrderError) {
-              console.error(
-                "There was an error getting the order",
-                getOrderError,
-              );
-              return;
-            }
-
-            const purchaseOrderData = data[0] as PurchaseOrder;
-
-            const { error: updateOrderError } = await supabase
-              .from("Orders")
-              .update({
-                status: "InProduction",
-              })
-              .eq("id", purchaseOrderData.WorkOrders.Orders.id);
-
-            if (updateOrderError) {
-              console.error(
-                "There was an error updating the order status",
-                updateOrderError,
-              );
-              return;
-            }
-          })();*/
+          mutation.mutate(order);
         };
+
+        if (isPending) return <Skeleton />;
+        if (error)
+          return (
+            <Typography>
+              Er was een fout bij het ophalen van de data.
+            </Typography>
+          );
 
         return (
           <Space>
-            <Form onFinish={handleSubmit}>
-              <Form.Item
-                label="Periode"
-                name="period"
-                rules={[
-                  { required: true, message: "Vul a.u.b de periode in." },
-                ]}
-              >
-                <InputNumber min={1} max={80} />
-              </Form.Item>
-              <Form.Item label={null}>
-                <Button type="primary" htmlType="submit">
-                  Geleverd
-                </Button>
-              </Form.Item>
-            </Form>
+            <Button type="primary" onClick={handleSubmit}>
+              Geleverd
+            </Button>
           </Space>
         );
       },

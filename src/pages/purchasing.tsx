@@ -98,7 +98,7 @@ const PurchasingPage: FC = () => {
         const handleSubmit = () => {
           const order = record.order;
 
-          order.status = "InProduction";
+          order.status = "WaitingForParts";
 
           mutation.mutate(order);
         };
