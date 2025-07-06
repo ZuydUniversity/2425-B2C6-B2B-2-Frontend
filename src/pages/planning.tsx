@@ -1,181 +1,327 @@
-import React, { FC, useState } from "react";
-import styles from "./planning.module.scss"; // Controleer dit pad!
+﻿import { FC, useEffect, useState } from "react";
+import {
+  Button,
+  Checkbox,
+  Dropdown,
+  Form,
+  InputNumber,
+  MenuProps,
+  Modal,
+  Skeleton,
+  Space,
+  Table,
+  Typography,
+} from "antd";
+import { Content } from "antd/es/layout/layout";
+import { Order } from "../models/order.model";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { OrderController } from "../controllers/order.controller";
+import { Planning } from "../models/planning.model";
+import { PlanningController } from "../controllers/planning.controller";
+import { ProductionLine } from "../models/productionline.model";
+import { ProductionLineController } from "../controllers/productionline.controller";
+import { queryClient } from "./_app";
 
-interface PlanningItem {
-  type: string;
-  periode: string;
-  aantal: number | null;
-  orderId: string | null;
-}
-
-interface ProductionLineStatus {
-  line: string;
-  ordersInProgress: number | null;
+interface OrderDataDTO {
+  key: number;
+  orderId: number;
+  status: string;
+  customerName: string;
+  productName: string;
+  quantity: number;
+  orderPeriod: number;
 }
 
 const PlanningPage: FC = () => {
-  const [blue, setBlue] = useState("");
-  const [red, setRed] = useState("");
-  const [gray, setGray] = useState("");
-  const [productionLine, setProductionLine] = useState(""); // Nieuwe state voor productielijn
+  const [form] = Form.useForm();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const {
+    isPending: ordersIsPending,
+    error: ordersError,
+    data: ordersData,
+  } = useQuery({
+    queryKey: ["refetch_global", "orders"],
+    queryFn: OrderController.readAll,
+  });
+  useEffect(() => setOrders(ordersData || []), [ordersData]);
+  const orderMutation = useMutation({
+    mutationFn: OrderController.update,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    },
+  });
 
-  const planningDisplayItems: PlanningItem[] = [
-    { type: "", periode: "", aantal: null, orderId: null },
-    { type: "", periode: "", aantal: null, orderId: null },
-    { type: "", periode: "", aantal: null, orderId: null },
-  ];
+  const [plannings, setPlannings] = useState<Planning[]>([]);
+  const {
+    isPending: planningsIsPending,
+    error: planningsError,
+    data: planningsData,
+  } = useQuery({
+    queryKey: ["refetch_global", "plannings"],
+    queryFn: PlanningController.readAll,
+  });
+  useEffect(() => setPlannings(planningsData || []), [planningsData]);
+  const planningMutation = useMutation({
+    mutationFn: PlanningController.create,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["plannings"] });
+    },
+  });
 
-  const productionLineStatuses: ProductionLineStatus[] = [
-    { line: "Productielijn A", ordersInProgress: null },
-    { line: "Productielijn B", ordersInProgress: null },
-    { line: "Productielijn C", ordersInProgress: null },
-  ];
+  const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
+  const {
+    isPending: productionLineIsPending,
+    error: productionLineError,
+    data: productionLineData,
+  } = useQuery({
+    queryKey: ["production_lines"],
+    queryFn: ProductionLineController.readAll,
+  });
+  useEffect(
+    () => setProductionLines(productionLineData || []),
+    [productionLineData],
+  );
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const [statusFilter, setStatusFilter] = useState<string>("Planning");
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<OrderDataDTO | null>(null);
+  const [selectedLine, setSelectedLine] = useState<string | null>(null);
 
-    const blueAmount = Number(blue);
-    const redAmount = Number(red);
-    const grayAmount = Number(gray);
+  const [selectedProductionLineId, setSelectedProductionLineId] = useState<
+    number | null
+  >();
 
-    console.log("Blauw:", blueAmount);
-    console.log("Rood:", redAmount);
-    console.log("Grijs:", grayAmount);
-    console.log("Productielijn:", productionLine); // Log de productielijn
+  useEffect(() => {}, []);
 
-    alert(
-      `Aantallen ingevoerd: Blauw=${blueAmount}, Rood=${redAmount}, Grijs=${grayAmount}, Productielijn=${productionLine}`,
+  const filteredOrders = orders.filter((order) => {
+    if (statusFilter === "All") return true;
+    return order.status === statusFilter;
+  });
+
+  const dataSource: OrderDataDTO[] = filteredOrders
+    // sort by date ascending
+    .sort((left, right) => left.orderDate.getTime() - right.orderDate.getTime())
+    .map(
+      (order): OrderDataDTO => ({
+        key: order.id,
+        orderId: order.id,
+        status: order.status,
+        customerName: order.customer.name,
+        productName: order.product.name,
+        quantity: order.quantity,
+        orderPeriod: 1,
+      }),
     );
 
-    setBlue("");
-    setRed("");
-    setGray("");
-    setProductionLine("");
+  const showModal = async (order: OrderDataDTO) => {
+    setSelectedOrder(order);
+    setIsModalVisible(true);
   };
 
+  const handleSubmit = (values: any) => {
+    (async () => {
+      /*const { error: updateOrderError } = await supabase
+        .from("Orders")
+        .update({
+          status: "WaitingForPurchasing",
+        })
+        .eq("id", selectedOrder.key);
+
+      const { data, error: workOrderError } = await supabase
+        .from("WorkOrders")
+        .insert([
+          {
+            orderId: selectedOrder.key,
+            plannedPeriod: values.period,
+            productionLineId: selectedProductionLineId,
+          },
+        ])
+        .select();*/
+      /*if (!data || data.length <= 0) {
+        console.error("Data length is", data.length);
+        return;
+      }*/
+
+      if (
+        selectedProductionLineId === null ||
+        selectedProductionLineId === undefined
+      )
+        return;
+      if (selectedOrder === null) return;
+
+      const order = orders.find((order) => order.id === selectedOrder.key);
+
+      if (order === undefined) return;
+
+      order.status = "WaitingForPurchasing";
+
+      orderMutation.mutate(order);
+
+      planningMutation.mutate({
+        plannedDate: new Date(),
+        orderId: order.id,
+        productionLineId: selectedProductionLineId,
+      });
+    })();
+
+    console.table(values);
+    form.resetFields();
+    setSelectedProductionLineId(null);
+    handleModalClose();
+  };
+
+  const handleModalOk = () => {
+    form.submit();
+  };
+
+  const handleModalClose = () => {
+    setIsModalVisible(false);
+    setSelectedOrder(null);
+    setSelectedLine(null);
+  };
+
+  const columns = [
+    {
+      title: "Klantnaam",
+      dataIndex: "customerName",
+      key: "customerName",
+    },
+    {
+      title: "Product",
+      dataIndex: "productName",
+      key: "productName",
+    },
+    {
+      title: "Aantal",
+      dataIndex: "quantity",
+      key: "quantity",
+    },
+    {
+      title: "Orderperiode",
+      dataIndex: "orderPeriod",
+      key: "orderPeriod",
+    },
+    {
+      title: "Acties",
+      key: "actions",
+      render: (_: any, record: OrderDataDTO) => {
+        const isPlanning = record.status === "Planning";
+        const isRejected = record.status === "Rejected";
+
+        return (
+          <Space>
+            <Button
+              type={isPlanning ? "primary" : "default"}
+              onClick={() => showModal(record)}
+            >
+              Plannen
+            </Button>
+          </Space>
+        );
+      },
+    },
+  ];
+
+  const getProductionBacklog = (productionLineId: number): number => {
+    let total = 0;
+    const filteredPlannings = plannings.filter(
+      (planning) => planning.productionLine.id === productionLineId,
+    );
+
+    filteredPlannings.forEach((planning) => {
+      total += planning.order.quantity;
+    });
+
+    return total;
+  };
+
+  const handleMenuClick: MenuProps["onClick"] = (info) => {
+    setSelectedProductionLineId(Number(info.key));
+    form.setFieldsValue({ productionLine: info.key });
+  };
+
+  const menuItems: MenuProps["items"] = productionLines.map(
+    (productionLine) => ({
+      key: productionLine.id,
+      label:
+        productionLine.name +
+        " Backlog: " +
+        getProductionBacklog(productionLine.id),
+    }),
+  );
+
+  const selectedProductionLine = productionLines.find(
+    (productionLine) => productionLine.id === selectedProductionLineId,
+  );
+
+  if (ordersIsPending || productionLineIsPending || planningsIsPending)
+    return <Skeleton />;
+
+  if (ordersError || productionLineError || planningsError)
+    return (
+      <Typography>Er was een fout bij het ophalen van de data.</Typography>
+    );
+
   return (
-    <div className={styles.container}>
-      <h1 className={styles.pageTitle}>Planningsoverzicht</h1>
-
-      <div className={styles.contentWrapper}>
-        {" "}
-        {/* Nieuwe wrapper voor flex layout */}
-        {/* Sectie voor Productielijn Status (links) */}
-        <section className={styles.productionLineStatusSection}>
-          <h2 className={styles.sectionTitle}>Productielijnen Status</h2>
-          <div className={styles.statusList}>
-            {productionLineStatuses.map((status, index) => (
-              <div key={index} className={styles.statusItem}>
-                <span className={styles.statusLineName}>{status.line}:</span>
-                <span className={styles.statusOrders}>
-                  Benodigde tijd:{" "}
-                  {status.ordersInProgress !== null
-                    ? status.ordersInProgress
-                    : "____"}
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
-        <div className={styles.mainContent}>
-          {" "}
-          {/* Wrapper voor planning en formulier */}
-          {/* Huidige Planning Sectie (rechtsboven) */}
-          <section className={styles.planningSection}>
-            <h2 className={styles.sectionTitle}>Huidige Planning</h2>
-            <div className={styles.grid}>
-              {planningDisplayItems.map((_, index) => (
-                <div key={index} className={styles.card}>
-                  <div className={styles.cardHeader}>
-                    <span className={styles.cardTypePlaceholder}>
-                      Type: ____
-                    </span>
-                    <span className={styles.cardOrderId}>OrderID: ____</span>
-                  </div>
-                  <div className={styles.cardBody}>
-                    <p>
-                      <strong>Periode:</strong> ____
-                    </p>
-                    <p>
-                      <strong>Aantal:</strong> ____
-                    </p>
-                  </div>
-                </div>
-              ))}
+    <Content>
+      <Table dataSource={dataSource} columns={columns} />
+      <Modal
+        title="Order plannen"
+        open={isModalVisible}
+        onOk={handleModalOk}
+        onCancel={handleModalClose}
+      >
+        {selectedOrder && (
+          <>
+            <p>
+              <strong>Klant:</strong> {selectedOrder.customerName}
+            </p>
+            <p>
+              <strong>Product:</strong> {selectedOrder.productName}
+            </p>
+            <p>
+              <strong>Aantal:</strong> {selectedOrder.quantity}
+            </p>
+            <p>
+              <strong>Periode:</strong> {selectedOrder.orderPeriod}
+            </p>
+            <p>
+              <strong>Status:</strong> {selectedOrder.status}
+            </p>
+            <div>
+              <p>
+                <strong>Verder benodigde informatie:</strong>
+              </p>
+              <Form form={form} onFinish={handleSubmit}>
+                <Form.Item
+                  label="Productielijn"
+                  name="productionLine"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Kies a.u.b. een productielijn",
+                    },
+                  ]}
+                >
+                  <Dropdown
+                    menu={{
+                      items: menuItems,
+                      onClick: handleMenuClick,
+                    }}
+                  >
+                    <Button>
+                      {selectedProductionLine
+                        ? selectedProductionLine.name
+                        : "Kies uw gewenste productielijn ↓"}
+                    </Button>
+                  </Dropdown>
+                </Form.Item>
+              </Form>
             </div>
-          </section>
-          {/* Formulier Sectie (rechtsonder) */}
-          <section className={styles.formSection}>
-            <h2 className={styles.sectionTitle}>Aantal blokjes invoeren</h2>
-            <form onSubmit={handleSubmit}>
-              <div className={styles.inputGroup}>
-                <label htmlFor="blauw" className={styles.inputLabel}>
-                  Aantal blauwe blokjes:
-                </label>
-                <input
-                  id="blauw"
-                  type="number"
-                  value={blue}
-                  onChange={(e) => setBlue(e.target.value)}
-                  className={styles.inputField}
-                  min="0"
-                  placeholder="Voer aantal in"
-                />
-              </div>
-
-              <div className={styles.inputGroup}>
-                <label htmlFor="rood" className={styles.inputLabel}>
-                  Aantal rode blokjes:
-                </label>
-                <input
-                  id="rood"
-                  type="number"
-                  value={red}
-                  onChange={(e) => setRed(e.target.value)}
-                  className={styles.inputField}
-                  min="0"
-                  placeholder="Voer aantal in"
-                />
-              </div>
-
-              <div className={styles.inputGroup}>
-                <label htmlFor="grijs" className={styles.inputLabel}>
-                  Aantal grijze blokjes:
-                </label>
-                <input
-                  id="grijs"
-                  type="number"
-                  value={gray}
-                  onChange={(e) => setGray(e.target.value)}
-                  className={styles.inputField}
-                  min="0"
-                  placeholder="Voer aantal in"
-                />
-              </div>
-
-              {/* NIEUW: Productielijn Invoer Veld */}
-              <div className={styles.inputGroup}>
-                <label htmlFor="productielijn" className={styles.inputLabel}>
-                  Productielijn:
-                </label>
-                <input
-                  id="productielijn"
-                  type="text"
-                  value={productionLine}
-                  onChange={(e) => setProductionLine(e.target.value)}
-                  className={styles.inputField}
-                  placeholder="Bijv. Lijn A, Lijn B"
-                />
-              </div>
-
-              <button type="submit" className={styles.formButton}>
-                Planning Bevestigen
-              </button>
-            </form>
-          </section>
-        </div>
-      </div>
-    </div>
+          </>
+        )}
+      </Modal>
+    </Content>
   );
 };
 

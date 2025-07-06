@@ -1,39 +1,41 @@
-import Order from "./order.model";
-import ProductionLine from "./productionLine.model";
+﻿import { Order } from "./order.model";
+import { ProductionLine } from "./productionline.model";
 
-interface ApprovalFormConstructor {
+export interface PlanningProperties {
   id: number;
-  plannedDate: Date;
-  orderId: number;
+  plannedDate?: Date;
   order: Order;
-  productionLineId: number;
   productionLine: ProductionLine;
 }
 
-export default class Planning {
-  public id: number;
-  public plannedDate: Date;
-  public orderId: number;
-  public order: Order;
-  public productionLineId: number;
-  public productionLine: ProductionLine;
+export class Planning implements PlanningProperties {
+  public id;
+  public plannedDate;
+  public order;
+  public productionLine;
 
-  constructor({
-    id,
-    plannedDate,
-    orderId,
-    order,
-    productionLineId,
-    productionLine,
-  }: ApprovalFormConstructor) {
-    this.id = id;
-    this.plannedDate = plannedDate;
-    this.orderId = orderId;
-    this.order = order instanceof Order ? order : new Order(order);
-    this.productionLineId = productionLineId;
-    this.productionLine =
-      productionLine instanceof ProductionLine
-        ? productionLine
-        : new ProductionLine(productionLine);
+  public constructor(properties: PlanningProperties) {
+    this.id = properties.id;
+    this.plannedDate = properties.plannedDate;
+    this.order = properties.order;
+    this.productionLine = properties.productionLine;
+  }
+
+  public static fromJSON(json: any): Planning {
+    return new Planning({
+      id: json.id,
+      plannedDate: json.plannedDate ? new Date(json.plannedDate) : undefined,
+      order: Order.fromJSON(json.order),
+      productionLine: ProductionLine.fromJSON(json.productionLine),
+    });
+  }
+
+  public toJSON(): any {
+    return {
+      id: this.id,
+      plannedDate: this.plannedDate?.toISOString() ?? null,
+      orderId: this.order.id,
+      productionLineId: this.productionLine.id,
+    };
   }
 }

@@ -1,22 +1,145 @@
-﻿import "normalize.css"; // Use normalize.css to make styling more reliable
-import { Provider } from "react-redux";
-import store from "../global/state/store";
-import { FC } from "react";
+﻿import { Provider } from "react-redux";
+import store from "../state/store";
+import { FC, useCallback, useEffect } from "react";
 import { AppProps } from "next/app";
-import Layout from "../presentation/components/Layout";
+import { App, Layout, Menu } from "antd";
+import { Content } from "antd/lib/layout/layout";
+import Sider from "antd/es/layout/Sider";
+import {
+  AlignLeftOutlined,
+  AppstoreOutlined,
+  AuditOutlined,
+  BuildOutlined,
+  CalendarOutlined,
+  EuroCircleOutlined,
+  MonitorOutlined,
+  SnippetsOutlined,
+  TeamOutlined,
+  TruckOutlined,
+} from "@ant-design/icons";
+import router from "next/router";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { QueryClient } from "@tanstack/query-core";
+
+export const queryClient = new QueryClient();
+const shouldShowDevTools = true;
 
 /**
  * Default app component. This component renders and wraps around every page.
- * Includes normalize.css and the Redux store.
  */
-const App: FC<AppProps> = ({ Component, pageProps }: AppProps) => {
+const MyApp: FC<AppProps> = ({ Component, pageProps }: AppProps) => {
+  const menuItems = [
+    {
+      key: "/",
+      icon: <AppstoreOutlined />,
+      label: "Dashboard",
+    },
+    {
+      key: "customer",
+      icon: <TeamOutlined />,
+      label: "Klant",
+    },
+    {
+      key: "accountmanagement",
+      icon: <AuditOutlined />,
+      label: "Account management",
+    },
+
+    {
+      key: "planning",
+      icon: <CalendarOutlined />,
+      label: "Planning",
+    },
+    {
+      key: "purchasing",
+      icon: <EuroCircleOutlined />,
+      label: "Inkoop",
+    },
+    {
+      key: "supplier",
+      icon: <TruckOutlined />,
+      label: "Leverancier",
+    },
+    /*
+    {
+      key: "inventorymanagement",
+      icon: <TagsOutlined />,
+      label: "Voorraadbeheer",
+    },
+     */
+    {
+      key: "production",
+      icon: <BuildOutlined />,
+      label: "Productie",
+    },
+    {
+      key: "expedition",
+      icon: <MonitorOutlined />,
+      label: "Expeditie",
+    },
+    {
+      key: "servicelog",
+      icon: <AlignLeftOutlined />,
+      label: "Service Logs",
+    },
+    /*
+    {
+      key: "financialadmin",
+      icon: <StockOutlined />,
+      label: "Financiële administratie",
+    },
+     */
+  ];
+
+  const handleMenuClick = useCallback(
+    ({ key }: { key: string }) => {
+      router.push(key);
+    },
+    [router],
+  );
+
+  useEffect(() => {
+    const refetchInterval = setInterval(() => {
+      console.log("Refetching data...");
+      queryClient.invalidateQueries({ queryKey: ["refetch_global"] });
+      console.log("Successful refetch!");
+    }, 1000);
+
+    return () => clearInterval(refetchInterval);
+  }, [queryClient]);
+
   return (
     <Provider store={store}>
-      <Layout>
-        <Component {...pageProps} />
-      </Layout>
+      <QueryClientProvider client={queryClient}>
+        <App>
+          <Layout style={{ minHeight: "100vh", margin: 0 }}>
+            <Sider>
+              <Menu
+                style={{ height: "100%" }}
+                mode="inline"
+                items={menuItems}
+                onClick={handleMenuClick}
+              />
+            </Sider>
+            <Content>
+              <Layout
+                style={{
+                  margin: "10px",
+                  padding: "24px",
+                  backgroundColor: "white",
+                  borderRadius: "20px",
+                }}
+              >
+                <Component {...pageProps} />
+              </Layout>
+            </Content>
+          </Layout>
+        </App>
+        {shouldShowDevTools && <ReactQueryDevtools />}
+      </QueryClientProvider>
     </Provider>
   );
 };
 
-export default App;
+export default MyApp;

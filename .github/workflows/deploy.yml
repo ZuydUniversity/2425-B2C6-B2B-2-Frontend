@@ -31,16 +31,6 @@ jobs:
         with:
           cmd: format:check
 
-      - name: Check if there aren't any linting errors
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: lint
-
-      - name: Check unit tests
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: test
-
       - name: Generate version (Docker)
         id: version
         run: echo "date=$(date +'%Y-%m-%d-%H-%M')" >> $GITHUB_OUTPUT

@@ -1,33 +1,23 @@
 ﻿import { FC, useEffect, useState } from "react";
-import {
-  Button,
-  Form,
-  InputNumber,
-  Skeleton,
-  Space,
-  Table,
-  Typography,
-} from "antd";
+import { Button, Skeleton, Space, Table, Typography } from "antd";
 import { Content } from "antd/es/layout/layout";
-import { Order } from "../models/order.model";
 import { Planning } from "../models/planning.model";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { PlanningController } from "../controllers/planning.controller";
+import { Order } from "../models/order.model";
 import { OrderController } from "../controllers/order.controller";
 import { queryClient } from "./_app";
 
 interface PlanningDataDTO {
   key: number;
   order: Order;
-  quantity: number;
-  productName: string;
   blueBlocks: number;
   redBlocks: number;
   greyBlocks: number;
   productionLineName: string;
 }
 
-const PurchasingPage: FC = () => {
+const SupplierPage: FC = () => {
   const [plannings, setPlannings] = useState<Planning[]>([]);
   const { isPending, error, data } = useQuery({
     queryKey: ["refetch_global", "plannings"],
@@ -43,51 +33,38 @@ const PurchasingPage: FC = () => {
   });
 
   const dataSource: PlanningDataDTO[] = plannings
-    .filter((planning) => planning.order.status === "WaitingForPurchasing")
+    .filter((planning) => planning.order.status === "WaitingForParts")
     // sort by date ascending
     .sort(
       (left, right) =>
         left.order.orderDate.getTime() - right.order.orderDate.getTime(),
     )
     .map((planning): PlanningDataDTO => {
-      const order = planning.order;
-      const quantity: number = order.quantity;
+      const quantity = planning.order.quantity;
 
       return {
-        key: order.id,
-        order: order,
-        quantity: quantity,
-        productName: order.product.name,
-        blueBlocks: order.product.blueBlocks * quantity,
-        redBlocks: order.product.redBlocks * quantity,
-        greyBlocks: order.product.greyBlocks * quantity,
+        key: planning.id,
+        order: planning.order,
+        blueBlocks: planning.order.product.blueBlocks * quantity,
+        redBlocks: planning.order.product.redBlocks * quantity,
+        greyBlocks: planning.order.product.greyBlocks * quantity,
         productionLineName: planning.productionLine.name,
       };
     });
 
   const columns = [
     {
-      title: "Type",
-      dataIndex: "productName",
-      key: "productName",
-    },
-    {
-      title: "Aantal",
-      dataIndex: "quantity",
-      key: "quantity",
-    },
-    {
-      title: "Blauwe blokken x aantal",
+      title: "Blauwe blokken",
       dataIndex: "blueBlocks",
       key: "blueBlocks",
     },
     {
-      title: "Rode blokken x aantal",
+      title: "Rode blokken",
       dataIndex: "redBlocks",
       key: "redBlocks",
     },
     {
-      title: "Grijze blokken x aantal",
+      title: "Grijze blokken",
       dataIndex: "greyBlocks",
       key: "greyBlocks",
     },
@@ -103,27 +80,29 @@ const PurchasingPage: FC = () => {
         const handleSubmit = () => {
           const order = record.order;
 
-          order.status = "WaitingForParts";
+          order.status = "InProduction";
 
           mutation.mutate(order);
         };
 
+        if (isPending) return <Skeleton />;
+        if (error)
+          return (
+            <Typography>
+              Er was een fout bij het ophalen van de data.
+            </Typography>
+          );
+
         return (
           <Space>
             <Button type="primary" onClick={handleSubmit}>
-              Verzenden naar leverancier
+              Geleverd
             </Button>
           </Space>
         );
       },
     },
   ];
-
-  if (isPending) return <Skeleton />;
-  if (error)
-    return (
-      <Typography>Er was een fout bij het ophalen van de data.</Typography>
-    );
 
   return (
     <Content>
@@ -132,4 +111,4 @@ const PurchasingPage: FC = () => {
   );
 };
 
-export default PurchasingPage;
+export default SupplierPage;

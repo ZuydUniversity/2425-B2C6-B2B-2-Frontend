@@ -1,129 +1,69 @@
-import axios from "axios";
-import Order from "../models/order.model";
-import Planning from "../models/planning.model";
-import ProductionLine from "models/productionLine.model";
-import * as EitherModule from "fp-ts/Either";
+﻿import { Planning } from "../models/planning.model";
+import { createBackendRoute } from "../global/env";
 
-export default class PlanningController {
-  public static getAll(): EitherModule.Either<string, Planning[]> {
-    axios
-      .get<any[]>("https://10.0.2.4:8080/api/Planning")
-      .then((response) => {
-        const result: Planning[] = [];
-        const data = response.data;
+export interface CreatePlanningDTO {
+  plannedDate: Date;
+  orderId: number;
+  productionLineId: number;
+}
 
-        data.forEach((item) => {
-          result.push(
-            new Planning({
-              id: item["id"] as number,
-              plannedDate: item["plannedDate"] as Date,
-              orderId: item["orderId"] as number,
-              order: item["order"] as Order,
-              productionLineId: item["productionLineId"] as number,
-              productionLine: item["productionLine"] as ProductionLine,
-            }),
-          );
-        });
-        return EitherModule.right(result);
-      })
-      .catch((error) => {
-        return EitherModule.left(error.toString());
-      });
-    return EitherModule.left("Failed to fetch planning data");
+export class PlanningController {
+  public static async readAll(): Promise<Planning[]> {
+    const response = await fetch(createBackendRoute("Planning"));
+    const data = await response.json();
+    return data.map((item: any) => Planning.fromJSON(item));
   }
 
-  public static getById(id: number): EitherModule.Either<string, Planning> {
-    axios
-      .get<any>(`https://10.0.2.4:8080/api/Planning/${id}`)
-      .then((response) => {
-        const item = response.data;
-        const planning = new Planning({
-          id: item["id"] as number,
-          plannedDate: item["plannedDate"] as Date,
-          orderId: item["orderId"] as number,
-          order: item["order"] as Order,
-          productionLineId: item["productionLineId"] as number,
-          productionLine: item["productionLine"] as ProductionLine,
-        });
-        return EitherModule.right(planning);
-      })
-      .catch((error) => {
-        return EitherModule.left(error.toString());
-      });
-    return EitherModule.left("Failed to fetch planning by ID");
+  public static async readOneById(id: number): Promise<Planning> {
+    const response = await fetch(
+      createBackendRoute(["Planning", id.toString()]),
+    );
+    const data = await response.json();
+    return Planning.fromJSON(data);
   }
 
-  public static createPlanning(
-    planning: Planning,
-  ): EitherModule.Either<string, Planning> {
-    axios
-      .post<any>("https://10.0.2.4:8080/api/Planning", {
-        id: planning.id,
-        plannedDate: planning.plannedDate,
-        orderId: planning.orderId,
-        order: planning.order,
-        productionLineId: planning.productionLineId,
-        productionLine: planning.productionLine,
-      })
-      .then((response) => {
-        const created = new Planning({
-          id: response.data.id,
-          plannedDate: response.data.plannedDate,
-          orderId: response.data.orderId,
-          order: response.data.order,
-          productionLineId: response.data.productionLineId,
-          productionLine: response.data.productionLine,
-        });
-        return EitherModule.right(created);
-      })
-      .catch((error) => {
-        return EitherModule.left(error.toString());
-      });
-    return EitherModule.left("Failed to create planning");
+  public static async create(planning: CreatePlanningDTO): Promise<Planning> {
+    const response = await fetch(createBackendRoute("Planning"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(planning),
+    });
+
+    const data = response.json();
+
+    return Planning.fromJSON(data);
   }
 
-  public static updatePlanning(
-    planning: Planning,
-  ): EitherModule.Either<string, Planning> {
-    axios
-      .put<any>(`https://10.0.2.4:8080/api/Planning/${planning.id}`, {
-        id: planning.id,
-        plannedDate: planning.plannedDate,
-        orderId: planning.orderId,
-        order: planning.order,
-        productionLineId: planning.productionLineId,
-        productionLine: planning.productionLine,
-      })
-      .then((response) => {
-        const updated = new Planning({
-          id: response.data.id,
-          plannedDate: response.data.plannedDate,
-          orderId: response.data.orderId,
-          order: response.data.order,
-          productionLineId: response.data.productionLineId,
-          productionLine: response.data.productionLine,
-        });
-        return EitherModule.right(updated);
-      })
-      .catch((error) => {
-        return EitherModule.left(error.toString());
-      });
-    return EitherModule.left("Failed to update planning");
+  public static async update(planning: Planning): Promise<Planning> {
+    const id = planning.id;
+
+    const planningJSON = planning.toJSON();
+
+    const response = await fetch(
+      createBackendRoute(["Planning", id.toString()]),
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(planningJSON),
+      },
+    );
+
+    const data = await response.json();
+
+    return Planning.fromJSON(data);
   }
 
-  public static deletePlanning(
-    id: number,
-  ): EitherModule.Either<string, string> {
-    axios
-      .delete(`https://10.0.2.4:8080/api/Planning/${id}`)
-      .then(() => {
-        return EitherModule.right(
-          `Planning met ID ${id} succesvol verwijderd.`,
-        );
-      })
-      .catch((error) => {
-        return EitherModule.left(error.toString());
-      });
-    return EitherModule.left("Failed to delete planning");
+  public static async delete(id: number): Promise<Planning> {
+    const response = await fetch(
+      createBackendRoute(["Planning", id.toString()]),
+      {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+
+    const data = await response.json();
+
+    return Planning.fromJSON(data);
   }
 }
