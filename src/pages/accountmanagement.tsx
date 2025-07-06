@@ -37,6 +37,8 @@ const AccountManagementPage: FC = () => {
 
   const dataSource: OrderDataDTO[] = orders
     .filter((order) => order.status === statusFilter)
+    // sort by date ascending
+    .sort((left, right) => left.orderDate.getTime() - right.orderDate.getTime())
     .map(
       (order): OrderDataDTO => ({
         key: order.id,

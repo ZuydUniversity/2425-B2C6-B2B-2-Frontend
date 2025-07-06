@@ -44,6 +44,11 @@ const PurchasingPage: FC = () => {
 
   const dataSource: PlanningDataDTO[] = plannings
     .filter((planning) => planning.order.status === "WaitingForPurchasing")
+    // sort by date ascending
+    .sort(
+      (left, right) =>
+        left.order.orderDate.getTime() - right.order.orderDate.getTime(),
+    )
     .map((planning): PlanningDataDTO => {
       const order = planning.order;
       const quantity: number = order.quantity;

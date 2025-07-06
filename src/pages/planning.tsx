@@ -98,17 +98,20 @@ const PlanningPage: FC = () => {
     return order.status === statusFilter;
   });
 
-  const dataSource: OrderDataDTO[] = filteredOrders.map(
-    (order): OrderDataDTO => ({
-      key: order.id,
-      orderId: order.id,
-      status: order.status,
-      customerName: order.customer.name,
-      productName: order.product.name,
-      quantity: order.quantity,
-      orderPeriod: 1,
-    }),
-  );
+  const dataSource: OrderDataDTO[] = filteredOrders
+    // sort by date ascending
+    .sort((left, right) => left.orderDate.getTime() - right.orderDate.getTime())
+    .map(
+      (order): OrderDataDTO => ({
+        key: order.id,
+        orderId: order.id,
+        status: order.status,
+        customerName: order.customer.name,
+        productName: order.product.name,
+        quantity: order.quantity,
+        orderPeriod: 1,
+      }),
+    );
 
   const showModal = async (order: OrderDataDTO) => {
     setSelectedOrder(order);

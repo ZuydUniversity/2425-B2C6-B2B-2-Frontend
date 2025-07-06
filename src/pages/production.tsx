@@ -120,6 +120,11 @@ const ProductionLineView: FC<ProductionLineViewProps> = ({
       (planning) => planning.productionLine.id === selectedProductionLineId,
     )
     .filter((planning) => planning.order.status === "InProduction")
+    // sort by date ascending
+    .sort(
+      (left, right) =>
+        left.order.orderDate.getTime() - right.order.orderDate.getTime(),
+    )
     .map((planning): OrderDataDTO => {
       const order = planning.order;
 

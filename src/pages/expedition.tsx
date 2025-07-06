@@ -33,6 +33,8 @@ const ExpeditionPage: FC = () => {
 
   const dataSource: OrderDataDTO[] = orders
     .filter((order) => order.status === "ReadyForDelivery")
+    // sort by date ascending
+    .sort((left, right) => left.orderDate.getTime() - right.orderDate.getTime())
     .map(
       (order): OrderDataDTO => ({
         key: order.id,
