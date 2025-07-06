@@ -15,9 +15,7 @@ const HomePage: FC = () => {
   useEffect(() => setOrders(data || []), [data]);
 
   const totalOrders = orders.length;
-  const totalOrdersFinished = orders.filter(
-    (order) => order.status === "Delivered",
-  ).length;
+  let totalOrdersFinished = 0;
   let totalBlocks = 0;
   let totalProducts = 0;
 
@@ -27,6 +25,7 @@ const HomePage: FC = () => {
     const redBlocksTotal = order.product.redBlocks * quantity;
     const greyBlocksTotal = order.product.greyBlocks * quantity;
 
+    if (order.status === "Delivered") totalOrdersFinished += 1;
     totalBlocks += blueBlocksTotal + redBlocksTotal + greyBlocksTotal;
     totalProducts += quantity;
   }
