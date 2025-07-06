@@ -30,7 +30,7 @@ interface PlanningDataDTO {
 const PurchasingPage: FC = () => {
   const [plannings, setPlannings] = useState<Planning[]>([]);
   const { isPending, error, data } = useQuery({
-    queryKey: ["refresh_global", "plannings"],
+    queryKey: ["refetch_global", "plannings"],
     queryFn: PlanningController.readAll,
   });
   useEffect(() => setPlannings(data || []), [data]);
