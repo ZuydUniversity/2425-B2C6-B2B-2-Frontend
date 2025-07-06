@@ -1,5 +1,13 @@
 ﻿import { FC, useEffect, useState } from "react";
-import { Space, Typography, List, Collapse, Table, Button } from "antd";
+import {
+  Space,
+  Typography,
+  List,
+  Collapse,
+  Table,
+  Button,
+  Skeleton,
+} from "antd";
 import { Content } from "antd/lib/layout/layout";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { CustomerController } from "../controllers/customer.controller";
@@ -128,6 +136,12 @@ const AccountManagementPage: FC = () => {
       },
     },
   ];
+
+  if (isPending) return <Skeleton />;
+  if (error)
+    return (
+      <Typography>Er was een fout bij het ophalen van de data.</Typography>
+    );
 
   return (
     <Content>
