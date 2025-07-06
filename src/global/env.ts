@@ -1,6 +1,6 @@
 ﻿export const BACKEND_URL =
   process.env.BACKEND_URL ||
-  "https://b2b2buildingblocks.westeurope.cloudapp.azure.com:8080/api";
+  "https://b2b2buildingblocks.westeurope.cloudapp.azure.com:8081/api";
 export const createBackendRoute = (routes: string[] | string): string => {
   if (typeof routes === "string") {
     return [BACKEND_URL, routes].join("/");
